@@ -380,7 +380,7 @@ layerrule = ignorealpha 0.5, wofi
 
 `Alt+Tab` - wlogout
 
-> [!Tip]
+> [!NOTE]
 > This isnt every Keybind. Just some highlighted ones.
 > 
 > More can be found and changed in `~/.confing/hypr/hyprland.conf`
