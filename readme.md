@@ -4,7 +4,7 @@
 
 
 > [!TIP]
-> Check out [MyFetch](github.com/elifouts/MyFetch) now!
+> Check out [MyFetch](https://github.com/elifouts/MyFetch) now!
 
 This contains My **Arch** Linux Dotfiles for a clean-looking lightweight **Hyprland** setup.
 
