@@ -46,12 +46,12 @@ main() {
         fi
     done)
     
+    # Kill any existing mpvpaper process first
+    pkill mpvpaper 2>/dev/null
+    sleep 0.5
+    
     # Check if it's a video file
     if [[ "$actual_file" =~ \.(mp4|mkv)$ ]]; then
-        # Kill any existing mpvpaper process
-        pkill mpvpaper 2>/dev/null
-        sleep 0.5
-        
         # Play video as wallpaper using mpvpaper
         mpvpaper -o "no-audio --loop-file=inf" "*" "$actual_file" &
         
