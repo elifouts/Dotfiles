@@ -30,4 +30,7 @@ main() {
     fi
 
 }
-main
+
+if ! pgrep -x wofi > /dev/null; then
+    main
+fi

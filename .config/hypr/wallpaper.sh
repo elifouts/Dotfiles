@@ -22,5 +22,8 @@ main() {
     pkill -USR2 cava 2>/dev/null
     source ~/.cache/wal/colors.sh && cp -r $wallpaper ~/wallpapers/pywallpaper.jpg 
 }
-main
+
+if ! pgrep -x wofi > /dev/null; then
+    main
+fi
 
