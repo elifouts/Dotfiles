@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import atexit
 import curses
 import re
 import shlex
@@ -73,6 +74,9 @@ def ui(screen, full, items):
     curses.curs_set(0)
     screen.keypad(True)
     curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
+    curses.mouseinterval(0)
+    print("\033[?1003h", end="", flush=True)
+    atexit.register(lambda: print("\033[?1003l", end="", flush=True))
     curses.start_color()
     curses.use_default_colors()
     for number, foreground in ((1, curses.COLOR_GREEN), (2, curses.COLOR_RED),
@@ -82,6 +86,8 @@ def ui(screen, full, items):
 
     column = 0
     row = 0
+    view_start = 0
+    preserve_scroll = False
     marked = set()
 
     while items:
@@ -96,7 +102,16 @@ def ui(screen, full, items):
         right_x = width // 2 + gutter // 2
         package_width = max(12, (width - 42) // 2)
         size_width = max(4, max([len(item[2]) for item in items] + [4]))
-        start = max(0, min(row - max(1, height - 9) // 2, len(current) - max(1, height - 9)))
+        visible_rows = max(1, height - 9)
+        max_start = max(0, max(len(left), len(right)) - visible_rows)
+        view_start = min(view_start, max_start)
+        if not preserve_scroll:
+            if row < view_start:
+                view_start = row
+            elif row >= view_start + visible_rows - 1:
+                view_start = min(row - visible_rows + 2, max_start)
+        preserve_scroll = False
+        start = view_start
 
         def text(y, x, value, attr=0):
             if y < height and x < width:
@@ -135,10 +150,21 @@ def ui(screen, full, items):
         if key == curses.KEY_MOUSE:
             _, mouse_x, mouse_y, _, mouse_state = curses.getmouse()
             if mouse_state & curses.BUTTON4_PRESSED:
-                row = max(0, row - 3)
+                view_start = max(0, view_start - 3)
+                preserve_scroll = True
                 continue
             if mouse_state & curses.BUTTON5_PRESSED:
-                row = min(len(current) - 1, row + 3)
+                view_start = min(max_start, view_start + 3)
+                preserve_scroll = True
+                continue
+            if 5 <= mouse_y < height - 3:
+                hovered_column = 1 if mouse_x >= right_x else 0
+                hovered_group = right if hovered_column else left
+                if hovered_group:
+                    column = hovered_column
+                    row = max(0, min(start + mouse_y - 5, len(hovered_group) - 1))
+            if not mouse_state & (curses.BUTTON1_PRESSED | curses.BUTTON1_CLICKED |
+                                  curses.BUTTON1_DOUBLE_CLICKED):
                 continue
             if mouse_state & (curses.BUTTON1_PRESSED | curses.BUTTON1_CLICKED | curses.BUTTON1_DOUBLE_CLICKED):
                 if mouse_y == height - 1 and 2 <= mouse_x < 2 + len(uninstall_label):
