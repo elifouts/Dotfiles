@@ -150,9 +150,12 @@ apply_dotfiles() {
     local hypr_dest="$HOME/.config/hypr"
     mkdir -p "$hypr_dest"
 
-    for shared_file in hypridle.conf hyprlock.conf wallpaper.sh select.sh; do
+    for shared_file in hypridle.conf hyprlock.conf; do
         cp -a "$hypr_source/$shared_file" "$hypr_dest/"
     done
+
+    mkdir -p "$hypr_dest/utilities"
+    cp -a "$hypr_source/utilities/." "$hypr_dest/utilities/"
 
     cp -a "$hypr_source/$HYPRLAND_STYLE_DIR/." "$hypr_dest/"
     printf '%s\n' "$HYPRLAND_STYLE_DIR" > "$hypr_dest/.active-profile"

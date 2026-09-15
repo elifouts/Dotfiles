@@ -47,12 +47,12 @@ disk size:
 
 ```bash
 cd ~/Dotfiles
-./InstallScripts/package-tui.sh
+./.config/hypr/utilities/package-tui.sh
 ```
 
 Use the arrow keys or `j`/`k` to scroll, `Enter` or `d` to uninstall, `r` to
 reinstall packages included in the full installer, and `q` to quit. For a
-non-interactive list, run `./InstallScripts/package-tui.sh --list`.
+non-interactive list, run `./.config/hypr/utilities/package-tui.sh --list`.
 
 
 ## My Applications
@@ -282,7 +282,7 @@ layerrule = ignorealpha 0.5, wofi
 
 ## General Overview
 
-- The `wallpaper.sh` script in `Dotfiles/.config/hypr/` applies a wallpaper using `swww` and sets the `Pywal` theme. It also updates Kitty's color scheme, Cava, nvim (if configured), and any other application using `pywal`.
+- The `wallpaper.sh` utility applies a wallpaper using `swww` and sets the `Pywal` theme. It also updates Kitty's color scheme, Cava, nvim (if configured), and any other application using `pywal`.
 - The script uses Wofi to select wallpapers. I have not been able to optimize the wallpaper loading so it might load slowly but it should work.
 
 ### Dependencies
@@ -301,7 +301,7 @@ layerrule = ignorealpha 0.5, wofi
      
 1. **Copy Configuration Files:**
    - Copy `Dotfiles/.config/wal` to `~/.config/` to provide `pywal` with the necessary template for Hyprland.
-   - Copy `Dotfiles/.config/hypr/wallpaper.sh` to `~/.config/hypr/`.
+  - Copy `Dotfiles/.config/hypr/utilities/wallpaper.sh` to `~/.config/hypr/utilities/`.
    - Copy `Dotfiles/.config/wofi` to `~/.config/`. ( Check the Wofi tab for how to configure blur )
 
 2. Bind the script to a key combination of your choice to easily change your wallpaper.

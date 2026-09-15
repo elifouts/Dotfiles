@@ -6,7 +6,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_HYPR_DIR="${DOTFILES_DIR:-$HOME/Dotfiles}/.config/hypr"
 ACTIVE_HYPR_DIR="$HOME/.config/hypr"
 
-# Add an icon here for each profile. Profiles without an entry use the default icon.
 declare -A PROFILE_ICONS=(
     ["Modern"]="󰆍"
     ["Modern Laptop"]="󰌢"

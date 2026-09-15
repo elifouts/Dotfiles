@@ -34,7 +34,7 @@ case "${choice,,}" in
     8) target="wallpapersolution.sh" ;;
     9) target="starshipinstall.sh" ;;
     0) target="gtkthemesinstall.sh" ;;
-    p) target="package-tui.sh" ;;
+    p) target="../.config/hypr/utilities/package-tui.sh" ;;
     q) echo "Goodbye."; exit 0 ;;
     *) echo "Invalid choice: $choice"; exit 1 ;;
 esac

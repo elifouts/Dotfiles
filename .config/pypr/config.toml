@@ -32,3 +32,11 @@ class = "Spotify"
 position = "17% 6%"
 size = "70% 60%"
 offset = "200%"
+
+[scratchpads.packages]
+animation = "fromTop"
+command = "kitty --class kitty-packages -e /home/$USER/Dotfiles/.config/hypr/utilities/package-tui.sh"
+class = "kitty-packages"
+position = "8% 5%"
+size = "84% 88%"
+offset = "200%"

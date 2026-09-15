@@ -6,8 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-MANIFEST = ROOT / "fullinstall-packages.sh"
+ROOT = Path(__file__).resolve().parents[3]
+MANIFEST = ROOT / "InstallScripts" / "fullinstall-packages.sh"
 
 
 def run(*args):

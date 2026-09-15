@@ -9,7 +9,7 @@ ensure_prereqs
 
 install_packages swww python-pywal16 fd wofi
 copy_config_dir "wal" "wal"
-copy_config_file "hypr/wallpaper.sh" "hypr/wallpaper.sh"
+copy_config_file "hypr/utilities/wallpaper.sh" "hypr/utilities/wallpaper.sh"
 
 # Required by wallpaper.sh launcher styles and menu config.
 copy_config_file "wofi/config" "wofi/config"
