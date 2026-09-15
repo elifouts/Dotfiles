@@ -20,5 +20,12 @@ if [[ "${pywalfox_choice:-y}" =~ ^[Yy]$ ]]; then
 	install_packages python-pywalfox
 fi
 
-apply_default_pywal
+wallpaper_script="$CONFIG_DIR/hypr/utilities/wallpaper.sh"
+if [ -x "$wallpaper_script" ]; then
+	info "Launching wallpaper selector to initialize wallpaper and Pywal."
+	"$wallpaper_script"
+else
+	warn "Wallpaper script not found at $wallpaper_script; applying the default Pywal theme instead."
+	apply_default_pywal
+fi
 success "Wallpaper solution installed."

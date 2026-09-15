@@ -1,7 +1,6 @@
 # ~/.bashrc
 clear && myfetch -c 8 -C " █"
 eval "$(starship init bash)"
-eval "$(zoxide init bash)"
 eval "$(fzf --bash)"
 [[ $- != *i* ]] && return
 alias lsd='eza --icons'
