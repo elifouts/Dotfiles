@@ -30,6 +30,13 @@ echo -e "${RESET}"
 # ── Sanity checks ─────────────────────────────────────────────────────────────
 DOTFILES_DIR="$HOME/Dotfiles"
 
+# Add future profiles as: "Display name|Directory name"
+HYPRLAND_STYLES=(
+    "Modern|Modern"
+    "Modern laptop|Modern Laptop"
+)
+HYPRLAND_STYLE_DIR=""
+
 if [ ! -d "$DOTFILES_DIR" ]; then
     error "Dotfiles directory not found at $DOTFILES_DIR. Aborting."
     exit 1
@@ -90,6 +97,36 @@ backup_bashrc() {
     success "Backup created at $backup_dir/.bashrc"
 }
 
+select_hyprland_style() {
+    section "Hyprland Style"
+
+    local index=1
+    local style
+    for style in "${HYPRLAND_STYLES[@]}"; do
+        echo "${index}. ${style%%|*}"
+        ((index++))
+    done
+
+    local style_choice
+    read -rp "Choose a Hyprland style [1]: " style_choice
+    style_choice="${style_choice:-1}"
+
+    if ! [[ "$style_choice" =~ ^[0-9]+$ ]] || (( style_choice < 1 || style_choice > ${#HYPRLAND_STYLES[@]} )); then
+        error "Unknown Hyprland style '$style_choice'. Exiting."
+        exit 1
+    fi
+
+    style="${HYPRLAND_STYLES[$((style_choice - 1))]}"
+    HYPRLAND_STYLE_DIR="${style#*|}"
+
+    if [ ! -d "$DOTFILES_DIR/.config/hypr/$HYPRLAND_STYLE_DIR" ]; then
+        error "Hyprland style directory not found: $HYPRLAND_STYLE_DIR"
+        exit 1
+    fi
+
+    success "Selected Hyprland style: ${style%%|*}"
+}
+
 apply_dotfiles() {
     section "Applying Dotfiles"
     info "Copying wallpapers..."
@@ -99,7 +136,23 @@ apply_dotfiles() {
     cp -a "$DOTFILES_DIR/.icons" "$HOME/"
 
     info "Copying .config files..."
-    cp -a "$DOTFILES_DIR/.config/." "$HOME/.config/"
+    mkdir -p "$HOME/.config"
+    for config_entry in "$DOTFILES_DIR/.config/"*; do
+        [ -e "$config_entry" ] || continue
+        [ "$(basename "$config_entry")" = "hypr" ] && continue
+        cp -a "$config_entry" "$HOME/.config/"
+    done
+
+    local hypr_source="$DOTFILES_DIR/.config/hypr"
+    local hypr_dest="$HOME/.config/hypr"
+    mkdir -p "$hypr_dest"
+
+    for shared_file in hypridle.conf hyprlock.conf wallpaper.sh select.sh; do
+        cp -a "$hypr_source/$shared_file" "$hypr_dest/"
+    done
+
+    cp -a "$hypr_source/$HYPRLAND_STYLE_DIR/." "$hypr_dest/"
+    printf '%s\n' "$HYPRLAND_STYLE_DIR" > "$hypr_dest/.active-profile"
 
     info "Copying .bashrc..."
     cp -a "$DOTFILES_DIR/.bashrc" "$HOME/"
@@ -243,6 +296,8 @@ manual_install() {
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 section "Welcome"
+
+select_hyprland_style
 
 read -rp "Installation mode — (A)utomatic or (M)anual? [A]: " install_choice
 install_choice="${install_choice:-a}"
