@@ -5,6 +5,9 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/fullinstall-packages.sh"
+
 # ── Colors ────────────────────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 CYAN='\033[0;36m'; BOLD='\033[1m'; RESET='\033[0m'
@@ -231,19 +234,6 @@ finish() {
         "Open Terminal with MOD+Q\nHello $USER — Thanks for using my Dotfiles!\n-EF" \
         2>/dev/null || true
 }
-
-# ── Core packages ─────────────────────────────────────────────────────────────
-CORE_PACKAGES=(
-    python-pywal16 swww waybar swaync starship myfetch neovim python-pywalfox
-    hypridle hyprpicker hyprshot hyprlock hyprmon pacman-contrib pyprland wlogout fd
-    cava brightnessctl clock-rs-git nerd-fonts nwg-look qogir-icon-theme
-    materia-gtk-theme illogical-impulse-bibata-modern-classic-bin
-    thunar gvfs tumbler eza bottom htop libreoffice-fresh spotify-launcher ncspot
-    discord visual-studio-code-bin yazi lazygit hyprdvd swayosd-git
-)
-
-OPTIONAL_PACKAGES=(blueman bluez pipewire pipewire-pulse pipewire-alsa
-    pipewire-jack pavucontrol pulsemixer gnome-network-displays gst-plugins-bad)
 
 # ── Installation modes ────────────────────────────────────────────────────────
 

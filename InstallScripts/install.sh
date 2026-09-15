@@ -18,6 +18,7 @@ echo "7. Wlogout"
 echo "8. Wallpaper solution"
 echo "9. Starship"
 echo "0. GTK themes"
+echo "p. Package manager TUI"
 echo "q. Quit"
 echo ""
 read -rp "Choose an option: " choice
@@ -33,6 +34,7 @@ case "${choice,,}" in
     8) target="wallpapersolution.sh" ;;
     9) target="starshipinstall.sh" ;;
     0) target="gtkthemesinstall.sh" ;;
+    p) target="package-tui.sh" ;;
     q) echo "Goodbye."; exit 0 ;;
     *) echo "Invalid choice: $choice"; exit 1 ;;
 esac

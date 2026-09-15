@@ -39,6 +39,21 @@ If you do not want this, **you can remove it in the given applications `style.cs
   ```  
 </details>
 
+## Package Manager TUI
+
+The package manager tool shows explicitly installed applications and packages
+from the full installer, including AUR packages, source, installed status, and
+disk size:
+
+```bash
+cd ~/Dotfiles
+./InstallScripts/package-tui.sh
+```
+
+Use the arrow keys or `j`/`k` to scroll, `Enter` or `d` to uninstall, `r` to
+reinstall packages included in the full installer, and `q` to quit. For a
+non-interactive list, run `./InstallScripts/package-tui.sh --list`.
+
 
 ## My Applications
 
