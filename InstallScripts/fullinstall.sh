@@ -157,6 +157,11 @@ apply_dotfiles() {
     mkdir -p "$hypr_dest/utilities"
     cp -a "$hypr_source/utilities/." "$hypr_dest/utilities/"
 
+    for profile_dir in "$hypr_source"/*/; do
+        [ -d "$profile_dir" ] || continue
+        cp -a "$profile_dir" "$hypr_dest/"
+    done
+
     cp -a "$hypr_source/$HYPRLAND_STYLE_DIR/." "$hypr_dest/"
     printf '%s\n' "$HYPRLAND_STYLE_DIR" > "$hypr_dest/.active-profile"
 

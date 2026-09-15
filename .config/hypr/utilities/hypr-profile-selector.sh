@@ -3,7 +3,6 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOTFILES_HYPR_DIR="${DOTFILES_DIR:-$HOME/Dotfiles}/.config/hypr"
 ACTIVE_HYPR_DIR="$HOME/.config/hypr"
 
 declare -A PROFILE_ICONS=(
@@ -15,7 +14,7 @@ WOFi_CONFIG="$HOME/.config/wofi/waybar"
 WOFi_STYLE="$HOME/.config/wofi/style-waybar.css"
 
 mapfile -t profiles < <(
-    find "$DOTFILES_HYPR_DIR" -mindepth 1 -maxdepth 1 -type d \
+    find "$ACTIVE_HYPR_DIR" -mindepth 1 -maxdepth 1 -type d \
         ! -name old -exec test -f '{}/hyprland.lua' \; \
         -printf '%f\n' | sort
 )
@@ -56,7 +55,7 @@ done
 
 [ -n "$selected_profile" ] || exit 1
 
-profile_dir="$DOTFILES_HYPR_DIR/$selected_profile"
+profile_dir="$ACTIVE_HYPR_DIR/$selected_profile"
 mkdir -p "$ACTIVE_HYPR_DIR"
 find "$ACTIVE_HYPR_DIR" -maxdepth 1 -type f -name '*.lua' -delete
 cp -a "$profile_dir/." "$ACTIVE_HYPR_DIR/"
