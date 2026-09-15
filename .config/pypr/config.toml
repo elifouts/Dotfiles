@@ -26,8 +26,9 @@ size = "30% 80%"
 offset = "200%"
 
 [scratchpads.spotify]
-animation = "fromBottom"
+animation = "fromTop"
 command = "spotify-launcher"
 class = "Spotify"
-size = "75% 67%"
-offset = "260%"
+position = "17% 6%"
+size = "70% 60%"
+offset = "200%"
