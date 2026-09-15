@@ -3,7 +3,7 @@
 # Keep the package manifest in one place so installers and maintenance tools
 # agree on which packages belong to the dotfiles setup.
 CORE_PACKAGES=(
-    python-pywal16 swww waybar swaync starship myfetch neovim python-pywalfox
+    python-pywal16 asciiquarium awww waybar swaync starship myfetch neovim python-pywalfox
     hypridle hyprpicker hyprshot hyprlock hyprmon pacman-contrib pyprland wlogout fd
     cava brightnessctl clock-rs-git nerd-fonts nwg-look qogir-icon-theme
     materia-gtk-theme illogical-impulse-bibata-modern-classic-bin
