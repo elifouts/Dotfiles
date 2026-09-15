@@ -59,6 +59,25 @@ profile_dir="$ACTIVE_HYPR_DIR/$selected_profile"
 mkdir -p "$ACTIVE_HYPR_DIR"
 find "$ACTIVE_HYPR_DIR" -maxdepth 1 -type f -name '*.lua' -delete
 cp -a "$profile_dir/." "$ACTIVE_HYPR_DIR/"
+
+declare -A profile_utility_paths=()
+for utility_dir in "$ACTIVE_HYPR_DIR"/*/utilities; do
+    [ -d "$utility_dir" ] || continue
+    while IFS= read -r -d '' utility_file; do
+        relative_path="${utility_file#"$utility_dir"/}"
+        profile_utility_paths["$relative_path"]=1
+    done < <(find "$utility_dir" -type f -print0)
+done
+
+for relative_path in "${!profile_utility_paths[@]}"; do
+    rm -rf "$ACTIVE_HYPR_DIR/utilities/$relative_path"
+done
+
+if [ -d "$profile_dir/utilities" ]; then
+    mkdir -p "$ACTIVE_HYPR_DIR/utilities"
+    cp -a "$profile_dir/utilities/." "$ACTIVE_HYPR_DIR/utilities/"
+fi
+
 printf '%s\n' "$selected_profile" > "$ACTIVE_HYPR_DIR/.active-profile"
 
 hyprctl reload

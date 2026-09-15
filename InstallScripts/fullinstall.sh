@@ -163,6 +163,25 @@ apply_dotfiles() {
     done
 
     cp -a "$hypr_source/$HYPRLAND_STYLE_DIR/." "$hypr_dest/"
+
+    declare -A profile_utility_paths=()
+    for utility_dir in "$hypr_source"/*/utilities; do
+        [ -d "$utility_dir" ] || continue
+        while IFS= read -r -d '' utility_file; do
+            relative_path="${utility_file#"$utility_dir"/}"
+            profile_utility_paths["$relative_path"]=1
+        done < <(find "$utility_dir" -type f -print0)
+    done
+
+    for relative_path in "${!profile_utility_paths[@]}"; do
+        rm -rf "$hypr_dest/utilities/$relative_path"
+    done
+
+    local selected_utilities="$hypr_source/$HYPRLAND_STYLE_DIR/utilities"
+    if [ -d "$selected_utilities" ]; then
+        cp -a "$selected_utilities/." "$hypr_dest/utilities/"
+    fi
+
     printf '%s\n' "$HYPRLAND_STYLE_DIR" > "$hypr_dest/.active-profile"
 
     info "Copying .bashrc..."
