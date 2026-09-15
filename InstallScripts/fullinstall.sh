@@ -213,6 +213,12 @@ setup_wallpaper() {
     section "Setting Wallpaper (pywal)"
     local wallpaper="$DOTFILES_DIR/wallpapers/pywallpaper.jpg"
     if [ -f "$wallpaper" ]; then
+        if ! pgrep -x awww-daemon >/dev/null 2>&1; then
+            info "Starting awww daemon..."
+            awww-daemon >/dev/null 2>&1 &
+            sleep 1
+        fi
+        awww img "$wallpaper" --transition-type any --transition-fps 60 --transition-duration .5
         wal -i "$wallpaper" -n
         success "Wallpaper set."
     else
