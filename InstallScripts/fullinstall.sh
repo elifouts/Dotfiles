@@ -209,20 +209,14 @@ fix_wofi_paths() {
     done
 }
 
-setup_wallpaper() {
-    section "Setting Wallpaper (pywal)"
-    local wallpaper="$DOTFILES_DIR/wallpapers/pywallpaper.jpg"
-    if [ -f "$wallpaper" ]; then
-        if ! pgrep -x awww-daemon >/dev/null 2>&1; then
-            info "Starting awww daemon..."
-            awww-daemon >/dev/null 2>&1 &
-            sleep 1
-        fi
-        awww img "$wallpaper" --transition-type any --transition-fps 60 --transition-duration .5
-        wal -i "$wallpaper" -n
-        success "Wallpaper set."
+run_wallpaper_selector() {
+    local wallpaper_script="$HOME/.config/hypr/utilities/wallpaper.sh"
+
+    if [ -x "$wallpaper_script" ]; then
+        section "Selecting Wallpaper"
+        "$wallpaper_script"
     else
-        warn "Wallpaper not found at $wallpaper — skipping."
+        warn "Wallpaper selector not found at $wallpaper_script — skipping."
     fi
 }
 
@@ -283,9 +277,9 @@ auto_install() {
 
     setup_bluetooth
     setup_pipewire
-    setup_wallpaper
     setup_dynamic_cursors
     apply_dotfiles
+    run_wallpaper_selector
     finish
 }
 
@@ -301,8 +295,6 @@ manual_install() {
         [[ "${choice:-y}" =~ ^[Yy]$ ]] && yay -S --needed "$pkg" && clear
     done
 
-    setup_wallpaper
-
     read -rp "Install Bluetooth support? (Y/n): " b
     [[ "${b:-y}" =~ ^[Yy]$ ]] && setup_bluetooth
 
@@ -313,6 +305,7 @@ manual_install() {
     [[ "${c:-y}" =~ ^[Yy]$ ]] && setup_dynamic_cursors
 
     apply_dotfiles
+    run_wallpaper_selector
     finish
 }
 
