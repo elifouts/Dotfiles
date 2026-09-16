@@ -49,7 +49,7 @@ hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:mag
 
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
-hl.bind("ALT + TAB", hl.dsp.exec_cmd("wlogout -b 2"))
+hl.bind("ALT + TAB", hl.dsp.exec_cmd("~/.config/hypr/utilities/workspace-overview.sh"))
 hl.bind("ALT + w", hl.dsp.exec_cmd("~/.config/hypr/utilities/wallpaper.sh"))
 hl.bind("ALT + a", hl.dsp.exec_cmd("~/.config/waybar/scripts/refresh.sh"))
 hl.bind("ALT + B", hl.dsp.exec_cmd("~/.config/hypr/utilities/waybar-selector.sh"))
