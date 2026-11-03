@@ -8,6 +8,8 @@ ShaderEffect {
     property real screenX: 0
     property real pan: (ws - 1) * (Store.values["space.parallax"] ?? 1) + screenX / 2000
     property real zoom: 1
+    property real lift: 0
+    property real glow: 0
     // 0 standing on the ground, 1 up in orbit looking back at the planet
     property real rise: 0
     // star map only: space goes see-through (clear), draw the planet here (orbit), and how small it ends (endR)
@@ -23,13 +25,21 @@ ShaderEffect {
     // the world's terrain, a star map planet passes its own
     property real seed: World.landSeed
     readonly property real aspect: width / Math.max(1, height)
-    // hue >= 0 draws that world's palette straight away, the star map lands before wal has caught up
+    // hue >= 0 draws that world's palette straight away, the star map lands before wal has caught up.
+    // asTheme picks the same slots Theme does, so the wallpaper matches once wal is done
+    property bool asTheme: false
     property real hue: -1
     readonly property var pal: hue >= 0 ? World.palette(hue).colors : null
-    readonly property color bg: pal ? pal.color0 : Theme.bg
-    readonly property color accent: pal ? pal.color9 : Theme.accent
-    readonly property color fg: pal ? pal.color15 : Theme.fg
-    readonly property color tone: pal ? pal.color4 : Theme.c(4, "#24324f")
+    property color bg: pal ? pal.color0 : Theme.bg
+    property color accent: pal ? pal[asTheme ? "color" + Theme.slotOf("accent") : "color9"] : Theme.accent
+    property color fg: pal ? (asTheme ? Theme.readable(pal.color7) : pal.color15) : Theme.fg
+    property color tone: pal ? pal.color4 : Theme.c(4, "#24324f")
+    // ms to glide to new colours instead of snapping, the wallpaper turns it on round alt+w
+    property int fade: 0
+    Behavior on bg { enabled: fade > 0; ColorAnimation { duration: fade; easing.type: Easing.InOutSine } }
+    Behavior on accent { enabled: fade > 0; ColorAnimation { duration: fade; easing.type: Easing.InOutSine } }
+    Behavior on fg { enabled: fade > 0; ColorAnimation { duration: fade; easing.type: Easing.InOutSine } }
+    Behavior on tone { enabled: fade > 0; ColorAnimation { duration: fade; easing.type: Easing.InOutSine } }
     // the hills are the opposite hue, dark, like the navy against the pink
     property color zenith: Theme.mix(bg, "#000000", 0.2)
     property color horizon: Theme.mix(accent, bg, 0.25)

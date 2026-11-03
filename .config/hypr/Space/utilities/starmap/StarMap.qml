@@ -82,6 +82,7 @@ Scope {
     function starSize(s) { return Math.min(30, 5 + 7 * s) }
     function fwd() { return [Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch)] }
     function mix3(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t] }
+    function sub3(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]] }
     // world vector into camera space (x right, y up, z forward), rel does it for a point
     function toCam(vx, vy, vz) {
         const c = cam
@@ -98,7 +99,7 @@ Scope {
     // which way the star is from a planet, in the shader's space (z toward you), so every planet is lit by its own sun
     function sunDir(from, to) {
         if (!from || !to) return Qt.vector4d(-0.35, 0.6, 0.7, 0)
-        const q = toCam(to[0] - from[0], to[1] - from[1], to[2] - from[2]), l = Math.hypot(...q) || 1
+        const q = toCam(...sub3(to, from)), l = Math.hypot(...q) || 1
         return Qt.vector4d(q[0] / l, q[1] / l, -q[2] / l, 0)
     }
     // where the transit moon sits on screen next to its planet, for the wallpaper's moon to land on (see Terrain.moonEnd)
@@ -121,7 +122,7 @@ Scope {
     }
     // angles that look at a point, yaw the short way round so it never spins you
     function lookAt(from, to) {
-        const d = [to[0] - from[0], to[1] - from[1], to[2] - from[2]]
+        const d = sub3(to, from)
         let y = Math.atan2(d[0], d[2])
         while (y - yaw > Math.PI) y -= Math.PI * 2
         while (y - yaw < -Math.PI) y += Math.PI * 2
@@ -189,7 +190,7 @@ Scope {
         if (!f) return (h + (i + 1) * 0.618) % 1
         return World.accentHue(f.t.c[3 + (f.i - 3 + i + 1) % 6])
     }
-    function sysSeed(s) { return 1 + Math.round(sysRand(s, 5) * 996) }
+    function sysSeed(s, n = 5) { return 1 + Math.round(sysRand(s, n) * 996) }
     function tiltOf(s) { return 0.22 + sysRand(s, 2) * 0.3 }
     // a point on one of a system's orbits. rings and planets both come from this, so planets sit on their ring
     function orbitC(c, t, r, a) {
@@ -228,16 +229,18 @@ Scope {
     readonly property var bodies: {
         if (!sel) return []
         const h = homeOf(sel), t = tiltOf(sel), out = [h, moonOf(h)]
-        if (sel.kind === "ws") sel.ws.toplevels.values.forEach((w, i) => {
-            const r = homeR + ringGap * (i + 1), a = sysRand(sel, 20 + i) * Math.PI * 2
-            out.push({ kind: "planet", key: "p" + w.address, window: w, wsid: sel.id, ring: "p" + i, rr: r, r: worldR, center: sel.pos, star: sel.pos,
-                       hue: worldHue(sel, i), seed: 1 + Math.round(sysRand(sel, 10 + i) * 996), a: a, pos: orbit(sel, r, a) })
-        })
-        if (sel.kind === "ws") scratch.forEach((w, i) => {
-            const r = natR + 0.7 + i * 0.5, a = i * 2.4 + sysRand(sel, 4) * Math.PI * 2
-            out.push({ kind: "moon", key: "s" + w.name, special: w.name.slice(8), sys: sel, ring: "m" + i, rr: r, r: moonR, center: h.pos, star: sel.pos,
-                       hue: h.hue, seed: h.seed, a: a, pos: orbitC(h.pos, t, r, a) })
-        })
+        if (sel.kind === "ws") {
+            sel.ws.toplevels.values.forEach((w, i) => {
+                const r = homeR + ringGap * (i + 1), a = sysRand(sel, 20 + i) * Math.PI * 2
+                out.push({ kind: "planet", key: "p" + w.address, window: w, wsid: sel.id, ring: "p" + i, rr: r, r: worldR, center: sel.pos, star: sel.pos,
+                           hue: worldHue(sel, i), seed: sysSeed(sel, 10 + i), a: a, pos: orbit(sel, r, a) })
+            })
+            scratch.forEach((w, i) => {
+                const r = natR + 0.7 + i * 0.5, a = i * 2.4 + sysRand(sel, 4) * Math.PI * 2
+                out.push({ kind: "moon", key: "s" + w.name, special: w.name.slice(8), sys: sel, ring: "m" + i, rr: r, r: moonR, center: h.pos, star: sel.pos,
+                           hue: h.hue, seed: h.seed, a: a, pos: orbitC(h.pos, t, r, a) })
+            })
+        }
         return out
     }
     // a0 is where its body sits, so each ring draws itself out of its planet
@@ -273,28 +276,26 @@ Scope {
         const c = o.center ?? o.pos, cs = mix3(sel.pos, c, bloom)
         return o.center ? mix3(cs, [cs[0] + o.pos[0] - c[0], cs[1] + o.pos[1] - c[1], cs[2] + o.pos[2] - c[2]], bloom) : cs
     }
+    function screenOf(o) { return project(shown(o)) }
     // how far to park from a body so it fills the wallpaper's orbit view
     function distFor(o) { return (o.r ?? planetR) * focal / planetPx }
 
     // whatever is closest to the crosshair. anything you can't see can't be aimed at
     readonly property var aimed: {
         let best = null, bestD = 40
+        const near = (p, o, far) => {
+            if (!p || p.z > far) return
+            const d = Math.hypot(p.x - cx, p.y - cy)
+            if (d < bestD) { bestD = d; best = o }
+        }
         const open = bloom > 0.9
         for (const o of bodies.concat(used)) {
             const body = !!o.star
             if (body && !open) continue
-            const p = project(shown(o))
-            if (!p || p.z > (body ? 400 : 160)) continue
-            const d = Math.hypot(p.x - cx, p.y - cy)
-            if (d < bestD) { bestD = d; best = o }
+            near(screenOf(o), o, body ? 400 : 160)
         }
         const wp = wildP
-        for (let i = 0; i < wp.length; i++) {
-            const p = wp[i]
-            if (!p || p.z > 160) continue
-            const d = Math.hypot(p.x - cx, p.y - cy)
-            if (d < bestD) { bestD = d; best = wild[i] }
-        }
+        for (let i = 0; i < wp.length; i++) near(wp[i], wild[i], 160)
         return best
     }
 
@@ -459,6 +460,7 @@ Scope {
     property int landWs: current
     property real landHue: -1
     property real landSeed: World.landSeed
+    function focusWs(id) { Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })") }
     function land() {
         const l = landing.star ? (landing.kind === "planet" ? landing : landing.sys) : landing
         if (l.kind === "wild") {
@@ -467,23 +469,23 @@ Scope {
             World.place(id, l.pos, l.hue)
             landWs = id
             landHue = l.hue
-            Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })")
-            World.reroll(l.hue, landSeed)
+            focusWs(id)
         } else if (l.kind === "planet") {
             const a = String(l.window.address || "")
             if (!a) return false
             landWs = l.wsid
             Hyprland.dispatch("hl.dsp.focus({ window = \"address:" + (a.startsWith("0x") ? a : "0x" + a) + "\" })")
-            World.reroll(l.hue, landSeed)
         } else {
             landWs = l.id
             if (landHue !== World.hue || landSeed !== World.landSeed) World.reroll(landHue, landSeed)
-            if (l.id !== current) Hyprland.dispatch("hl.dsp.focus({ workspace = " + l.id + " })")
+            if (l.id !== current) focusWs(l.id)
             // a moon is a scratchpad, land on its home world then pull it up (unless it's already showing)
             const sp = landing.special
             if (sp && Hyprland.focusedMonitor?.lastIpcObject?.specialWorkspace?.name !== "special:" + sp)
                 Hyprland.dispatch("hl.dsp.workspace.toggle_special(\"" + sp + "\")")
+            return true
         }
+        World.reroll(l.hue, landSeed)
         return true
     }
 
@@ -754,7 +756,7 @@ Scope {
                 Item {
                     id: bd
                     required property var modelData
-                    readonly property var p: map.project(map.shown(modelData))
+                    readonly property var p: map.screenOf(modelData)
                     readonly property real rpx: p ? modelData.r * map.bloom * map.cam.f / p.z : 0
                     z: 4 + (p ? 1 - Math.min(1, p.z / 500) : 0)
                     Terrain {
@@ -787,7 +789,7 @@ Scope {
 
             // bracket on whatever the crosshair sits on
             Item {
-                readonly property var p: map.aimed && !map.busy ? map.project(map.shown(map.aimed)) : null
+                readonly property var p: map.aimed && !map.busy ? map.screenOf(map.aimed) : null
                 visible: !!p
                 x: (p?.x ?? 0) - win.ox
                 y: (p?.y ?? 0) - win.oy
@@ -799,7 +801,7 @@ Scope {
             Item {
                 id: cardBox
                 readonly property var o: map.carded
-                readonly property var p: o ? map.project(map.shown(o)) : null
+                readonly property var p: o ? map.screenOf(o) : null
                 visible: !!p && p.x - win.ox > -320 && p.x - win.ox < win.width
                 x: p ? Math.min(win.width - 290, p.x - win.ox + 44) : 0
                 y: p ? Math.max(20, Math.min(win.height - card.height - 20, p.y - win.oy - 30)) : 0

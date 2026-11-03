@@ -67,11 +67,9 @@ Column {
                         width: tile.armedNow ? parent.width : 0
                         NumberAnimation on width { running: tile.armedNow; from: tiles.w; to: 0; duration: disarm.interval }
                     }
-                    MouseArea {
+                    Hover {
                         id: ma
                         anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             if (Power.confirm(tile.modelData[0]) && !tile.armedNow) { pw.armed = tile.modelData[0]; return disarm.restart() }
                             Ui.panel = ""

@@ -31,7 +31,6 @@ Item {
                 caps: false
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: Qt.formatTime(clock.date, Store.values["space.clock24"] === false ? "h:mm" : "HH:mm")
-                font.family: Theme.font
                 font.pixelSize: Math.min(face.width, face.height) * 0.11
                 font.weight: Font.ExtraLight
                 font.letterSpacing: 6

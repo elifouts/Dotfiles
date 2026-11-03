@@ -28,11 +28,10 @@ Column {
     onPosChanged: refrac()
     onLenChanged: refrac()
 
+    function rebase(p) { base = p; baseT = Date.now(); pos = p }
     function sync() {
         player?.positionChanged()
-        base = player?.position ?? 0
-        baseT = Date.now()
-        pos = base
+        rebase(player?.position ?? 0)
     }
     function fmt(t) {
         t = Math.max(0, Math.floor(t))
@@ -43,16 +42,17 @@ Column {
     onPlayerChanged: sync()
     Connections { target: now; function onTitleChanged() { mc.sync() } }
 
+    readonly property bool ticking: visible && playing && !dragging
     // 4 times a second is plenty for a seek bar, this was a FrameAnimation and kept the wallpaper redrawing at full refresh
     Timer {
-        running: mc.visible && mc.playing && !mc.dragging
+        running: mc.ticking
         interval: 250
         repeat: true
         onTriggered: mc.pos = Math.min(mc.len, mc.base + (Date.now() - mc.baseT) / 1000)
     }
     // drift check only, small jitter is ignored so the bar never steps
     Timer {
-        running: mc.visible && mc.playing && !mc.dragging
+        running: mc.ticking
         interval: 1000
         repeat: true
         triggeredOnStart: true
@@ -60,7 +60,7 @@ Column {
             if (Date.now() < mc.settleUntil) return
             mc.player?.positionChanged()
             const p = mc.player?.position ?? 0
-            if (Math.abs(p - mc.pos) > 0.5) { mc.base = p; mc.baseT = Date.now(); mc.pos = p }
+            if (Math.abs(p - mc.pos) > 0.5) mc.rebase(p)
         }
     }
 
@@ -104,11 +104,9 @@ Column {
                 Behavior on color { ColorAnimation { duration: 120 } }
             }
         }
-        MouseArea {
+        Hover {
             id: ma
             anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
             onClicked: b.clicked()
         }
     }
@@ -139,7 +137,6 @@ Column {
                 width: parent.width
                 text: now.title || "—"
                 elide: Text.ElideRight
-                font.family: Theme.font
                 font.pixelSize: 14 * mc.s
                 color: mc.ink
             }
@@ -150,7 +147,6 @@ Column {
                 visible: text !== ""
                 text: [now.artist, now.album].filter(Boolean).join("  ·  ")
                 elide: Text.ElideRight
-                font.family: Theme.font
                 font.pixelSize: 11 * mc.s
                 color: Theme.alpha(mc.ink, 0.65)
             }
@@ -197,7 +193,6 @@ Column {
             anchors.left: parent.left
             anchors.top: parent.top
             text: mc.fmt(mc.pos)
-            font.family: Theme.font
             font.pixelSize: 9 * mc.s
             font.letterSpacing: 1.5
             color: Theme.accent
@@ -207,7 +202,6 @@ Column {
             anchors.right: parent.right
             anchors.top: parent.top
             text: "-" + mc.fmt(mc.len - mc.pos)
-            font.family: Theme.font
             font.pixelSize: 9 * mc.s
             font.letterSpacing: 1.5
             color: Theme.dim
@@ -217,7 +211,6 @@ Column {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
             text: Math.round(mc.frac * 100) + "%"
-            font.family: Theme.font
             font.pixelSize: 9 * mc.s
             font.letterSpacing: 1.5
             color: Theme.alpha(mc.ink, seekBar.active ? 0.7 : 0.3)
@@ -285,8 +278,7 @@ Column {
             }
             function commit() {
                 if (mc.player?.canSeek) mc.player.position = mc.pos
-                mc.base = mc.pos
-                mc.baseT = Date.now()
+                mc.rebase(mc.pos)
                 mc.settleUntil = Date.now() + 2000
                 mc.dragging = false
             }

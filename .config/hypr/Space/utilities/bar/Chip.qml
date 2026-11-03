@@ -19,7 +19,7 @@ Item {
     Behavior on reveal { NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
     visible: reveal > 0.001
     opacity: reveal
-    // eases to the new size when the text changes (song titles), the wing follows along
+    // eases to the new size when the text changes, the wing follows along
     property real natW: row.width + 14
     Behavior on natW { NumberAnimation { id: resize; duration: Theme.open; easing.type: Easing.OutCubic } }
     clip: reveal < 0.999 || resize.running

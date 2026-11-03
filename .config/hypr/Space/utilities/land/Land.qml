@@ -25,6 +25,7 @@ PanelWindow {
         anchors.fill: parent
         ws: win.ws
         screenX: win.screen?.x ?? 0
+        asTheme: true
         Behavior on pan { NumberAnimation { duration: 1400; easing.type: Easing.InOutCubic } }
     }
 
@@ -32,8 +33,27 @@ PanelWindow {
     Rectangle { id: flash; anchors.fill: parent; color: Theme.accent; opacity: 0 }
     Connections {
         target: World
-        function onLanded() { landing.restart() }
+        function onLanded() { if (!World.hopping) landing.restart() }
+        function onHopped(h) { land.fade = 900; land.hue = h; release.stop(); fadeOff.stop(); hopping.restart() }
     }
+    // moonset: the moon goes down into a sunset while the colours glide to the new ones, drops back in from the top
+    // as the glow settles, then wal gets told
+    SequentialAnimation {
+        id: hopping
+        ParallelAnimation {
+            NumberAnimation { target: land; property: "lift"; to: -0.9; duration: 450; easing.type: Easing.InSine }
+            NumberAnimation { target: land; property: "glow"; to: 1; duration: 450; easing.type: Easing.OutQuad }
+        }
+        ScriptAction { script: land.lift = 0.9 }
+        ParallelAnimation {
+            NumberAnimation { target: land; property: "lift"; to: 0; duration: 500; easing.type: Easing.OutSine }
+            NumberAnimation { target: land; property: "glow"; to: 0; duration: 500; easing.type: Easing.InQuad }
+        }
+        ScriptAction { script: { World.hopLand(); release.restart() } }
+    }
+    // hand the colours back to Theme once wal's surely done, the glide's still on in case they're off a hair
+    Timer { id: release; interval: 4000; onTriggered: { land.hue = -1; fadeOff.restart() } }
+    Timer { id: fadeOff; interval: 1000; onTriggered: land.fade = 0 }
     ParallelAnimation {
         id: landing
         NumberAnimation { target: land; property: "zoom"; from: 2.6; to: 1; duration: 1300; easing.type: Easing.OutCubic }

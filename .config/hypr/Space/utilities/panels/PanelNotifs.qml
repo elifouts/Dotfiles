@@ -33,7 +33,7 @@ Column {
                     Hud { text: row.modelData.appName || "notice"; color: Theme.accent; font.pixelSize: 10 }
                     Hud { anchors.right: parent.right; text: Notifs.ago(row.modelData, clock.date); font.pixelSize: 10 }
                 }
-                Hud { caps: false; width: parent.width; text: row.modelData.summary; elide: Text.ElideRight; font.family: Theme.font; font.pixelSize: 12; color: Theme.fg }
+                Hud { caps: false; width: parent.width; text: row.modelData.summary; elide: Text.ElideRight; font.pixelSize: 12; color: Theme.fg }
                 Text {
                     width: parent.width
                     visible: text !== ""

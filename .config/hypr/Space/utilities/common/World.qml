@@ -38,6 +38,25 @@ Singleton {
     // ws id -> [x, y, z, hue]
     property var stars: ({})
     signal landed()
+    // alt+w: picks the new colours, the wallpapers fade to them during a moonset, then settle() writes them out.
+    // wal (kitty, borders, everything) is heavy and made the fade choppy, so it waits till the moon's back
+    signal hopped(real h)
+    property real hopHue: -1
+    property bool hopping: false
+    function hop() {
+        hopHue = snap(Math.random())
+        hopped(hopHue)
+    }
+    // every wallpaper calls this when its moon's back, the first one does it
+    function hopLand() {
+        if (hopHue < 0) return
+        const h = hopHue
+        hopHue = -1
+        hopping = true
+        paint(h)
+        reroll(h, landSeed)
+        hopping = false
+    }
 
     FileView {
         id: file

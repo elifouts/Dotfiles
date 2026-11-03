@@ -6,6 +6,9 @@
     "theme": "dark/space"
   },
   "config": {
+    "animations": {
+      "enabled": true
+    },
     "decoration": {
       "blur": {
         "enabled": true
@@ -13,12 +16,12 @@
     },
     "general": {
       "border_size": 0,
-      "gaps_in": 0,
-      "gaps_out": 12
+      "gaps_in": 1,
+      "gaps_out": 19
     }
   },
   "space": {
-    "font": "JetBrainsMono Nerd Font Mono",
+    "font": "Code New Roman",
     "parallax": 0.2
   },
   "wallpaper": {

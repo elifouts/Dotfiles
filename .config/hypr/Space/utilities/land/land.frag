@@ -24,6 +24,9 @@ layout(std140, binding = 0) uniform buf {
     vec4 shade;
     vec4 moonEnd;
     float starClock;
+    // alt+w: the moon sets behind the hills (lift < 0) and drops back in from the top (lift > 0), glow is the sunset
+    float lift;
+    float glow;
 };
 
 // no sin() hashes, they lost precision far out
@@ -94,14 +97,25 @@ float under(float y, float h) {
 }
 // pines standing on a slope, coverage. no early return, derivatives go undefined in a branch and drew streaks everywhere
 float pines(float x, float y, float ground, float dens, float s) {
-    float tx = x * 46.0, ti = floor(tx), tf = fract(tx) - 0.5;
-    float ax = fwidth(tx) * 1.2, ay = fwidth(y) * 0.9;
+    // wider cells than the trees so each one can wander off centre, then scaled back so the trees keep their size
+    float tx = x * 30.0, ti = floor(tx), tf = (fract(tx) - 0.5 - (h1(ti + 7.0 + s) - 0.5) * 0.2) * (46.0 / 30.0);
+    float ax = fwidth(x) * 46.0 * 1.2, ay = fwidth(y) * 0.9;
     // tall and narrow, branch tiers stepping in, a thin trunk at the bottom. squat cones looked like dwarfs
-    float th = 0.05 + 0.04 * h1(ti + 4.0 + s), lift = y - ground, u = lift / th;
+    float th = 0.04 + 0.06 * h1(ti + 4.0 + s), lift = y - ground, u = lift / th;
     float tiers = 0.3 + 0.15 * (1.0 - fract(u * 3.2 + 0.2));
     float halfw = u < 0.07 ? 0.035 : (1.0 - u) * tiers;
     float cov = smoothstep(halfw + ax, halfw - ax, abs(tf)) * smoothstep(-ay, ay, lift) * smoothstep(th + ay, th - ay, lift);
-    return cov * step(h1(ti + s), dens);
+    // whole trees or nothing, deciding per pixel sliced them down the middle
+    return cov * step(h1(ti + s), dens * (0.3 + 1.4 * n1((ti + 0.5) / 30.0 * 2.3 + s)));
+}
+// grass in small batches, a few short straight blades where a slow noise says so. dens is roughly how much ground gets a batch
+float grass(float x, float y, float ground, float dens, float s) {
+    float gx = x * 160.0, gi = floor(gx), ax = fwidth(gx) * 1.2, ay = fwidth(y) * 0.9, lift = y - ground;
+    float batch = smoothstep(1.0 - dens, 1.0 - dens + 0.1, n1(x * 6.0 + s));
+    float th = (0.004 + 0.005 * h1(gi + s + 1.0)) * batch, u = clamp(lift / max(th, 1e-5), 0.0, 1.0);
+    float tf = fract(gx) - 0.5 - (h1(gi + s + 2.0) - 0.5) * 0.2;
+    float halfw = 0.16 * (1.0 - u);
+    return smoothstep(halfw + ax, halfw - ax, abs(tf)) * smoothstep(th + ay, th - ay, lift) * smoothstep(-ay, ay, lift) * step(0.001, batch);
 }
 float sdTaper(vec2 p, vec2 a, vec2 b, float ra, float rb) {
     vec2 pa = p - a, ba = b - a;
@@ -142,15 +156,18 @@ void main() {
     // sky with the warm glow sitting behind the hills
     col = mix(horizon.rgb, zenith.rgb, smoothstep(0.16, 0.9, y));
     col += warm.rgb * 0.55 * exp(-length(vec2(x * 0.55, (y - 0.27) * 2.4)) * 3.0);
+    // sunset: the low sky warms up and blooms where the moon went down
+    col = mix(col, mix(warm.rgb, horizon.rgb, 0.3), glow * 0.55 * smoothstep(0.75, 0.15, y));
+    col += warm.rgb * glow * 0.6 * exp(-length(vec2((x - pan * 0.02 - 0.25) * 0.8, (y - 0.27) * 2.2)) * 2.5);
 
     // moon, barely lighter than the sky behind it, soft texture
-    vec2 md = vec2(x - pan * 0.02, y - 0.56);
+    vec2 md = vec2(x - pan * 0.02 + lift * 0.35, y - 0.56 - lift);
     float mr = length(md);
     float tex = n1(md.x * 14.0 + md.y * 9.0 + 3.0) * n1(md.y * 17.0 - md.x * 5.0 + 9.0);
     float disc = smoothstep(0.31 + fwidth(mr), 0.31 - fwidth(mr), mr);
     // when it's about to fly up and become a real moon (star map) the one below takes over straight away
     float handed = step(0.5, moonEnd.w) * smoothstep(0.0, 0.04, rise);
-    col = mix(col, mix(col, moon.rgb, 0.09 + tex * 0.07 + 0.05 * smoothstep(0.3, 0.0, length(md + vec2(0.08, -0.08)))), disc * (1.0 - handed));
+    col = mix(col, mix(col, mix(moon.rgb, warm.rgb * 1.1, glow * 0.75), 0.09 + tex * 0.07 + 0.05 * smoothstep(0.3, 0.0, length(md + vec2(0.08, -0.08))) + max(smoothstep(0.0, 0.3, abs(lift)), glow) * 0.5), disc * (1.0 - handed));
 
     vec2 g = vec2(x * 12.0 + pan * 0.05, y * 12.0);
     vec2 cell = floor(g), f = fract(g) - 0.5;
@@ -164,7 +181,7 @@ void main() {
     float rate = mix(0.6, 1.8, h2(cell + 4.9));
     float phase = h2(cell + 8.3) * 6.2831853;
     float twinkle = 0.88 + 0.12 * sin(starClock * rate + phase);
-    col += starDot * twinkle * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 1.2;
+    col += starDot * twinkle * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 1.2 * (1.0 - glow * 0.6);
     vec2 s0 = vec2((h1(5.0) - 0.2) * aspect * 0.6, 0.8), dir = normalize(vec2(1.0, 0.28));
     vec2 sp = vec2(x, y) - s0;
     float along = dot(sp, dir), off = abs(dot(sp, vec2(-dir.y, dir.x)));
@@ -196,18 +213,17 @@ void main() {
         float h = 0.28 - k * 0.03 + roll(xx, float(i) * 3.0) * (0.04 + k * 0.02);
         vec3 lc = mix(far.rgb, horizon.rgb, (1.0 - k) * 0.5) * (0.9 + 0.15 * smoothstep(h - 0.12, h, y));
         col = mix(col, lc, under(y, h));
-        col = mix(col, horizon.rgb, 0.12 * exp(-abs(y - h + 0.01) * 60.0) * (1.0 - k));
-        if (i == 2) col = mix(col, lc * 0.9, pines(x * 1.4 + pan * 0.4, y, h, 0.25, 50.0));
+        col = mix(col, mix(horizon.rgb, warm.rgb, glow * 0.6), 0.12 * exp(-abs(y - h + 0.01) * 60.0) * (1.0 - k));
+        if (i == 2) col = mix(col, mix(lc * 0.93, horizon.rgb, 0.08), max(pines(x * 1.4 + pan * 0.4, y, h, 0.25, 50.0), grass(x * 1.4 + pan * 0.4, y, h, 0.12, 55.0)));
     }
 
     // main hill with a peak every 5 units, rim lit where it faces the glow
     y = y0 + r2 * 0.95;
     float xm = x + pan * 0.6;
-    float peak = xm - floor(xm / 5.0 + 0.5) * 5.0;
     float hill = hillHeight(xm);
-    float grove = smoothstep(0.55, 0.8, 0.5 + 0.5 * sin(xm * 1.7 + h1(9.0) * 6.3)) * step(0.35, abs(peak));
-    float hc = max(under(y, hill), pines(xm, y, hill, 0.75 * grove, 0.0));
-    vec3 hillCol = near.rgb + warm.rgb * 0.07 * exp(-abs(y - hill) * 90.0) * smoothstep(1.2, 0.0, abs(x));
+    float xc = (floor(xm * 30.0) + 0.5) / 30.0, pc = xc - floor(xc / 5.0 + 0.5) * 5.0;
+    float grove = smoothstep(0.5, 0.75, n1(xc * 0.5 + 9.0)) * step(0.35, abs(pc));
+    vec3 hillCol = near.rgb + warm.rgb * (0.07 + glow * 0.2) * exp(-abs(y - hill) * 90.0) * smoothstep(1.2, 0.0, abs(x));
     // landed ship
     float gcell = floor(xm / 3.6 + 0.5);
     float gcx = gcell * 3.6 + (h1(gcell + 31.0) - 0.5) * 1.2;
@@ -216,12 +232,14 @@ void main() {
     vec2 gp = vec2(xm - gcx, y - hillHeight(gcx) - 0.004);
     float groundShip = shipShape(vec2(gc * gp.x + gs * gp.y, -gs * gp.x + gc * gp.y), 0.12, fwidth(y));
     col = mix(col, mix(near.rgb, far.rgb, 0.35), groundShip);
+    float scrub = grass(xm, y, hill, (0.08 + 0.15 * grove) * step(0.2, abs(xm - gcx)), 30.0);
+    float hc = max(under(y, hill), max(pines(xm, y, hill, 0.75 * grove, 0.0), scrub));
     col = mix(col, hillCol, hc);
 
     // foreground slope, darkest, a little lighter at its edge
     y = y0 + r2 * 1.5;
     float fg = 0.09 + roll(x * 0.7 + pan * 1.1, 21.0) * 0.04 - x * 0.02;
-    col = mix(col, near.rgb * (0.68 + 0.12 * smoothstep(fg - 0.08, fg, y)), max(under(y, fg), pines(x * 0.8 + pan * 1.1, y, fg, 0.12, 70.0)));
+    col = mix(col, near.rgb * (0.68 + 0.12 * smoothstep(fg - 0.08, fg, y)), max(under(y, fg), max(pines(x * 0.8 + pan * 1.1, y, fg, 0.12, 70.0), grass(x * 0.8 + pan * 1.1, y, fg, 0.14, 75.0))));
     }
 
     // up into space: the sky goes black, the land curves away into the planet it is and the sky's moon

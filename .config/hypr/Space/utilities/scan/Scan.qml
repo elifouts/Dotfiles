@@ -51,6 +51,7 @@ Scope {
     }
     readonly property real ram: s.MemTotal ? 1 - s.MemAvailable / s.MemTotal : 0
     readonly property var gpu: (s.GPU || "").split(",").map(x => x.trim())
+    function gb(used, total, div) { return (used / div).toFixed(1) + " / " + (total / div).toFixed(1) + " GB" }
     function uptime(sec) {
         const d = Math.floor(sec / 86400), h = Math.floor(sec % 86400 / 3600), m = Math.floor(sec % 3600 / 60)
         return (d ? d + "d " : "") + h + "h " + m + "m"
@@ -88,7 +89,6 @@ Scope {
             horizontalAlignment: Text.AlignRight
             elide: Text.ElideLeft
             text: parent.v
-            font.family: Theme.font
             font.pixelSize: 12
             color: Theme.fg
         }
@@ -151,7 +151,6 @@ Scope {
                         caps: false
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: Qt.formatTime(clock.date, Store.values["space.clock24"] === false ? "h:mm:ss" : "HH:mm:ss")
-                        font.family: Theme.font
                         font.pixelSize: 34
                         font.weight: Font.ExtraLight
                         font.letterSpacing: 4
@@ -182,7 +181,7 @@ Scope {
                     Block {
                         order: 2; glyph: "󰘚"; title: "memory"
                         Meter { glyph: "󰍛"; target: scan.ram }
-                        Read { k: "used"; v: ((scan.s.MemTotal - scan.s.MemAvailable) / 1048576).toFixed(1) + " / " + (scan.s.MemTotal / 1048576).toFixed(1) + " GB" }
+                        Read { k: "used"; v: scan.gb(scan.s.MemTotal - scan.s.MemAvailable, scan.s.MemTotal, 1048576) }
                     }
                 }
 
@@ -196,7 +195,7 @@ Scope {
                         side: 1; order: 0; glyph: "󰢮"; title: "graphics"
                         Read { k: "card"; v: scan.gpu[0] || "" }
                         Meter { glyph: "󰓅"; target: (parseFloat(scan.gpu[1]) || 0) / 100 }
-                        Read { k: "vram"; v: ((parseFloat(scan.gpu[2]) || 0) / 1024).toFixed(1) + " / " + ((parseFloat(scan.gpu[3]) || 0) / 1024).toFixed(1) + " GB" }
+                        Read { k: "vram"; v: scan.gb(parseFloat(scan.gpu[2]) || 0, parseFloat(scan.gpu[3]) || 0, 1024) }
                         Read { k: "temp"; v: (scan.gpu[4] || "") + "°" }
                     }
                     Block {

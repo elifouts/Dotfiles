@@ -37,16 +37,20 @@ PanelWindow {
     }
     HyprlandFocusGrab { active: true; windows: [sheet]; onCleared: sheet.close() }
 
+    component Caption: Hud { width: 100; height: 24; color: Theme.alpha(Theme.fg, 0.35) }
     // label left, clickable words right
     component Pick: Row {
         id: pick
         property string label
         property var options: []
-        property var current
+        property string key
+        property var fallback
+        property var current: Store.values[key] || fallback
         signal chose(var v)
+        onChose: v => { if (key) Store.set(key, v) }
         height: 24
         spacing: 12
-        Hud { text: pick.label; width: 100; height: 24; color: Theme.alpha(Theme.fg, 0.35) }
+        Caption { text: pick.label }
         Repeater {
             model: pick.options
             Hud {
@@ -67,7 +71,7 @@ PanelWindow {
         property bool fallback: true
         height: 24
         spacing: 12
-        Hud { text: tg.label; width: 100; height: 24; color: Theme.alpha(Theme.fg, 0.35) }
+        Caption { text: tg.label }
         Kit.Toggle {
             // hyprland reports its bools as 1/0 sometimes, so coerce
             on: !!(Store.values[tg.key] ?? tg.fallback)
@@ -86,7 +90,7 @@ PanelWindow {
         readonly property real v: Store.values[key] ?? fallback
         height: 22
         spacing: 12
-        Hud { text: knob.label; width: 100; height: 22; color: Theme.alpha(Theme.fg, 0.35) }
+        Caption { text: knob.label; height: 22 }
         Kit.Slide {
             width: 230
             value: (knob.v - knob.from) / (knob.to - knob.from)
@@ -165,7 +169,7 @@ PanelWindow {
                     current: Store.active.variant
                     onChose: v => { if (v !== Store.active.variant) Store.applyProfile(Store.active.style, v) }
                 }
-                Pick { label: "layout"; options: ["dwindle", "master"]; current: Store.values["config.general.layout"]; onChose: v => Store.set("config.general.layout", v) }
+                Pick { label: "layout"; options: ["dwindle", "master"]; key: "config.general.layout" }
                 Toggle { label: "glow"; key: "config.decoration.glow.enabled" }
                 Toggle { label: "blur"; key: "config.decoration.blur.enabled" }
                 Toggle { label: "24h clock"; key: "space.clock24" }
@@ -190,7 +194,7 @@ PanelWindow {
             spacing: 14
             Row {
                 spacing: 12
-                Hud { text: "random"; width: 100; height: 24; color: Theme.alpha(Theme.fg, 0.35) }
+                Caption { text: "random" }
                 Kit.Toggle { on: World.random; onFlip: World.setRandom(!World.random) }
                 Item { width: 24; height: 1 }
                 Button { label: "new world"; onPressed: World.reroll() }
@@ -199,7 +203,7 @@ PanelWindow {
             // what's actually on the desktop right now
             Row {
                 spacing: 12
-                Hud { text: "applied"; width: 100; height: 14; color: Theme.alpha(Theme.fg, 0.35) }
+                Caption { text: "applied"; height: 14 }
                 Rectangle { width: 14; height: 14; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter }
                 Hud {
                     height: 14
@@ -293,8 +297,8 @@ PanelWindow {
                 current: Store.values["animation.preset"] || "theme"
                 onChose: v => Motion.pick(Store, v, Store.values["animation.curve"] || Motion.CURVE)
             }
-            Pick { visible: mo.own; label: "windows"; options: Motion.WINDOWS; current: Store.values["animation.window"] || "popin 90%"; onChose: v => Store.set("animation.window", v) }
-            Pick { visible: mo.own; label: "workspaces"; options: Motion.WORKSPACES; current: Store.values["animation.workspace"] || "slide"; onChose: v => Store.set("animation.workspace", v) }
+            Pick { visible: mo.own; label: "windows"; options: Motion.WINDOWS; key: "animation.window"; fallback: "popin 90%" }
+            Pick { visible: mo.own; label: "workspaces"; options: Motion.WORKSPACES; key: "animation.workspace"; fallback: "slide" }
         }
     }
 
@@ -312,7 +316,7 @@ PanelWindow {
             }
             Row {
                 spacing: 14
-                Hud { text: "font"; width: 100; height: 24; color: Theme.alpha(Theme.fg, 0.35) }
+                Caption { text: "font" }
                 Field { id: find; width: 260; placeholder: "search" }
                 Hud { text: Theme.font; height: 24; color: Theme.accent }
             }

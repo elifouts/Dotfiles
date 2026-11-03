@@ -6,7 +6,6 @@ import "../common"
 Item {
     id: control
 
-    property var def
     readonly property var curve: Store.values["animation.curve"] || Motion.CURVE
     readonly property real speed: Store.values["animation.speed"] || 1
     readonly property string windowStyle: Store.values["animation.window"] || "popin 90%"
@@ -17,8 +16,10 @@ Item {
     property real t: 0
     property real p: 0
 
-    readonly property string css: "cubic-bezier(" + curve.map(v => Number(v).toFixed(2)).join(", ") + ")"
-    readonly property string hyprLine: "bezier = custom, " + curve.map(v => Number(v).toFixed(2)).join(", ")
+    readonly property string nums: curve.map(v => Number(v).toFixed(2)).join(", ")
+    readonly property string css: "cubic-bezier(" + nums + ")"
+    readonly property string hyprLine: "bezier = custom, " + nums
+    readonly property var spline: curve.slice(0, 4).concat([1, 1])
 
     function edit(c) {
         Store.setMany({ "animation.preset": "custom", "animation.curve": c })
@@ -85,7 +86,7 @@ Item {
                 to: 1
                 duration: control.previewMs
                 easing.type: Easing.BezierSpline
-                easing.bezierCurve: [control.curve[0], control.curve[1], control.curve[2], control.curve[3], 1, 1]
+                easing.bezierCurve: control.spline
             }
         }
         PauseAnimation { duration: 700 }
@@ -98,7 +99,7 @@ Item {
                 to: 0
                 duration: control.previewMs
                 easing.type: Easing.BezierSpline
-                easing.bezierCurve: [control.curve[0], control.curve[1], control.curve[2], control.curve[3], 1, 1]
+                easing.bezierCurve: control.spline
             }
         }
         PauseAnimation { duration: 500 }
@@ -204,6 +205,7 @@ Item {
                     id: field
                     required property string modelData
                     required property int index
+                    readonly property string val: Number(control.curve[index]).toFixed(2)
                     width: (fields.width - fields.spacing * 3) / 4
                     height: 32
                     radius: Theme.r(9)
@@ -235,16 +237,15 @@ Item {
                         font.pixelSize: 12
                         color: Theme.bright
                         selectionColor: Theme.alpha(Theme.accent, 0.5)
-                        text: Number(control.curve[field.index]).toFixed(2)
+                        text: field.val
+                        function rebind() { text = Qt.binding(() => field.val); control.forceActiveFocus() }
                         onActiveFocusChanged: if (activeFocus) selectAll()
                         onEditingFinished: {
                             control.commitText(field.index, text)
-                            text = Qt.binding(() => Number(control.curve[field.index]).toFixed(2))
-                            control.forceActiveFocus()
+                            rebind()
                         }
                         Keys.onEscapePressed: event => {
-                            text = Qt.binding(() => Number(control.curve[field.index]).toFixed(2))
-                            control.forceActiveFocus()
+                            rebind()
                             event.accepted = true
                         }
                     }

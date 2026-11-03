@@ -14,7 +14,6 @@ Column {
     Hud {
         caps: false
         text: Qt.formatTime(clock.date, Store.values["space.clock24"] === false ? "h:mm" : "HH:mm")
-        font.family: Theme.font
         font.pixelSize: 34
         font.weight: Font.ExtraLight
         color: Theme.fg

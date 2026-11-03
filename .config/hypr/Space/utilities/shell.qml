@@ -64,7 +64,7 @@ ShellRoot {
         case "motion": return sheet("motion")
         case "desk": return Ui.editing = Ui.editing ? "" : Hypr.focusedScreen()?.name ?? ""
         case "bar": return Ui.bar = !Ui.bar
-        case "world": return World.reroll()
+        case "world": return World.hop()
         // share.sh asks for this when an app wants the screen
         case "capture": return Ui.openPanel("media", Hypr.focusedScreen(), "capture")
         }

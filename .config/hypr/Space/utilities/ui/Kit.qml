@@ -37,7 +37,6 @@ Item {
             width: parent.width - x - val.width - 14
             text: line.text
             elide: Text.ElideRight
-            font.family: Theme.font
             font.pixelSize: 12
             color: line.lit || line.hot ? Theme.fg : Theme.dim
             anchors.verticalCenter: parent.verticalCenter

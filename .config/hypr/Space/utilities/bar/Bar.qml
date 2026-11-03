@@ -21,9 +21,6 @@ PanelWindow {
     // only the frames take input, the strip between them stays click-through
     mask: Region { Region { item: lw } Region { item: rw } }
 
-    readonly property bool narrow: width < 1300
-    readonly property var player: Media.pickPlayer("")
-
     Wing {
         id: lw
         lean: 1
@@ -43,12 +40,7 @@ PanelWindow {
         active: bar.visible
         anchors.right: parent.right
         // what's playing, and the way into timer, color, capture and weather
-        Chip {
-            readonly property string title: bar.narrow ? "" : bar.player?.trackTitle ?? ""
-            glyph: !bar.player ? "󰝚" : Media.playing(bar.player) ? "󰎈" : "󰏤"
-            text: title.length > 24 ? title.slice(0, 23) + "…" : title
-            panel: "media"
-        }
+        Chip { glyph: "󰝚"; panel: "media" }
         Chip { show: Live.timer.active; glyph: "󰔛"; text: Live.timer.format(Live.timer.remaining); panel: "media"; tab: "timer"; hot: !Live.timer.running }
         Chip { show: Updates.count > 0; glyph: "󰚰"; text: Updates.count; panel: "updates" }
         Chip { glyph: Sys.net === "OFFLINE" ? "󰤭" : Sys.net === "WLAN" ? "󰤨" : "󰈀"; panel: "net"; hot: Sys.net === "OFFLINE" }
