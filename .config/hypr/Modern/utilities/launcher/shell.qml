@@ -71,7 +71,7 @@ ShellRoot {
 
     Connections {
         target: DesktopEntries.applications
-        function onValuesChanged() { rebuild.restart(); rescan.restart() }
+        function onValuesChanged() { root.appsKey = ""; rebuild.restart(); rescan.restart() }
     }
     Timer { id: rebuild; interval: 120; onTriggered: root.buildApps() }
     Timer { id: rescan; interval: 1500; onTriggered: scan.running = true }
@@ -184,8 +184,10 @@ ShellRoot {
 
     function launch(a) {
         if (!a) return
-        if (a.entry.runInTerminal) Quickshell.execDetached([terminal, "-e"].concat(a.entry.command))
-        else a.entry.execute()
+        // entries are recreated when .desktop files change; resolve a live one
+        const e = DesktopEntries.byId(a.id) || a.entry
+        if (e.runInTerminal) Quickshell.execDetached([terminal, "-e"].concat(e.command))
+        else e.execute()
         bump(appCache, a.path)
         close()
     }
