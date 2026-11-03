@@ -27,6 +27,9 @@ layout(std140, binding = 0) uniform buf {
     // alt+w: the moon sets behind the hills (lift < 0) and drops back in from the top (lift > 0), glow is the sunset
     float lift;
     float glow;
+    // 0 everything, twinkle included. 1 the still land with every star at its dimmest, drawn once and cached.
+    // 2 only the twinkle, added over a 1 (see Twinkle.qml), so the full scene never redraws per frame
+    float layerMode;
 };
 
 // no sin() hashes, they lost precision far out
@@ -152,6 +155,8 @@ void main() {
     vec3 col = vec3(0.0);
     // up in orbit none of the landscape shows, so the star map's planets skip all of it. uniform branch, fwidth is fine
     if (rise < 0.5) {
+    // twinkle pass: nothing twinkles below the sky band (stars fade out by 0.38), skip it. the mask is 0 there so the quads never see it
+    if (layerMode > 1.5 && y < 0.37) { fragColor = vec4(0.0); return; }
 
     // sky with the warm glow sitting behind the hills
     col = mix(horizon.rgb, zenith.rgb, smoothstep(0.16, 0.9, y));
@@ -180,8 +185,22 @@ void main() {
     float starDot = exp(-3.2 * (dist / size) * (dist / size)) * starOn;
     float rate = mix(0.6, 1.8, h2(cell + 4.9));
     float phase = h2(cell + 8.3) * 6.2831853;
-    float twinkle = 0.88 + 0.12 * sin(starClock * rate + phase);
+    float blink = sin(starClock * rate + phase);
+    // still + twinkle pass add up to exactly 0.88 + 0.12 * blink
+    float twinkle = layerMode < 0.5 ? 0.88 + 0.12 * blink : layerMode < 1.5 ? 0.76 : 0.12 + 0.12 * blink;
+    if (layerMode > 1.5) col = vec3(0.0);
     col += starDot * twinkle * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 1.2 * (1.0 - glow * 0.6);
+    if (layerMode > 1.5) {
+        // the sky ship is the only thing drawn over the stars, same maths as below
+        float sxw = x + pan * 0.3;
+        float sc = floor(sxw / 7.0 + 0.5);
+        vec2 sp0 = vec2(sxw - (sc * 7.0 + (h1(sc + 7.0) - 0.5) * 2.4), y - (0.5 + 0.25 * h1(sc + 13.0)));
+        float sa = (h1(sc + 19.0) - 0.5) * 0.4, scs = cos(sa), sns = sin(sa);
+        vec2 sq = vec2(scs * sp0.x + sns * sp0.y, -sns * sp0.x + scs * sp0.y);
+        // alpha 0 so it adds onto the cached land under it
+        fragColor = vec4(col * (1.0 - shipShape(sq, 0.09, fwidth(y))), 0.0) * qt_Opacity;
+        return;
+    }
     vec2 s0 = vec2((h1(5.0) - 0.2) * aspect * 0.6, 0.8), dir = normalize(vec2(1.0, 0.28));
     vec2 sp = vec2(x, y) - s0;
     float along = dot(sp, dir), off = abs(dot(sp, vec2(-dir.y, dir.x)));

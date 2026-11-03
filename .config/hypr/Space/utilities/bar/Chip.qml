@@ -45,7 +45,9 @@ Item {
             Behavior on scale { NumberAnimation { duration: area.pressed ? 70 : 220; easing.type: area.pressed ? Easing.OutQuad : Easing.OutBack } }
             Behavior on color { ColorAnimation { duration: 140 } }
             SequentialAnimation on opacity {
-                running: chip.hot
+                // only while it's on screen. the hidden timer chip is hot whenever no timer runs, and any looping
+                // animation, seen or not, makes qt redraw every window (wallpaper included) at full refresh
+                running: chip.hot && chip.visible
                 loops: Animation.Infinite
                 NumberAnimation { to: 0.35; duration: 600; easing.type: Easing.InOutSine }
                 NumberAnimation { to: 1; duration: 600; easing.type: Easing.InOutSine }

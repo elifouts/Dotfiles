@@ -26,8 +26,12 @@ PanelWindow {
         ws: win.ws
         screenX: win.screen?.x ?? 0
         asTheme: true
+        // drawn once and kept, only redrawn while it pans, lands or fades. Twinkle does the stars
+        layerMode: 1
+        layer.enabled: true
         Behavior on pan { NumberAnimation { duration: 1400; easing.type: Easing.InOutCubic } }
     }
+    Twinkle { anchors.fill: parent; under: land }
 
     // touchdown: falls in from high up and a flash of the new sky clears
     Rectangle { id: flash; anchors.fill: parent; color: Theme.accent; opacity: 0 }

@@ -13,7 +13,9 @@ Item {
 
     SystemClock { id: clock; precision: SystemClock.Minutes }
 
-    Terrain { anchors.fill: parent }
+    // still land cached, only the twinkle redraws, same as the wallpaper
+    Terrain { id: land; anchors.fill: parent; layerMode: 1; layer.enabled: true }
+    Twinkle { anchors.fill: parent; under: land }
     Rectangle { anchors.fill: parent; color: Theme.void_; opacity: 0.35 + 0.3 * face.t }
 
     // focus pull, same as alt tab: everything settles in from slightly too close

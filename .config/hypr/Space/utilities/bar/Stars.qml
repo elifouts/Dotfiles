@@ -62,7 +62,13 @@ Item {
                 visible: moons > 0
                 anchors.centerIn: parent
                 width: 14; height: 14
-                NumberAnimation on rotation { running: orbit.visible && Theme.quick > 0; from: 0; to: 360; duration: 6000; loops: Animation.Infinite }
+                // 30 ticks a second is under a pixel of travel per tick. a looping animation redrew the bar (and its blur) at full refresh
+                Timer {
+                    interval: 33
+                    repeat: true
+                    running: orbit.visible && Theme.quick > 0
+                    onTriggered: orbit.rotation = (Date.now() % 6000) * 0.06
+                }
                 Repeater {
                     model: Math.max(0, orbit.moons)
                     Rectangle {
