@@ -1,9 +1,21 @@
 {
+  "animation": {
+    "curve": [
+      0.3,
+      1,
+      0.4,
+      1
+    ],
+    "preset": "snappy",
+    "speed": 1.7,
+    "window": "popin 60%",
+    "workspace": "slide"
+  },
   "bar": {
-    "kind": "waybar"
+    "kind": "quickshell"
   },
   "colors": {
-    "theme": "dark/gruvbox"
+    "theme": "dark/catppuccin-macchiato-copy"
   },
   "config": {
     "animations": {
@@ -41,9 +53,9 @@
     "style": "full"
   },
   "wallpaper": {
-    "path": "$HOME/wallpapers/library/abstract/abs-08.jpg"
+    "path": "$HOME/wallpapers/library/catppuccin/cat-02.jpg"
   },
   "waybar": {
-    "style": "line"
+    "style": "default"
   }
 }
