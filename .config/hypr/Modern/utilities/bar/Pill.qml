@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
 import "../common"
+import "menus" as Menus
 
 Item {
     id: self
@@ -20,7 +21,7 @@ Item {
     }
 
     readonly property var opens: ({ workspaces: "workspaces", media: "island", date: "island", constdate: "island", timer: "island",
-        clock: "island", tray: "tray", network: "network", audio: "audio", power: "power" })
+        clock: "calendar", tray: "tray", network: "network", audio: "audio", power: "power" })
     function has(page) {
         // alarm rings out of whichever pill has the island
         return modules.some(m => opens[m] === (page === "alarm" ? "island" : page))
@@ -33,8 +34,10 @@ Item {
         for (let j = i + 1; j < modules.length && modules[j] !== "|"; j++) after = after || showing(j)
         return before && after
     }
-    readonly property var widths: ({ workspaces: 600, island: 600, network: 350, audio: 340, power: 330, tray: 290, alarm: 300 })
-    readonly property var widest: ({ workspaces: 900, island: 900, network: 720, audio: 720, power: 420, tray: 360, alarm: 340 })
+    // network goes two column at 600, center gets 640 so wifi and bluetooth sit side by side
+    readonly property bool wideNet: align === "center"
+    readonly property var widths: ({ workspaces: 600, island: 600, network: wideNet ? 672 : 350, calendar: 652, audio: 340, power: 330, tray: 290, alarm: 300 })
+    readonly property var widest: ({ workspaces: 900, island: 900, network: wideNet ? 640 : 560, calendar: 620, audio: 720, power: 420, tray: 360, alarm: 340 })
     readonly property int pad: 16
 
     property string page: ""
@@ -48,17 +51,22 @@ Item {
         closeDelay.stop()
         openDelay.stop()
         if (p === "") { close(); return }
-        if (!open && self.t === 0 && ctx.musicInTheWay(self, p)) {
+        // same as the music player: get it out of the way first, open after. the osd card just leaves
+        const card = Media.card && p === "island"
+        const music = ctx.musicInTheWay(self, p)
+        if (!open && self.t === 0 && (music || card)) {
             pending = p
             pendingTray = t ?? null
-            tucked = true
-            ctx.musicCall("tuck")
+            if (music) { tucked = true; ctx.musicCall("tuck") }
+            if (card) Media.dropCard()
             tuckWait.restart()
             return
         }
         place(p, t ?? null)
     }
 
+    // cursor's on the bar row itself, not down in the page
+    readonly property bool onRow: hover.hovered && hover.point.position.y < pillH
     function place(p, t) {
         page = p
         tray = t
@@ -127,13 +135,21 @@ Item {
     }
     Timer { id: tuckWait; interval: Theme.ms(340); onTriggered: self.place(self.pending, self.pendingTray) }
 
-    // whole pixels, border looked blurry without it. idk
-    readonly property real rowW: Math.ceil(row.implicitWidth) + 8
+    // slack rounds to even pixels once it settles, rounding every frame made things hop
+    readonly property real rawW: row.implicitWidth + 8
+    property real slack: 0
+    Behavior on slack { Settle { duration: Theme.fast } }
+    onRawWChanged: settleWait.restart()
+    Timer { id: settleWait; interval: Theme.move + 80; onTriggered: self.slack = 2 * Math.ceil(self.rawW / 2) - self.rawW }
+    Component.onCompleted: settleWait.restart()
+    readonly property real rowW: rawW + slack
     readonly property real targetW: Math.max(rowW, Math.min(maxW, widths[shownPage] ?? 340))
     property real bodyW: targetW
-    property real bodyH: front.item ? Math.ceil(front.item.implicitHeight) + 6 + pad : 0
+    // ownHeight pages land on whole pixels anyway, rounding mid ease hopped
+    readonly property bool ownHeight: !!front.item && !!front.item.ownHeight
+    property real bodyH: front.item ? (ownHeight ? front.item.implicitHeight : Math.ceil(front.item.implicitHeight)) + 6 + pad : 0
     Behavior on bodyW { enabled: self.t === 1; Settle { duration: Theme.move } }
-    Behavior on bodyH { enabled: self.t === 1; Settle { duration: Theme.move } }
+    Behavior on bodyH { enabled: self.t === 1 && !self.ownHeight; Settle { duration: Theme.move } }
 
     property real t: open ? 1 : 0
     Behavior on t {
@@ -166,12 +182,13 @@ Item {
 
     Item {
         id: card
-        // grow both edges together or it shimmies, took me a while to find that
+        // centered on the bar not the pill, the pill's own rounding fought ours
         readonly property real grow: (self.bodyW - self.rowW) * self.t
-        readonly property real w: self.rowW + (self.align === "center" ? 2 * Math.round(grow / 2) : Math.round(grow))
-        x: self.align === "left" ? 0 : self.align === "right" ? self.rowW - w : (self.rowW - w) / 2
+        readonly property real w: self.rowW + grow
+        x: self.align === "left" ? 0 : self.align === "right" ? self.rowW - w
+            : self.parent ? (self.parent.width - w) / 2 - self.x : (self.rowW - w) / 2
         width: w
-        height: Math.round(self.pillH + self.bodyH * self.t)
+        height: self.ownHeight ? self.pillH + self.bodyH * self.t : Math.round(self.pillH + self.bodyH * self.t)
 
         HoverHandler { id: hover }
         MouseArea { anchors.fill: parent; hoverEnabled: true }
@@ -250,7 +267,7 @@ Item {
 
         Row {
             id: row
-            x: 4 - card.x
+            x: 4 + self.slack / 2 - card.x
             height: self.pillH
 
             Repeater {
@@ -276,26 +293,36 @@ Item {
         property real f: front ? 1 : 0
         Behavior on f { Settle { duration: Theme.move } }
 
-        property real room: 0
-        Binding on room { when: slot.front; value: self.targetW - self.pad * 2 }
-        // settled width, i think this is why the card doesn't wobble
-        x: Math.round(self.align === "left" ? self.pad : self.align === "right" ? card.width - width - self.pad : (card.width - width) / 2)
+        // whole pixel and even width so the center never moves, fractional shimmered the buttons
+        readonly property real cardLeft: self.x + card.x
+        x: self.align === "left" ? self.pad : self.align === "right" ? card.width - width - self.pad
+            : Math.round(cardLeft + (card.width - width) / 2) - cardLeft
         y: 6
-        width: Math.min(room, self.widest[page] ?? room)
+        // leaving pages keep their width, otherwise bluetooth drops off before wifi
+        property real held: 0
+        Binding on held {
+            when: slot.front
+            // never under the page's own width or network loads in one column
+            value: 2 * Math.floor(Math.min(self.widest[slot.page] ?? Infinity,
+                Math.max(self.bodyW, Math.min(self.maxW, self.widths[slot.page] ?? 0)) - self.pad * 2) / 2)
+            restoreMode: Binding.RestoreNone
+        }
+        width: held
         opacity: Math.max(0, self.t * 2 - 1) * f
         visible: opacity > 0
         z: front ? 1 : 0
         transform: Translate { y: (1 - slot.f) * 8 }
         Rise { target: slot.item }
         active: page !== ""
-        sourceComponent: ({ workspaces: workspacesC, island: islandC, network: networkC, audio: audioC, power: powerC, tray: trayC, alarm: alarmC })[page] ?? null
+        sourceComponent: ({ workspaces: workspacesC, island: islandC, network: networkC, audio: audioC, power: powerC, tray: trayC, alarm: alarmC, calendar: calendarC })[page] ?? null
     }
 
     Component { id: workspacesC; Workspaces.Page { expose: self.ctx.expose; screen: self.screen; onPicked: self.close(); onOverview: self.ctx.toggleOverview() } }
     Component { id: islandC; Island { ctx: self.ctx; pill: self } }
     Component { id: networkC; Menus.Network { open: self.open; onRun: c => self.ctx.run(c) } }
-    Component { id: audioC; Menus.Audio { open: self.open; onRun: c => self.ctx.run(c); onDone: self.close() } }
+    Component { id: audioC; Menus.Sound { open: self.open; onRun: c => self.ctx.run(c); onDone: self.close() } }
     Component { id: powerC; Menus.Session { open: self.open; standalone: self.ctx.standalone; onRun: c => self.ctx.run(c); onDone: self.close() } }
+    Component { id: calendarC; Calendar { open: self.open && self.page === "calendar" } }
     Component { id: alarmC; Alarm { open: self.open && self.page === "alarm"; length: self.ctx.timer.words(self.ctx.timer.total); onDone: self.close() } }
     Component { id: trayC; Menus.Tray { open: self.open; item: parent ? parent.tray : null; onRun: c => self.ctx.run(c); onDone: self.close() } }
 }

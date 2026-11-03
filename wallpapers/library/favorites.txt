@@ -1,6 +1,6 @@
 gruvbox/nat-12.jpg
 catppuccin/cat-12.png
-cars/car-04.jpg
 catppuccin/cat-10.png
 gruvbox/gru-01.jpg
 nature/nat-09.jpg
+gruvbox/gru-04.jpg

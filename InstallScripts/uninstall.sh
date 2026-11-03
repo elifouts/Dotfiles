@@ -9,7 +9,6 @@ set +e -uo pipefail
 shopt -s nullglob dotglob
 
 LEFT="$HOME/.dotfiles_uninstalled_$(date +%Y%m%d_%H%M%S)"
-GLASS=https://github.com/hyprnux/hyprglass
 # stuff your system probably still needs even after the dotfiles are gone
 KEEP=" networkmanager pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber kitty xdg-desktop-portal-hyprland rsync unzip zip "
 MODE=defaults
@@ -57,7 +56,7 @@ choose_packages() {
     while read -r pkg; do have[$pkg]=1; done < <(pacman -Qq)
 
     for group in "Core:${CORE_PACKAGES[*]}" "Optional:${OPTIONAL_PACKAGES[*]}" \
-                 "Audio, bluetooth, mirrors:${INSTALLER_PACKAGES[*]}" "Autologin:greetd greetd-tuigreet" "Plugins:hyprpm"; do
+                 "Audio, bluetooth, mirrors:${INSTALLER_PACKAGES[*]}" "Autologin:greetd greetd-tuigreet"; do
         any=()
         for pkg in ${group#*:}; do
             [[ -n "${have[$pkg]:-}" && -z "${seen[$pkg]:-}" ]] || continue
@@ -80,13 +79,6 @@ choose_packages() {
             ask "Uninstall ${pkg%!}?" n && PICKED+=("${pkg%!}")
         done
     fi
-}
-
-undo_plugins() {
-    command -v hyprpm >/dev/null && hyprpm list 2>/dev/null | grep -qi hyprglass || return 0
-    info "Removing hyprglass..."
-    hyprpm disable hyprglass >/dev/null 2>&1
-    hyprpm remove "$GLASS" >/dev/null 2>&1 && success "hyprglass removed." || warn "hyprpm couldn't remove hyprglass, try it from inside Hyprland."
 }
 
 undo_autologin() {
@@ -143,14 +135,14 @@ undo_configs() {
     fi
 
     # everything the dotfiles generate. the gitignored stuff sits in the repo behind the links
-    # (profile links like utilities/wallpaper-picker, cava/config, kitty theme, .color-theme...)
+    # (hypr/state, cava/config, kitty theme...)
     # cava makes shaders/themes on its own, only the config is ours
     local made
     while IFS= read -r made; do
         ours "$REPO/$made" && rm "$REPO/$made" || stash "$REPO/$made"
     done < <(git -C "$REPO" ls-files -oi --exclude-standard .config ':!.config/cava/shaders' ':!.config/cava/themes')
     for made in .cache/wal .cache/wallpaper-picker .cache/hypr-home .cache/launcher .cache/colorpicker \
-                .cache/capture-thumb.png .local/state/hypr-settings .local/state/music-player \
+                .cache/capture-thumb.png .cache/dotfiles-welcome .local/state/hypr-settings .local/state/music-player \
                 .local/state/overview .local/state/quickshell-lock.json; do
         stash "$HOME/$made"
     done
@@ -200,13 +192,12 @@ EOF
     section "About to"
     echo "  • $( [[ $MODE == restore ]] && echo "unlink the dotfiles and restore your backups" || echo "unlink the dotfiles and leave everything default" )"
     echo "  • clear out everything the dotfiles generated (wallpaper-picker, wal colors, cava config...)"
-    echo "  • turn off autologin and hyprglass if they're set up, close the cast firewall ports"
+    echo "  • turn off autologin if it's set up, close the cast firewall ports"
     echo "  • uninstall ${#PICKED[@]} package(s)${PICKED:+: ${PICKED[*]}}"
     echo "  • move anything that isn't a link to $LEFT"
     ask "Go?" n || { info "Cancelled, nothing touched."; exit 0; }
 
     sudo -v || { error "Need sudo for the system stuff."; exit 1; }
-    undo_plugins
     undo_autologin
     undo_services
     undo_configs

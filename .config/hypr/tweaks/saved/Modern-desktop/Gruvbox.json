@@ -1,18 +1,9 @@
 {
-  "animation": {
-    "curve": [
-      0.36,
-      0.63,
-      0.17,
-      1.02
-    ],
-    "preset": "custom",
-    "speed": 1.25,
-    "window": "popin 60%",
-    "workspace": "slidefadevert"
-  },
   "bar": {
     "kind": "quickshell"
+  },
+  "border": {
+    "gradient": false
   },
   "colors": {
     "theme": "dark/gruvbox"
@@ -34,43 +25,30 @@
       "glow": {
         "enabled": false
       },
-      "inactive_opacity": 0.73,
+      "inactive_opacity": 0.8,
       "motion_blur": {
         "enabled": false
       },
-      "rounding": 7,
+      "rounding": 5,
       "rounding_power": 5,
       "shadow": {
         "enabled": true,
-        "range": 1,
+        "range": 12,
         "render_power": 4,
         "scale": 1,
-        "sharp": true
+        "sharp": false
       }
     },
     "general": {
       "border_size": 0,
-      "gaps_in": 11,
+      "gaps_in": 8,
       "gaps_out": 0,
       "gaps_workspaces": 0
     },
-    "plugin": {
-      "hyprglass": {
-        "default_theme": "light",
-        "layers": {
-          "enabled": true
-        }
-      }
+    "master": {
+      "mfact": 0.7,
+      "new_status": "master"
     }
-  },
-  "glass": {
-    "fresnel_color": 4269807923,
-    "fresnel_tint": 0.05,
-    "specular_angle": 0
-  },
-  "hyprglass": {
-    "layers": false,
-    "quickshell": false
   },
   "quickshell": {
     "style": "experimental"

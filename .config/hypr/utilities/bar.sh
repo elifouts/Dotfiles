@@ -1,9 +1,8 @@
 #!/bin/bash
 set -uo pipefail
 
-HYPR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
-UTIL="$HYPR/utilities"
-FILE="$HYPR/.active-bar"
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/paths.sh"
+FILE="$HYPR/state/bar"
 
 current() {
     [ "$(cat "$FILE" 2>/dev/null)" = quickshell ] && echo quickshell || echo waybar
@@ -45,9 +44,8 @@ case "${1:-}" in
         ;;
     style)
         name="${2:?name}"
-        style="$(cut -d/ -f1 "$HYPR/.active-profile" 2>/dev/null || true)"
-        [ -f "$HYPR/$style/quickshellbar/$name/config.json" ] || { echo "No quickshell bar style '$name' for $style" >&2; exit 1; }
-        printf '%s\n' "$name" > "$HYPR/.quickshell-bar.tmp" && mv -f "$HYPR/.quickshell-bar.tmp" "$HYPR/.quickshell-bar"
+        [ -f "$STYLE/quickshellbar/$name/config.json" ] || { echo "No quickshell bar style '$name' for ${STYLE##*/}" >&2; exit 1; }
+        printf '%s\n' "$name" > "$HYPR/state/bar-style.tmp" && mv -f "$HYPR/state/bar-style.tmp" "$HYPR/state/bar-style"
         record "quickshell.style=\"$name\""
         ;;
     toggle)

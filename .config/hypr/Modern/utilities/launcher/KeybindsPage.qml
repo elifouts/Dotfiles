@@ -13,7 +13,7 @@ Item {
 
     Watched {
         id: source
-        path: Quickshell.env("HOME") + "/.config/hypr/shortcuts.lua"
+        path: Quickshell.shellPath("../base/shortcuts.lua")
     }
 
     readonly property var parsed: Binds.parse(source.text())

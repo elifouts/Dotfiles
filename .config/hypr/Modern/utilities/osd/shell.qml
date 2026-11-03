@@ -1,27 +1,32 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Quickshell.Hyprland
 import Quickshell.Wayland
-import Quickshell.Widgets
 import "../common"
 
 ShellRoot {
     id: root
 
-    readonly property string home: Quickshell.env("HOME")
 
-    property bool active: false
-    property bool leaving: false
-    property real t: 0
+    property alias active: morph.active
+    property alias leaving: morph.leaving
+    property alias t: morph.t
     property real pulse: 0
     property real wiggle: 0
     property int fillDuration: 110
 
     property string kind: "volume"
-    property bool flag: false
-    property string label: ""
     property real shownValue: 0
+
+    // bound to the real state so it never goes stale
+    readonly property var sink: Audio.sink
+    readonly property var source: Audio.source
+    property bool caps: false
+
+    readonly property real value: kind === "volume" ? (sink?.audio?.volume ?? 0) : kind === "brightness" ? Brightness.value : 0
+    readonly property bool flag: kind === "volume" ? !!sink?.audio?.muted
+        : kind === "mic" ? !!source?.audio?.muted
+        : kind === "caps" ? caps : false
 
     readonly property real dotSize: 52
     readonly property real fullWidth: 300
@@ -37,10 +42,6 @@ ShellRoot {
         case "brightness": return "\uf185"
         case "mic": return flag ? "\uf131" : "\uf130"
         case "caps": return flag ? "\uf023" : "\uf09c"
-        case "play": return "\uf04b"
-        case "pause": return "\uf04c"
-        case "next": return "\uf051"
-        case "prev": return "\uf048"
         }
         return ""
     }
@@ -48,7 +49,6 @@ ShellRoot {
         switch (kind) {
         case "caps": return "Caps Lock"
         case "mic": return "Microphone"
-        case "play": case "pause": case "next": case "prev": return label !== "" ? label : (kind === "pause" ? "Paused" : "Playing")
         }
         return ""
     }
@@ -60,67 +60,71 @@ ShellRoot {
     }
     readonly property bool readoutLit: kind === "caps" ? flag : (kind === "mic" ? !flag : !off)
 
-    function stage(from) {
-        return Math.max(0, Math.min(1, (t - from) / (1 - from)))
+    // t ends at 0 anyway so no reset needed after it closes
+    Morph { id: morph; openMs: 480; closeMs: 340; fadeOut: false }
+
+    function act(a) {
+        const out = sink?.audio, mic = source?.audio
+        switch (a) {
+        case "vol-up": case "vol-down":
+            if (out) {
+                out.muted = false
+                out.volume = Math.max(0, Math.min(1, Math.round((out.volume + (a === "vol-up" ? 0.05 : -0.05)) * 20) / 20))
+            }
+            return present("volume")
+        case "vol-mute": if (out) out.muted = !out.muted; return present("volume")
+        case "mic-mute": if (mic) mic.muted = !mic.muted; return present("mic")
+        // no caps event, so flip ours and check the led once the spam stops
+        case "caps": caps = !caps; capsGen++; capsCheck.restart(); return present("caps")
+        case "play": return media.toggle()
+        case "next": return media.skip(1)
+        case "prev": return media.skip(-1)
+        }
     }
 
-    function present(k, v, f, text) {
+    // pipewire answers late, so wiggle on the change itself
+    property string wiggleKind: ""
+    onFlagChanged: if (active && !leaving && kind === wiggleKind) wiggleAnim.restart()
+    onValueChanged: if (active && !leaving) shownValue = value
+
+    function present(k) {
         const fresh = !active || leaving || kind !== k
-        const toggled = !fresh && flag !== f
 
         kind = k
-        flag = f
-        label = text
+        wiggleKind = k
 
         if (fresh) {
             barBehavior.enabled = false
             shownValue = 0
             fillDuration = 420
             barBehavior.enabled = true
-            shownValue = v
         } else {
             fillDuration = 120
-            shownValue = v
         }
+        shownValue = value
 
         hideTimer.restart()
-        if (!active) {
-            active = true
-            leaving = false
-            t = 0
-            animateTo(1)
-        } else if (leaving) {
-            leaving = false
-            animateTo(1)
+        if (!active || leaving) {
+            morph.open()
         } else {
             pulseAnim.restart()
         }
 
-        if (toggled) wiggleAnim.restart()
     }
 
-    function animateTo(target) {
-        tween.stop()
-        tween.from = t
-        tween.to = target
-        tween.duration = Theme.ms(target === 1 ? 480 : 340)
-        tween.easing.type = Easing.BezierSpline
-        tween.easing.bezierCurve = target === 1 ? Theme.settle : Theme.leave
-        tween.start()
+    property int capsGen: 0
+    Timer { id: capsCheck; interval: 150; onTriggered: capsLed.check() }
+    Process {
+        id: capsLed
+        property int gen
+        function check() { gen = root.capsGen; running = true }
+        command: ["sh", "-c", "cat /sys/class/leds/*capslock/brightness"]
+        // a press that lands mid-read makes the answer useless, the timer reruns it anyway
+        stdout: StdioCollector { onStreamFinished: if (capsLed.gen === root.capsGen) root.caps = text.split("\n").some(l => l.trim() !== "" && l.trim() !== "0") }
     }
+    Component.onCompleted: capsLed.check()
 
-    function hide() {
-        if (!active || leaving) return
-        leaving = true
-        animateTo(0)
-    }
-
-    NumberAnimation {
-        id: tween
-        target: root
-        property: "t"
-        onFinished: if (root.leaving) { root.active = false; root.leaving = false; root.t = 0 }
-    }
+    function hide() { morph.close() }
 
     Timer { id: hideTimer; interval: 1400; onTriggered: root.hide() }
 
@@ -140,12 +144,13 @@ ShellRoot {
 
     IpcHandler {
         target: "osd"
-        function notify(kind: string, value: real, flag: bool, text: string): void { root.present(kind, value, flag, text) }
+        function act(action: string): void { root.act(action) }
+        function brightness(value: real): void { Brightness.value = value; root.present("brightness") }
     }
 
     PanelWindow {
         visible: root.active
-        screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
+        screen: Hypr.focusedScreen()
         anchors.bottom: true
         // sits on the edge so the card can slide fully off
         margins.bottom: 0
@@ -185,13 +190,13 @@ ShellRoot {
                 font.pixelSize: 18
                 color: root.off ? Theme.dim : root.accent
                 rotation: root.wiggle
-                scale: (0.75 + 0.25 * root.stage(0.1)) * (1 + 0.18 * root.pulse)
+                scale: (0.75 + 0.25 * morph.stage(0.1)) * (1 + 0.18 * root.pulse)
                 Behavior on color { ColorAnimation { duration: Theme.ms(120) } }
             }
 
             Label {
                 id: readout
-                visible: root.stage(0.55) > 0
+                visible: morph.stage(0.55) > 0
                 anchors.right: parent.right
                 anchors.rightMargin: 16
                 anchors.verticalCenter: parent.verticalCenter
@@ -200,13 +205,13 @@ ShellRoot {
                 text: root.readout
                 font.pixelSize: 14
                 color: root.readoutLit ? Theme.fg : Theme.dim
-                opacity: root.stage(0.55)
-                transform: Translate { x: 6 * (1 - root.stage(0.55)) }
+                opacity: morph.stage(0.55)
+                transform: Translate { x: 6 * (1 - morph.stage(0.55)) }
                 Behavior on color { ColorAnimation { duration: Theme.ms(120) } }
             }
 
             Rectangle {
-                visible: root.hasBar && root.stage(0.5) > 0
+                visible: root.hasBar && morph.stage(0.5) > 0
                 anchors.left: icon.right
                 anchors.leftMargin: 14
                 anchors.right: readout.left
@@ -215,7 +220,7 @@ ShellRoot {
                 height: 4
                 radius: 2
                 color: Theme.alpha(Theme.fg, 0.16)
-                opacity: root.stage(0.5)
+                opacity: morph.stage(0.5)
 
                 Rectangle {
                     id: fill
@@ -238,7 +243,7 @@ ShellRoot {
             }
 
             Label {
-                visible: !root.hasBar && root.stage(0.5) > 0
+                visible: !root.hasBar && morph.stage(0.5) > 0
                 anchors.left: icon.right
                 anchors.leftMargin: 14
                 anchors.right: readout.left
@@ -248,11 +253,170 @@ ShellRoot {
                 elide: Text.ElideRight
                 font.pixelSize: 15
                 color: Theme.fg
-                opacity: root.stage(0.5)
-                transform: Translate { x: -6 * (1 - root.stage(0.5)) }
+                opacity: morph.stage(0.5)
+                transform: Translate { x: -6 * (1 - morph.stage(0.5)) }
             }
         }
     }
 
     Behavior on shownValue { id: barBehavior; NumberAnimation { duration: Theme.ms(root.fillDuration); easing.type: Easing.OutCubic } }
+
+    // media keys get a little card top right, like windows 10's
+    Scope {
+        id: media
+
+        readonly property var player: Media.pickPlayer("")
+        NowPlaying { id: now; player: media.player }
+
+        property bool hovered: false
+        readonly property real cardW: 340
+        readonly property real cardH: 120
+        readonly property real dot: 44
+        // 0 left, .5 center, 1 right, wherever the bar's media is
+        readonly property real side: Media.side === "left" ? 0 : Media.side === "right" ? 1 : 0.5
+
+        // closeMs drops to 260 when something sends it off, show() puts it back
+        Morph { id: mm; openMs: 720; closeMs: 560 }
+
+        function toggle() { Media.toggle(player); show() }
+        function skip(d) { Media.skip(player, d); show() }
+        function show() {
+            if (Media.views > 0) return
+            hold.interval = 2600
+            if (!hovered) hold.restart()
+            if (!mm.active || mm.leaving) { mm.closeMs = 560; mm.open() }
+        }
+        onHoveredChanged: {
+            if (hovered) return hold.stop()
+            hold.interval = 450
+            hold.restart()
+        }
+        Timer { id: hold; onTriggered: mm.close() }
+        Binding { target: Media; property: "card"; value: mm.active && !mm.leaving }
+        // a media screen taking over, or the bar about to open one over it, sends it off quick
+        function leave() { hold.stop(); mm.closeMs = 260; mm.close() }
+        Connections {
+            target: Media
+            function onViewsChanged() { if (Media.views > 0) media.leave() }
+            function onDropCard() { media.leave() }
+        }
+
+        PanelWindow {
+            visible: mm.active
+            screen: Hypr.focusedScreen()
+            anchors.top: true
+            anchors.left: Media.side === "left"
+            anchors.right: Media.side === "right"
+            // Normal keeps it under whatever bar is reserving the top
+            exclusionMode: ExclusionMode.Normal
+            implicitWidth: media.cardW + 28
+            implicitHeight: media.cardH + 28
+            color: "transparent"
+            mask: Region { item: mcard }
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.namespace: "osd"
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+
+            Item {
+                id: mcard
+                // drops out of the bar: a strip that widens, then opens down
+                width: media.dot + (media.cardW - media.dot) * Math.min(1, mm.mw)
+                height: 10 + (media.cardH - 10) * Math.min(1, mm.mh)
+                x: 14 + (parent.width - 28 - width) * media.side
+                // tucks up under the bar at the end instead of lingering
+                y: 6 - (1 - mm.rise) * 18
+                opacity: Math.min(1, mm.t * 6)
+
+                HoverHandler { onHoveredChanged: media.hovered = hovered }
+                // anywhere but the buttons opens spotify
+                TapHandler { onTapped: { mm.close(); Media.openSpotify() } }
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Math.min(height / 2, Theme.rounding * 1.4)
+                    color: Theme.alpha(Theme.bg, 0.55)
+                    border.width: 1
+                    border.color: Theme.alpha(Theme.fg, 0.08)
+                }
+
+                // laid out at full size and pinned to the same side, so it unrolls from there
+                Item {
+                    anchors.fill: parent
+                    clip: true
+
+                    Item {
+                        x: (parent.width - width) * media.side
+                        width: media.cardW
+                        height: media.cardH
+                        // fades early so the shrinking card doesnt look like its cutting it off
+                        opacity: mm.leaving ? Math.max(0, Math.min(1, (mm.t - 0.6) / 0.35)) : mm.stage(0.5)
+
+                        Cover {
+                            id: art
+                            x: 12
+                            y: 12
+                            width: 64
+                            height: width
+                            radius: Math.min(Theme.rounding, 12)
+                            glyph: "\uf001"
+                            url: now.art
+                        }
+
+                        Column {
+                            anchors.left: art.right
+                            anchors.leftMargin: 12
+                            anchors.right: controls.left
+                            anchors.rightMargin: 8
+                            anchors.verticalCenter: art.verticalCenter
+                            spacing: 2
+
+                            Label {
+                                width: parent.width
+                                text: media.player ? media.player.identity : ""
+                                elide: Text.ElideRight
+                                font.pixelSize: 10
+                                color: Theme.dim
+                            }
+                            SwapText {
+                                width: parent.width
+                                value: media.player ? (now.title || "Unknown track") : "Nothing playing"
+                                elide: Text.ElideRight
+                                font.pixelSize: 14
+                                font.bold: true
+                                color: Theme.bright
+                            }
+                            SwapText {
+                                width: parent.width
+                                visible: value !== ""
+                                value: now.artist
+                                elide: Text.ElideRight
+                                font.pixelSize: 12
+                                color: Theme.fg
+                            }
+                        }
+
+                        Row {
+                            id: controls
+                            anchors.right: parent.right
+                            anchors.rightMargin: 10
+                            anchors.verticalCenter: art.verticalCenter
+                            SkipButton { anchors.verticalCenter: parent.verticalCenter; player: media.player; dir: -1; size: 32 }
+                            PlayButton { anchors.verticalCenter: parent.verticalCenter; player: media.player; size: 36 }
+                            SkipButton { anchors.verticalCenter: parent.verticalCenter; player: media.player; dir: 1; size: 32 }
+                        }
+
+                        Seek {
+                            x: 14
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 8
+                            width: parent.width - 28
+                            player: media.player
+                            u: 0.8
+                            active: mm.active
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

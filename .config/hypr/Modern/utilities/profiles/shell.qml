@@ -9,30 +9,23 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string py: Quickshell.env("HOME") + "/.config/hypr/utilities/hypr-settings.py"
+    readonly property string py: Hypr.util + "/hypr-settings.py"
     property var entries: []
     property string live: ""
     readonly property int n: entries.length
     property int cur: 0
     property real pos: 0
     readonly property var picked: n ? entries[mod(cur)] : null
-    property bool active: false
-    property bool leaving: false
-    property real t: 0
+    property alias active: morph.active
+    property alias leaving: morph.leaving
+    property alias t: morph.t
     property real p: 1
     property real scrollAcc: 0
     property var targetScreen: null
 
-    // same grow as the launcher, i copied it
     readonly property real dot: 52
-    function clamp01(v) { return Math.max(0, Math.min(1, v)) }
-    readonly property real rise: clamp01(t / 0.28)
-    readonly property real mh: Math.max(0, Math.min(1.02, (t - 0.12) / 0.48))
-    readonly property real mw: Math.max(0, Math.min(1.02, (t - 0.32) / 0.68))
-    readonly property real fan: stage(0.5)
-    function stage(from) {
-        return clamp01(leaving ? (t - 0.7) / 0.3 : (t - from) / (1 - from))
-    }
+    readonly property real fan: morph.stage(0.5)
+    Morph { id: morph; sideways: true }
 
     function mod(i) { return n ? ((i % n) + n) % n : 0 }
     function wrap(x) { return n ? mod(x + n / 2) - n / 2 : 0 }
@@ -44,40 +37,18 @@ ShellRoot {
         if (active && !leaving) return
         Theme.refresh()
         list.running = true
-        Theme.locate(s => {
+        Hypr.locate(s => {
             targetScreen = s
-            leaving = false
-            active = true
-            animateTo(1)
+            morph.open()
             warp.restart()
         })
     }
 
-    function close() {
-        if (!active || leaving) return
-        leaving = true
-        animateTo(0)
-    }
+    function close() { morph.close() }
 
     function apply() {
         if (picked && picked.id !== live) Quickshell.execDetached(["python3", py, "saved", "apply", picked.id])
         close()
-    }
-
-    function animateTo(to) {
-        tween.stop()
-        tween.to = to
-        tween.duration = Theme.ms(to === 1 ? 520 : 320)
-        tween.easing.bezierCurve = to === 1 ? Theme.settle : Theme.leave
-        tween.start()
-    }
-
-    NumberAnimation {
-        id: tween
-        target: root
-        property: "t"
-        easing.type: Easing.BezierSpline
-        onFinished: if (root.leaving) { root.active = false; root.leaving = false }
     }
 
     SequentialAnimation {
@@ -121,7 +92,7 @@ ShellRoot {
             if (!s) return
             const x = Math.round(s.x + s.width - content.width / 2)
             const y = Math.round(s.y + s.height / 2)
-            Theme.dispatch("hl.dsp.cursor.move({ x = " + x + ", y = " + y + " })", "movecursor " + x + " " + y)
+            Hypr.dispatch("hl.dsp.cursor.move({ x = " + x + ", y = " + y + " })", "movecursor " + x + " " + y)
         }
     }
 
@@ -130,6 +101,7 @@ ShellRoot {
         function toggle(): void { root.active && !root.leaving ? root.close() : root.show() }
         function open(): void { root.show() }
         function close(): void { root.close() }
+        function flip(): void { root.cur++ }
     }
 
     PanelWindow {
@@ -149,14 +121,14 @@ ShellRoot {
 
         Item {
             id: card
-            width: root.dot + (content.width - root.dot) * root.mw
-            height: root.dot + (content.height - root.dot) * root.mh
+            width: root.dot + (content.width - root.dot) * morph.mw
+            height: root.dot + (content.height - root.dot) * morph.mh
             readonly property real rest: Math.min(root.dot / 2, Theme.rounding)
-            readonly property real radius: Math.max(rest, root.dot / 2 - (root.dot / 2 - rest) * Math.min(1, root.mh))
+            readonly property real radius: Math.max(rest, root.dot / 2 - (root.dot / 2 - rest) * Math.min(1, morph.mh))
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             opacity: root.active ? Math.min(1, root.t * 8) : 0
-            transform: Translate { x: (1 - root.rise) * (root.dot + 24) }
+            transform: Translate { x: (1 - morph.rise) * (root.dot + 24) }
             clip: true
             focus: true
 
@@ -164,9 +136,9 @@ ShellRoot {
                 width: parent.width + card.radius + 2
                 height: parent.height
                 radius: card.radius
-                color: Theme.alpha(Theme.bg, 0.6)
+                color: Theme.panel
                 border.width: 1
-                border.color: Theme.alpha(Theme.fg, 0.07)
+                border.color: Theme.edge
             }
 
             Keys.onPressed: event => {
@@ -185,7 +157,7 @@ ShellRoot {
                 height: 450
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                opacity: root.stage(0.55)
+                opacity: morph.stage(0.55)
 
                 MouseArea {
                     anchors.fill: parent
@@ -333,18 +305,6 @@ ShellRoot {
                                         color: Theme.alpha(Qt.color(env.modelData.colors[0] ?? "#000000"), env.modelData.opacity * 0.75)
                                         border.width: Math.min(2, env.modelData.border)
                                         border.color: env.modelData.colors[9] ?? Theme.accent
-                                    }
-
-                                    Rectangle {
-                                        visible: env.modelData.glass
-                                        anchors.fill: parent
-                                        radius: env.modelData.rounding / 2
-                                        border.width: 1
-                                        border.color: Qt.rgba(1, 1, 1, 0.3)
-                                        gradient: Gradient {
-                                            GradientStop { position: 0; color: Qt.rgba(1, 1, 1, 0.2) }
-                                            GradientStop { position: 0.5; color: Qt.rgba(1, 1, 1, 0) }
-                                        }
                                     }
                                 }
 

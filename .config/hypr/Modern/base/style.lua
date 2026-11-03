@@ -14,7 +14,7 @@ end
 
 local colors = load_wal_colors(os.getenv("HOME") .. "/.cache/wal/colors-hyprland")
 -- primary picked in settings > colors, same file quickshell reads
-local roles = io.open(os.getenv("HOME") .. "/.config/hypr/.color-roles.json", "r")
+local roles = io.open(os.getenv("HOME") .. "/.config/hypr/state/color-roles.json", "r")
 local accent = roles and roles:read("a"):match('"accent"%s*:%s*(%d+)') or "9"
 if roles then roles:close() end
 
@@ -50,6 +50,10 @@ hl.config({
             render_power = 4,
             color = "rgba(0,0,0,.5)",
         },
+    },
+    render = {
+        -- stops fullscreen apps flipping the screen into hdr mode
+        cm_auto_hdr = 0,
     },
     xwayland = {
         force_zero_scaling = true,
@@ -90,16 +94,16 @@ hl.layer_rule({ name = "waybar-blur", match = { namespace = "waybar" }, blur = t
 -- half the pill opacity or the blur halos, i think
 hl.layer_rule({ name = "quickshell-bar-blur", match = { namespace = "quickshell-bar" }, blur = true, ignore_alpha = 0.3, no_anim = true })
 hl.layer_rule({ name = "quickshell-overview-noanim", match = { namespace = "quickshell-overview" }, no_anim = true })
-hl.layer_rule({ name = "notification-popup-glass", match = { namespace = "notification-popup" }, blur = true, ignore_alpha = 0.5, no_anim = true })
+hl.layer_rule({ name = "notification-popup-blur", match = { namespace = "notification-popup" }, blur = true, ignore_alpha = 0.5, no_anim = true })
 hl.layer_rule({ name = "selection-no-anim", match = { namespace = "selection" }, no_anim = true })
-hl.layer_rule({ name = "osd-glass", match = { namespace = "osd" }, blur = true, ignore_alpha = 0.05, no_anim = true })
+hl.layer_rule({ name = "osd-blur", match = { namespace = "osd" }, blur = true, ignore_alpha = 0.05, no_anim = true })
 hl.layer_rule({ name = "launcher-blur", match = { namespace = "launcher" }, blur = true, ignore_alpha = 0.3 })
 hl.layer_rule({ name = "wallpaper-picker-noanim", match = { namespace = "wallpaper-picker" }, no_anim = true })
 hl.layer_rule({ name = "lock-handoff-fade", match = { namespace = "lock-handoff" }, animation = "fade" })
 hl.layer_rule({ name = "wallpaper-picker-preview-noanim", match = { namespace = "wallpaper-picker-preview" }, no_anim = true })
-hl.layer_rule({ name = "settings-panel-glass", match = { namespace = "settings-panel" }, blur = true, ignore_alpha = 0.05, no_anim = true })
-hl.layer_rule({ name = "app-drawer-glass", match = { namespace = "app-drawer" }, blur = true, ignore_alpha = 0.05, no_anim = true })
-hl.layer_rule({ name = "music-player-glass", match = { namespace = "music-player" }, blur = true, ignore_alpha = 0.05, no_anim = true })
-hl.layer_rule({ name = "profile-switcher-glass", match = { namespace = "profile-switcher" }, blur = true, ignore_alpha = 0.05, no_anim = true })
-hl.layer_rule({ name = "home-screen-noanim", match = { namespace = "home-screen" }, no_anim = true })
+hl.layer_rule({ name = "settings-panel-blur", match = { namespace = "settings-panel" }, blur = true, ignore_alpha = 0.05, no_anim = true })
+hl.layer_rule({ name = "app-drawer-blur", match = { namespace = "app-drawer" }, blur = true, ignore_alpha = 0.05, no_anim = true })
+hl.layer_rule({ name = "music-player-blur", match = { namespace = "music-player" }, blur = true, ignore_alpha = 0.05, no_anim = true })
+hl.layer_rule({ name = "welcome-blur", match = { namespace = "welcome"}, blur = true, ignore_alpha = 0.05, no_anim = true})
+hl.layer_rule({ name = "profile-switcher-blur", match = { namespace = "profile-switcher"}, blur = true, ignore_alpha = 0.05, no_anim = true})
 hl.layer_rule({ name = "boot-sequence-blur", match = { namespace = "boot-sequence" }, blur = true, ignore_alpha = 0.15, no_anim = true })

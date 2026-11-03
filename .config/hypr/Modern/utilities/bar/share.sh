@@ -8,7 +8,7 @@ set -uo pipefail
 RUN="${XDG_RUNTIME_DIR:-/tmp}"
 REQ="$RUN/share-request"
 ANS="$RUN/share-answer"
-UTIL="$(readlink -f "$HOME/.config/hypr/utilities")"
+QS="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
 
 answer() { printf '%s' "$1" > "$ANS.tmp" && mv "$ANS.tmp" "$ANS"; }
 
@@ -59,14 +59,14 @@ picker() {
     local flags="" sel i
     [[ " $* " == *" --allow-token "* ]] && flags=r
     # not on my bar, use the stock picker
-    if [ "$(cat "$HOME/.config/hypr/.active-bar" 2>/dev/null)" != quickshell ] \
-        || ! qs ipc -p "$UTIL" show 2>/dev/null | grep -q '^target bar'; then
+    if [ "$(cat "$HOME/.config/hypr/state/bar" 2>/dev/null)" != quickshell ] \
+        || ! qs ipc -p "$QS" show 2>/dev/null | grep -q '^target bar'; then
         exec hyprland-share-picker "$@"
     fi
     rm -f "$ANS"
     trap ': > "$REQ"; rm -f "$ANS"' EXIT
     printf '1\n%s' "${XDPH_WINDOW_SHARING_LIST:-}" > "$REQ"
-    qs ipc -p "$UTIL" call bar island capture >/dev/null 2>&1
+    qs ipc -p "$QS" call bar island capture >/dev/null 2>&1
     for ((i = 0; i < 1200; i++)); do
         [ -e "$ANS" ] && break
         sleep 0.1

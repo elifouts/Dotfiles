@@ -92,13 +92,12 @@ apply_colors() {
     $INSTALLING || [[ ! -f "$HOME/.cache/wal/colors.json" ]] || return 0
     section "Applying Colors"
 
-    local wallpaper="$HOME/wallpapers/pywallpaper.jpg"
-    cp "$DOTFILES_DIR/wallpapers/pywallpaper.jpg" "$wallpaper"
-    mkdir -p "$HOME/.cache/wallpaper-picker"
-    printf '%s\n' "$wallpaper" > "$HOME/.cache/wallpaper-picker/current"
-    awww img "$wallpaper" --transition-type none >/dev/null 2>&1 || true
-
-    if "$HOME/.config/hypr/utilities/color-apply.sh" "" "$wallpaper"; then
+    # nothing starts the daemon till login, thats why no wallpaper till reboot
+    if [[ -n "${WAYLAND_DISPLAY:-}" ]] && ! pgrep -x awww-daemon >/dev/null; then
+        setsid -f awww-daemon >/dev/null 2>&1
+        sleep 0.5
+    fi
+    if "$HOME/.config/hypr/utilities/wallpaper-apply.sh" "$DOTFILES_DIR/wallpapers/pywallpaper.jpg" >/dev/null; then
         success "Colors generated from the dotfiles wallpaper."
     else
         warn "Couldn't generate colors; pick a color theme in settings later."
@@ -153,32 +152,6 @@ autologin_uninstall() {
 }
 
 
-# hyprpm plugins need rebuilding after hyprland updates
-update_plugins() {
-    command -v hyprpm >/dev/null || return 0
-    hyprpm list 2>/dev/null | grep -qi hyprglass || return 0
-
-    info "Updating Hyprland plugins..."
-    hyprpm update || { warn "hyprpm update failed; run it manually."; return 0; }
-    hyprpm reload -n >/dev/null 2>&1 || true
-    success "Hyprland plugins up to date."
-}
-
-glass_install() {
-    yay -S --needed hyprpm
-    hyprpm update
-    hyprpm list 2>/dev/null | grep -qi hyprglass ||
-        hyprpm add https://github.com/hyprnux/hyprglass
-    hyprpm enable hyprglass
-    hyprpm reload -n >/dev/null 2>&1 || true
-    success "hyprglass plugin installed"
-}
-glass_uninstall() {
-    hyprpm disable hyprglass
-    hyprpm remove https://github.com/hyprnux/hyprglass
-    success "hyprglass plugin removed"
-}
-
 setup_bluetooth() {
     section "Bluetooth"
     yay -S --needed blueman bluez
@@ -219,12 +192,11 @@ run_install() {
     pull_wallpapers
     cast_firewall allow
     ask "Set up autologin?" && { install_or_remove Autologin autologin_install autologin_uninstall || warn "Autologin setup failed."; }
-    install_or_remove hyprglass glass_install glass_uninstall
     ask "Install optional packages?" && { yay -S --needed "${OPTIONAL_PACKAGES[@]}" || warn "Some optional packages failed."; }
 
     success "Installation complete!"
-    notify-send "Dotfiles Installed" \
-        "Open Terminal with MOD+Q\nHello $USER, thanks for using my dotfiles!\n-EF" 2>/dev/null || true
+    # welcome pops up on the next boot, it deletes this
+    touch "$HOME/.cache/dotfiles-welcome"
 
     if ask "Reboot now?"; then
         info "Rebooting..."

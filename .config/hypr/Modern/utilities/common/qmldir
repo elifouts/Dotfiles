@@ -14,3 +14,18 @@ Backdrop 1.0 Backdrop.qml
 IconButton 1.0 IconButton.qml
 Rise 1.0 Rise.qml
 singleton Cava 1.0 Cava.qml
+Morph 1.0 Morph.qml
+Tabs 1.0 Tabs.qml
+NowPlaying 1.0 NowPlaying.qml
+SwapText 1.0 SwapText.qml
+Cover 1.0 Cover.qml
+PlayButton 1.0 PlayButton.qml
+SkipButton 1.0 SkipButton.qml
+MediaView 1.0 MediaView.qml
+Seek 1.0 Seek.qml
+singleton Hypr 1.0 Hypr.qml
+singleton Media 1.0 Media.qml
+singleton Audio 1.0 Audio.qml
+singleton Brightness 1.0 Brightness.qml
+Panel 1.0 Panel.qml
+CavaFeed 1.0 CavaFeed.qml

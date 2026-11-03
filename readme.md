@@ -104,7 +104,7 @@ Uninstall:
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/how-it-all-fits-together-v2.svg" alt="How It All Fits Together" align="absmiddle"></picture></summary>
 
   - **Style**: the whole look. Right now I only have one, `Modern`.
-  - **Variant**: `desktop` or `laptop`. Just the stuff that changes per machine like monitors and mouse.
+  - **Variant**: `desktop` or `laptop`. Just the stuff that changes per machine like monitors and mouse. Hyprland loads both straight out of `.config/hypr/Modern/`, so that is the config you edit.
   - **Profile**: your tweaks on top, picked in the settings panel. **Glass** and **Zen** are mine. Saving a profile also saves your colors, bar and wallpaper.
 
   ![profiles](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/profiles.gif)
@@ -124,7 +124,7 @@ Every screenshot below is shown three times, once for each of my saved profiles:
   ### *How To Install*
   1. **Install [Quickshell](https://quickshell.org)** (`yay -S quickshell`)
   2. Copy `Dotfiles/.config/hypr` into `~/.config` (or just use the install script)
-  3. Run `~/.config/hypr/utilities/shells.sh start`. My `startup.lua` already does this.
+  3. Run `~/.config/hypr/utilities/shells.sh start`. `Modern/base/startup.lua` already does this.
 </details>
 
 <details>
@@ -266,7 +266,7 @@ Every screenshot below is shown three times, once for each of my saved profiles:
 
   ### *How To Install*
   1. **Install [Quickshell](https://quickshell.org/)** and `hypridle`
-  2. Copy `Dotfiles/.config/hypr/Modern/utilities/lock` to `~/.config/hypr/utilities/lock`, plus `utilities/lock.sh` and `hypridle.conf`
+  2. Copy `Dotfiles/.config/hypr/Modern/utilities` to `~/.config/hypr/Modern/utilities` (lock needs `common` and `lock.qml` next to it), plus `utilities/lock.sh`, `utilities/paths.sh` and `hypridle.conf`
 </details>
 
 <details>

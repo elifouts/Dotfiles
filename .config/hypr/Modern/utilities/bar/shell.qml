@@ -5,15 +5,14 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import QtQuick.Shapes
 import "../common"
+import "island"
 
 ShellRoot {
     id: shell
 
-    readonly property string hypr: Quickshell.env("HOME") + "/.config/hypr"
-
     Watched {
         id: kindFile
-        path: shell.hypr + "/.active-bar"
+        path: Hypr.state + "/bar"
     }
     Watched {
         id: ownStyle
@@ -41,11 +40,10 @@ ShellRoot {
         Scope {
             id: root
 
-            Watched { id: profileFile; path: shell.hypr + "/.active-profile" }
-            Watched { id: nameFile; path: shell.hypr + "/.quickshell-bar" }
+            Watched { id: nameFile; path: Hypr.state + "/bar-style" }
             Watched {
                 id: lookFile
-                path: shell.standalone ? ownStyle.path : shell.hypr + "/" + profileFile.text().trim().split("/")[0] + "/quickshellbar/" + (nameFile.text().trim() || "default") + "/config.json"
+                path: shell.standalone ? ownStyle.path : Quickshell.shellPath("../quickshellbar/" + (nameFile.text().trim() || "default") + "/config.json")
             }
             readonly property var look: {
                 const d = { left: ["user", "workspaces"], center: ["media", "date", "timer", "clock"],
@@ -62,7 +60,7 @@ ShellRoot {
                 : look.shape === "capsule" ? pillH / 2 : Math.min(Theme.rounding, pillH / 2)
             readonly property int reserve: pillH + edge * (attached ? 1 : 2)
 
-            function run(cmd) { Theme.run(cmd) }
+            function run(cmd) { Hypr.run(cmd) }
 
             function pickColor() {
                 run("sleep 0.3; p=~/.config/waybar/scripts/colorpicker.sh; [ -x \"$p\" ] || p='" + Quickshell.shellDir + "/colorpicker.sh'; \"$p\"")
@@ -89,7 +87,7 @@ ShellRoot {
             }
             readonly property date now: clock.date
 
-            Island.Countdown {
+            Countdown {
                 id: countdown
                 // notification only if there's no pill to ring out of
                 onFinished: {
@@ -101,7 +99,7 @@ ShellRoot {
             }
             readonly property alias timer: countdown
 
-            Island.Forecast { id: forecast }
+            Forecast { id: forecast }
             readonly property alias weather: forecast
 
             property int updates: 0
@@ -138,10 +136,12 @@ ShellRoot {
                 if (!updateProc.running) updateProc.running = true
             }
 
-            readonly property var players: Theme.players
+            readonly property var players: Media.players
             property string pinned: ""
-            readonly property var player: Theme.pickPlayer(pinned)
-            readonly property bool playing: !!player && player.isPlaying
+            readonly property var player: Media.pickPlayer(pinned)
+            NowPlaying { id: nowPlaying; player: root.player }
+            readonly property alias track: nowPlaying
+            readonly property bool playing: Media.playing(player)
             // hold media a few seconds or track changes flicker
             property bool hasMedia: false
             onPlayingChanged: {
@@ -151,6 +151,12 @@ ShellRoot {
             onPlayerChanged: if (!player) { stopped.stop(); hasMedia = false }
             Component.onCompleted: hasMedia = playing
             Timer { id: stopped; interval: 3000; onTriggered: root.hasMedia = root.playing }
+            Binding { target: Media; property: "side"; value: (root.look.left || []).includes("media") ? "left" : (root.look.right || []).includes("media") ? "right" : "center" }
+            // the osd card already showed it's paused, don't bring the chip back for the hold
+            Connections {
+                target: Media
+                function onCardChanged() { if (!Media.card && !root.playing) { stopped.stop(); root.hasMedia = false } }
+            }
 
             function cyclePlayer() {
                 const ps = players
@@ -170,8 +176,10 @@ ShellRoot {
             function mediaAway(pill) {
                 return musicOut && !pill.tucked
             }
+            // tucks away while the island is open unless i'm on the row, folding under the cursor made it ping pong
             function showMedia(pill) {
-                return hasMedia && !mediaAway(pill)
+                return hasMedia && !mediaAway(pill) && !(pill.page === "island" && !pill.onRow)
+                    && !(Media.card && !pill.open)
             }
 
             function musicInTheWay(pill, page) {
@@ -184,7 +192,7 @@ ShellRoot {
                 return m.x < x + w && m.x + side > x && my < p.y + pillH + 460 && my + side > p.y
             }
 
-            function musicCall(call) { if (!standalone) run("~/.config/hypr/utilities/shells.sh music " + call) }
+            function musicCall(call) { if (!standalone) run(Hypr.util + "/shells.sh music " + call) }
 
             function toggleOverview() {
                 Quickshell.execDetached(["qs", "-p", Quickshell.shellDir, "ipc", "call", "overview", "toggle"])
@@ -295,7 +303,7 @@ ShellRoot {
                             screen: win.modelData
                             modules: root.look.center || []
                             align: "center"
-                            x: Math.round((win.width - width) / 2)
+                            x: (win.width - width) / 2
                             maxW: win.centerRoom
                             hurry: left.open || right.open
                         }

@@ -3,7 +3,6 @@ import Quickshell
 import Quickshell.Widgets
 import Quickshell.Bluetooth
 import Quickshell.Networking
-import Quickshell.Services.Pipewire
 import Quickshell.Services.SystemTray
 import "../common"
 
@@ -24,7 +23,7 @@ Item {
     height: implicitHeight
 
     HoverHandler {
-        enabled: mod.page === "workspaces" || mod.page === "island"
+        enabled: mod.page === "workspaces" || mod.page === "island" || mod.page === "calendar"
         onHoveredChanged: hovered ? mod.pill.rest(mod.page, null, mod) : mod.pill.unrest(mod)
     }
 
@@ -36,7 +35,7 @@ Item {
         onClicked: m => {
             const p = mod.ctx.player
             if (m.button === Qt.LeftButton) mod.pill.toggle("island")
-            else if (p && p.canTogglePlaying) p.togglePlaying()
+            else Media.toggle(p)
         }
     }
 
@@ -61,9 +60,7 @@ Item {
             pill: mod.pill
             text: Quickshell.env("USER")
             tint: Theme.accent2
-            onClicked: b => mod.ctx.run(b === Qt.RightButton ? "~/.config/hypr/utilities/shells.sh settings"
-                : b === Qt.MiddleButton ? "~/.config/hypr/utilities/shells.sh launcher"
-                : "~/.config/hypr/utilities/shells.sh home")
+            onClicked: b => mod.ctx.run(Hypr.util + "/shells.sh " + (b === Qt.RightButton ? "settings" : b === Qt.MiddleButton ? "launcher" : "home"))
         }
     }
 
@@ -94,24 +91,21 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 10
 
-                    ClippingRectangle {
+                    Cover {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 20
                         height: 20
                         radius: Math.min(Theme.rounding, 6)
-                        color: Theme.alpha(Theme.fg, 0.14)
-                        Image {
-                            anchors.fill: parent
-                            source: mod.ctx.player ? mod.ctx.player.trackArtUrl : ""
-                            sourceSize.width: 64
-                            sourceSize.height: 64
-                            fillMode: Image.PreserveAspectCrop
-                            asynchronous: true
-                        }
+                        fill: Theme.alpha(Theme.fg, 0.14)
+                        res: 64
+                        url: mod.ctx.track.art
                     }
 
-                    ChipText {
+                    SwapText {
                         id: title
+                        anchors.verticalCenter: parent.verticalCenter
+                        font.pixelSize: 12
+                        color: Theme.fg
                         // shrinks first when space runs out
                         property real fit: 170
                         function refit() { if (mod && mod.pill) fit = Math.max(40, Math.min(170, mod.pill.maxW - (mod.pill.rowW - width))) }
@@ -120,8 +114,10 @@ Item {
                             function onRowWChanged() { Qt.callLater(title.refit) }
                             function onMaxWChanged() { Qt.callLater(title.refit) }
                         }
-                        width: Math.min(implicitWidth, fit)
-                        text: mod.ctx.player ? [mod.ctx.player.trackTitle, mod.ctx.player.trackArtist].filter(s => !!s).join("  ·  ") : ""
+                        // sub pixels while it eases, whole once it lands
+                        width: Math.ceil(Math.min(fullWidth, fit))
+                        Behavior on width { Settle { duration: Theme.move } }
+                        value: [mod.ctx.track.title, mod.ctx.track.artist].filter(s => !!s).join("  ·  ")
                         elide: Text.ElideRight
                     }
 
@@ -227,7 +223,7 @@ Item {
                         const item = modelData
                         if (b === Qt.MiddleButton) item.secondaryActivate()
                         else if (b === Qt.RightButton || item.onlyMenu) { if (item.hasMenu) mod.pill.toggle("tray", item) }
-                        else if (Theme.isSpotify(item)) { mod.pill.close(); Theme.openSpotify() }
+                        else if (Media.isSpotify(item)) { mod.pill.close(); Media.openSpotify() }
                         else { mod.pill.close(); item.activate() }
                     }
                     onWheel: dir => modelData.scroll(dir * 120, false)
@@ -299,26 +295,22 @@ Item {
         id: audioC
         Chip {
             id: vol
-            readonly property var sink: Pipewire.defaultAudioSink
-            readonly property real volume: sink && sink.audio ? sink.audio.volume : 0
+            readonly property real volume: Audio.volume
             readonly property real level: Math.min(1, volume)
-            readonly property bool muted: !!sink && !!sink.audio && sink.audio.muted
-            PwObjectTracker { objects: [Pipewire.defaultAudioSink] }
-
-            function set(v) { if (sink && sink.audio) { sink.audio.volume = Math.max(0, Math.min(1, v)); if (v > 0) sink.audio.muted = false } }
+            readonly property bool muted: Audio.muted
 
             pill: mod.pill
             page: "audio"
-            visible: !!sink
+            visible: !!Audio.sink
             glyph: muted ? "󰝟" : volume > 0.66 ? "󰕾" : volume > 0.33 ? "󰖀" : "󰕿"
             glyphColor: muted ? Theme.dim : lit ? Theme.accent : Theme.along(Theme.spectrum, level)
             scrub: track
-            onScrubbed: f => set(f)
+            onScrubbed: f => Audio.setVolume(f)
             onClicked: b => {
-                if (b === Qt.MiddleButton) { if (sink && sink.audio) sink.audio.muted = !muted }
+                if (b === Qt.MiddleButton) Audio.toggleMute()
                 else if (b === Qt.RightButton) mod.ctx.run("pavucontrol")
             }
-            onWheel: dir => set(Math.round((volume + dir * 0.02) * 50) / 50)
+            onWheel: dir => Audio.setVolume(Math.round((volume + dir * 0.02) * 50) / 50)
 
             // the fill just uncovers the gradient so the colors don't squish
             Item {

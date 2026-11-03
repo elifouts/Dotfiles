@@ -10,7 +10,7 @@ import "../common"
 Singleton {
     id: root
 
-    readonly property string util: Quickshell.env("HOME") + "/.config/hypr/utilities"
+    readonly property string util: Hypr.util
     readonly property string py: util + "/hypr-settings.py"
 
     property var values: ({})
@@ -59,7 +59,6 @@ Singleton {
 
     // null removes the key
     function setMany(entries) {
-        entries = Schema.glassTargets(entries, values)
         const next = Object.assign({}, values)
         for (const key of Object.keys(entries)) {
             if (entries[key] !== null) next[key] = entries[key]
@@ -142,7 +141,7 @@ Singleton {
     }
 
     // profile or wallpaper changed somewhere else. wal writes a bunch of files at once hence the wait
-    Watched { path: Quickshell.env("HOME") + "/.config/hypr/.active-profile"; onLoaded: staleTimer.restart() }
+    Watched { path: Hypr.state + "/profile"; onLoaded: staleTimer.restart() }
     Watched { path: Quickshell.env("HOME") + "/.cache/wallpaper-picker/current"; onLoaded: staleTimer.restart() }
     Watched { path: Quickshell.env("HOME") + "/.cache/wal/colors.json"; onLoaded: staleTimer.restart() }
     Timer { id: staleTimer; interval: 300; onTriggered: root.refresh() }

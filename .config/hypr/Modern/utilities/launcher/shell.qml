@@ -7,20 +7,19 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string home: Quickshell.env("HOME")
     readonly property string helper: Quickshell.shellPath("launcher/launcher.py")
     readonly property string terminal: "kitty"
-    readonly property string cacheDir: home + "/.cache/launcher"
+    readonly property string cacheDir: Hypr.home + "/.cache/launcher"
     readonly property string appCache: cacheDir + "/apps"
     readonly property string homeCache: cacheDir + "/commands"
     readonly property string shellCache: cacheDir + "/shell"
     readonly property string bindCache: cacheDir + "/keybinds"
 
-    property bool active: false
-    property bool leaving: false
-    property real t: 0
+    property alias active: morph.active
+    property alias leaving: morph.leaving
+    property alias t: morph.t
     property real gridIntro: 1
-    property var targetScreen: null
+    property alias targetScreen: morph.screen
 
     readonly property var tabs: [
         { id: "home", label: "Home", title: "Home", icon: "", search: "" },
@@ -36,7 +35,7 @@ ShellRoot {
     property real introHome: 0
     property real introBinds: 0
 
-    readonly property real u: Theme.scaleFor(win.screen)
+    readonly property real u: Hypr.scaleFor(win.screen)
     readonly property int cols: 4
     readonly property real cell: Math.round(70 * u)
     readonly property real gap: Math.round(26 * u)
@@ -47,9 +46,6 @@ ShellRoot {
     readonly property real cardH: Math.round(Math.min((win.screen ? win.screen.height : 1080) * 0.72, 580 * u))
 
     readonly property real dot: Math.round(52 * u)
-    readonly property real rise: Math.max(0, Math.min(1, t / 0.28))
-    readonly property real mw: Math.max(0, Math.min(1.02, (t - 0.12) / 0.48))
-    readonly property real mh: Math.max(0, Math.min(1.02, (t - 0.32) / 0.68))
 
 
     property var drun: ({ hide: [], paths: {} })
@@ -240,7 +236,7 @@ ShellRoot {
     function runHome(id, cmd, afterClose) {
         bump(homeCache, id)
         close()
-        Theme.run((afterClose ? "sleep 0.3; " : "") + cmd)
+        Hypr.run((afterClose ? "sleep 0.3; " : "") + cmd)
     }
 
     function runShell(cmd, key, background) {
@@ -304,7 +300,6 @@ ShellRoot {
 
 
     Component.onCompleted: {
-        targetScreen = Theme.focusedScreen()
         scan.running = true
         scanCommands.running = true
     }
@@ -321,29 +316,20 @@ ShellRoot {
         } else if (i >= 0) {
             tab = i
         }
-        const scr = Theme.focusedScreen()
-        if (!active && scr !== targetScreen) {
-            targetScreen = scr
-            moveDelay.restart()
-            return
-        }
-        begin()
+        morph.show()
     }
 
     function begin() {
-        leaving = false
-        active = true
+        morph.open()
         Theme.refresh()
         focusTab()
         replayIntro()
-        animateTo(1)
     }
 
     function close() {
         if (!active || leaving) return
         if (tabId === "keybinds" && ui?.pBinds.touched) bump(bindCache, ui.pBinds.currentId)
-        leaving = true
-        animateTo(0)
+        morph.close()
     }
 
     function toggle() {
@@ -351,31 +337,10 @@ ShellRoot {
         else show("")
     }
 
-    function animateTo(target) {
-        tween.stop()
-        tween.from = t
-        tween.to = target
-        tween.duration = Theme.ms(target === 1 ? 520 : 320)
-        tween.easing.bezierCurve = target === 1 ? Theme.settle : Theme.leave
-        tween.start()
-    }
-
-    function stage(from) {
-        if (leaving) return Math.max(0, Math.min(1, (t - 0.7) / 0.3))
-        return Math.max(0, Math.min(1, (t - from) / (1 - from)))
-    }
-
-    Timer { id: moveDelay; interval: 90; onTriggered: root.begin() }
-
-    NumberAnimation {
-        id: tween
-        target: root
-        property: "t"
-        easing.type: Easing.BezierSpline
-        onFinished: {
-            if (!root.leaving) return
-            root.active = false
-            root.leaving = false
+    Panel {
+        id: morph
+        onBegin: root.begin()
+        onClosed: {
             root.searchPinned = false
             if (ui) ui.pSearch.text = ""
             root.refresh()
@@ -396,14 +361,7 @@ ShellRoot {
         function tab(id: string): void { root.show(id) }
     }
 
-    // i think this frees the textures once it closes, saves some memory
     readonly property Item ui: ld.item
-    property bool warm: false
-    onActiveChanged: {
-        if (active) { warm = true; cool.stop() }
-        else cool.restart()
-    }
-    Timer { id: cool; interval: 120000; onTriggered: root.warm = false }
 
 
     PanelWindow {
@@ -435,7 +393,7 @@ ShellRoot {
         Loader {
             id: ld
             anchors.fill: parent
-            active: root.active || root.warm
+            active: root.active || morph.warm
             sourceComponent: Component {
                 Item {
                     property alias pSearch: search
@@ -464,14 +422,14 @@ ShellRoot {
                     // never hide this, the icon textures drop and it stutters like hell
                     Item {
                         id: card
-                        width: root.dot + (root.cardW - root.dot) * root.mw
-                        height: root.dot + (root.cardH - root.dot) * root.mh
+                        width: root.dot + (root.cardW - root.dot) * morph.mw
+                        height: root.dot + (root.cardH - root.dot) * morph.mh
                         readonly property real rest: Math.min(root.dot / 2, Theme.rounding)
-                        readonly property real radius: Math.max(rest, root.dot / 2 - (root.dot / 2 - rest) * Math.min(1, root.mw))
+                        readonly property real radius: Math.max(rest, root.dot / 2 - (root.dot / 2 - rest) * Math.min(1, morph.mw))
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.bottom: parent.bottom
                         opacity: root.active ? Math.min(1, root.t * 8) : 0
-                        transform: Translate { y: (1 - root.rise) * (root.dot + 24) }
+                        transform: Translate { y: (1 - morph.rise) * (root.dot + 24) }
 
                         MouseArea { anchors.fill: parent }
 
@@ -479,9 +437,9 @@ ShellRoot {
                             width: parent.width
                             height: parent.height + card.radius + 2
                             radius: card.radius
-                            color: Theme.alpha(Theme.bg, 0.6)
+                            color: Theme.panel
                             border.width: 1
-                            border.color: Theme.alpha(Theme.fg, 0.07)
+                            border.color: Theme.edge
                         }
 
                         Item {
@@ -500,8 +458,8 @@ ShellRoot {
                                 id: header
                                 width: parent.width
                                 height: Math.round(36 * root.u)
-                                opacity: root.stage(0.55)
-                                transform: Translate { y: 10 * (1 - root.stage(0.5)) }
+                                opacity: morph.stage(0.55)
+                                transform: Translate { y: 10 * (1 - morph.stage(0.5)) }
 
                                 SearchPill {
                                     id: search
@@ -566,7 +524,7 @@ ShellRoot {
                                 anchors.bottom: tabBar.top
                                 anchors.bottomMargin: Math.round(10 * root.u)
                                 width: parent.width
-                                opacity: root.stage(0.62)
+                                opacity: morph.stage(0.62)
 
                                 Page {
                                     tab: "apps"
@@ -632,8 +590,8 @@ ShellRoot {
                                 readonly property real gapW: 4
                                 width: cellW * root.tabs.length + gapW * (root.tabs.length - 1)
                                 height: Math.round(32 * root.u)
-                                opacity: root.stage(0.7)
-                                transform: Translate { y: 8 * (1 - root.stage(0.66)) }
+                                opacity: morph.stage(0.7)
+                                transform: Translate { y: 8 * (1 - morph.stage(0.66)) }
 
                                 Rectangle {
                                     width: tabBar.cellW

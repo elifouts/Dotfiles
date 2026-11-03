@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Quickshell.Hyprland
 import Quickshell.Wayland
 import "Schema.js" as Schema
 import "../common"
@@ -9,15 +8,14 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string home: Quickshell.env("HOME")
     readonly property real defaultFrac: 1 / 3
     readonly property real minFrac: 0.2
     readonly property real maxFrac: 0.6
 
-    property bool active: false
-    property bool leaving: false
-    property real t: 0
-    property var targetScreen: null
+    property alias active: morph.active
+    property alias leaving: morph.leaving
+    property alias t: morph.t
+    property alias targetScreen: morph.screen
 
     property real frac: defaultFrac
     property real dragFrac: defaultFrac
@@ -28,7 +26,7 @@ ShellRoot {
 
     FileView {
         id: uiFile
-        path: root.home + "/.local/state/hypr-settings/ui.json"
+        path: Hypr.home + "/.local/state/hypr-settings/ui.json"
         blockLoading: true
     }
 
@@ -39,17 +37,8 @@ ShellRoot {
             if (ui.page && Schema.PAGES.some(p => p.id === ui.page)) page = ui.page
         } catch (e) {}
         dragFrac = frac
-        targetScreen = usableScreen(Theme.focusedScreen())
+        targetScreen = usableScreen(Hypr.focusedScreen())
         Store.refresh()
-    }
-
-
-    function screenNamed(name) {
-        return Quickshell.screens.find(s => s.name === name) ?? Theme.focusedScreen()
-    }
-
-    function show(name) {
-        showOn(name ? screenNamed(name) : Theme.focusedScreen())
     }
 
     function landscape(scr) {
@@ -65,16 +54,11 @@ ShellRoot {
     function showOn(scr) {
         scr = usableScreen(scr)
         if (active && !leaving && scr === targetScreen) return
-        if (scr !== targetScreen) {
-            tween.stop()
-            active = false
-            leaving = false
-            t = 0
-            targetScreen = scr
-            moveDelay.restart()
-            return
-        }
-        begin()
+        morph.show(scr)
+    }
+    function toggleOn(scr) {
+        if (active && !leaving && usableScreen(scr) === targetScreen) close()
+        else showOn(scr)
     }
 
     function followCursor(scr) {
@@ -87,28 +71,16 @@ ShellRoot {
         repeat: true
         running: root.active && !root.leaving
         // skip a tick if the last lookup hasn't come back
-        onTriggered: if (Theme.located.length === 0) Theme.locate(root.followCursor)
+        onTriggered: if (Hypr.located.length === 0) Hypr.locate(root.followCursor)
     }
 
     function begin() {
-        leaving = false
-        active = true
+        morph.open()
         Store.opened++
         ld.item?.forceActiveFocus()
-        animateTo(1)
     }
 
-    function close() {
-        if (!active || leaving) return
-        leaving = true
-        animateTo(0)
-    }
-
-    function toggle(name) {
-        const scr = usableScreen(name ? screenNamed(name) : Theme.focusedScreen())
-        if (active && !leaving && scr === targetScreen) close()
-        else show(name)
-    }
+    function close() { morph.close() }
 
     function stepPage(d) {
         const i = Schema.PAGES.findIndex(p => p.id === page)
@@ -127,46 +99,31 @@ ShellRoot {
 
     property int pageDir: 1
 
-    function selectPage(id) {
+    // welcome flips through pages without saving, unflip puts you back
+    property string flippedFrom: ""
+    function selectPage(id, peek) {
         if (id === page) return
         const from = Schema.PAGES.findIndex(p => p.id === page)
         const to = Schema.PAGES.findIndex(p => p.id === id)
         pageDir = to >= from ? 1 : -1
         page = id
-        Store.saveUi("page", id)
+        if (!peek) Store.saveUi("page", id)
         ld.item?.forceActiveFocus()
     }
 
-    function animateTo(target) {
-        tween.stop()
-        tween.from = t
-        tween.to = target
-        tween.duration = Theme.ms(target === 1 ? 380 : 240)
-        tween.easing.type = Easing.BezierSpline
-        tween.easing.bezierCurve = target === 1 ? Theme.settle : Theme.leave
-        tween.start()
-    }
-
-    Timer { id: moveDelay; interval: 90; onTriggered: root.begin() }
-
-    NumberAnimation {
-        id: tween
-        target: root
-        property: "t"
-        onFinished: {
-            if (root.leaving) { root.active = false; root.leaving = false }
-            else Store.refresh()
-        }
-    }
+    Panel { id: morph; jumps: true; openMs: 380; closeMs: 240; onOpened: Store.refresh(); onBegin: root.begin() }
 
     IpcHandler {
         target: "settings"
-        function toggle(): void { root.toggle("") }
-        function open(): void { root.show("") }
-        function toggleOn(screen: string): void { root.toggle(screen) }
-        function openOn(screen: string): void { root.show(screen) }
+        function toggle(): void { Hypr.locate(root.toggleOn) }
+        function open(): void { Hypr.locate(root.showOn) }
         function close(): void { root.close() }
-        function page(id: string): void { root.selectPage(id); root.show("") }
+        function page(id: string): void { root.selectPage(id); root.showOn(Hypr.focusedScreen()) }
+        function peek(id: string): void {
+            if (!root.flippedFrom) root.flippedFrom = root.page
+            root.selectPage(id, true)
+        }
+        function unflip(): void { if (root.flippedFrom) root.selectPage(root.flippedFrom, true); root.flippedFrom = "" }
     }
 
     function controlShown(c, values, caps, waybar) {
@@ -212,14 +169,6 @@ ShellRoot {
         }
     }
 
-    // i think this frees the textures once it closes, saves some memory
-    property bool warm: false
-    onActiveChanged: {
-        if (active) { warm = true; cool.stop() }
-        else cool.restart()
-    }
-    Timer { id: cool; interval: 120000; onTriggered: root.warm = false }
-
     PanelWindow {
         id: win
         screen: root.targetScreen ?? Quickshell.screens[0]
@@ -239,7 +188,7 @@ ShellRoot {
         Loader {
             id: ld
             anchors.fill: parent
-            active: root.active || root.warm
+            active: root.active || morph.warm
             sourceComponent: Component {
                 Item {
                     id: keyRoot
@@ -282,7 +231,7 @@ ShellRoot {
                             radius: rounding
                             color: Theme.alpha(Theme.bg, 0.64)
                             border.width: 1
-                            border.color: Theme.alpha(Theme.fg, 0.07)
+                            border.color: Theme.edge
                         }
 
                         Item {
@@ -319,60 +268,13 @@ ShellRoot {
                                 color: Theme.dim
                             }
 
-                            Item {
+                            Tabs {
                                 id: tabs
                                 y: title.y + title.height + 14
                                 width: parent.width
-                                height: 34
-                                readonly property real gap: 6
-                                readonly property real cell: (width - gap * (Schema.PAGES.length - 1)) / Schema.PAGES.length
-                                readonly property int index: Math.max(0, Schema.PAGES.findIndex(p => p.id === root.page))
-
-                                Rectangle {
-                                    width: tabs.cell
-                                    height: parent.height
-                                    radius: Theme.r(9)
-                                    x: tabs.index * (tabs.cell + tabs.gap)
-                                    color: Theme.soft(Theme.accent)
-                                    Behavior on x { NumberAnimation { duration: Theme.ms(340); easing.type: Easing.OutCubic } }
-                                }
-
-                                Repeater {
-                                    model: Schema.PAGES
-
-                                    Item {
-                                        id: tab
-                                        required property var modelData
-                                        required property int index
-                                        readonly property bool on: root.page === modelData.id
-                                        x: index * (tabs.cell + tabs.gap)
-                                        width: tabs.cell
-                                        height: tabs.height
-
-                                        Rectangle {
-                                            anchors.fill: parent
-                                            radius: Theme.r(9)
-                                            color: Theme.alpha(Theme.fg, tab.on ? 0 : (tabArea.containsMouse ? 0.12 : 0.05))
-                                            Behavior on color { ColorAnimation { duration: Theme.fast } }
-                                        }
-
-                                        Label {
-                                            anchors.centerIn: parent
-                                            text: tab.modelData.icon
-                                            font.pixelSize: 15
-                                            scale: tab.on ? 1.12 : 1
-                                            color: tab.on ? Theme.ink : tabArea.containsMouse ? Theme.bright : Theme.fg
-                                            Behavior on scale { NumberAnimation { duration: Theme.ms(260); easing.type: Easing.OutBack } }
-                                            Behavior on color { ColorAnimation { duration: Theme.fast } }
-                                        }
-
-                                        Hover {
-                                            id: tabArea
-                                            anchors.fill: parent
-                                            onClicked: root.selectPage(tab.modelData.id)
-                                        }
-                                    }
-                                }
+                                model: Schema.PAGES
+                                index: Math.max(0, Schema.PAGES.findIndex(p => p.id === root.page))
+                                onPicked: i => root.selectPage(Schema.PAGES[i].id)
                             }
 
                             Flickable {

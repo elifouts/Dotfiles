@@ -50,24 +50,7 @@
       "gaps_in": 11,
       "gaps_out": 0,
       "gaps_workspaces": 0
-    },
-    "plugin": {
-      "hyprglass": {
-        "default_theme": "light",
-        "layers": {
-          "enabled": true
-        }
-      }
     }
-  },
-  "glass": {
-    "fresnel_color": 4269807923,
-    "fresnel_tint": 0.05,
-    "specular_angle": 0
-  },
-  "hyprglass": {
-    "layers": false,
-    "quickshell": false
   },
   "quickshell": {
     "style": "experimental"

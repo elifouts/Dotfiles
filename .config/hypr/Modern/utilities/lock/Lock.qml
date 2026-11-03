@@ -10,18 +10,17 @@ import "../common"
 Singleton {
     id: root
 
-    readonly property string home: Quickshell.env("HOME")
     readonly property string user: Quickshell.env("USER")
     readonly property bool preview: Quickshell.env("LOCK_PREVIEW") === "1"
     readonly property string shots: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/quickshell-lock"
 
     readonly property color card: Theme.alpha(Theme.bg, 0.5)
-    readonly property color edge: Theme.alpha(Theme.fg, 0.07)
+    readonly property color edge: Theme.edge
     readonly property string wallpaper: {
         const p = walPath.text().trim()
         return p ? "file://" + encodeURI(p) : ""
     }
-    FileView { id: walPath; path: root.home + "/.cache/wal/wal"; printErrors: false }
+    FileView { id: walPath; path: Hypr.home + "/.cache/wal/wal"; printErrors: false }
 
     function corner(h, u) { return Math.min(h / 2, Theme.rounding * u) }
 
@@ -59,7 +58,7 @@ Singleton {
         ["clock", "Clock"], ["greeter", "Greeter"], ["music", "Music"], ["battery", "Battery"],
         ["power", "Power buttons"], ["idleHide", "Fade on idle"]
     ]
-    readonly property string statePath: home + "/.local/state/quickshell-lock.json"
+    readonly property string statePath: Hypr.home + "/.local/state/quickshell-lock.json"
     FileView { id: stateFile; path: root.statePath; printErrors: false; blockLoading: true }
     property var cfg: {
         let saved = {}
@@ -70,7 +69,7 @@ Singleton {
         const c = Object.assign({}, cfg)
         c[key] = value
         cfg = c
-        Quickshell.execDetached(["mkdir", "-p", home + "/.local/state"])
+        Quickshell.execDetached(["mkdir", "-p", Hypr.home + "/.local/state"])
         stateFile.setText(JSON.stringify(c, null, 2))
     }
     property bool menuOpen: false
@@ -134,13 +133,10 @@ Singleton {
     }
 
 
-    readonly property var player: Theme.pickPlayer("")
-    Timer {
-        interval: 1000
-        repeat: true
-        running: !!root.player && root.player.isPlaying && root.cfg.music && !root.idle && !root.leaving
-        onTriggered: root.player.positionChanged()
-    }
+    readonly property var player: Media.pickPlayer("")
+    NowPlaying { id: nowPlaying; player: root.player }
+    MediaView { on: root.t > 0 && root.cfg.music }
+    readonly property alias track: nowPlaying
 
     // full counts as charging here so the icon shows the plug
     readonly property bool charging: Power.charging || Power.full

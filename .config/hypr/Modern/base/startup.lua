@@ -5,7 +5,7 @@ local cursor = saved.cursor or defaults.cursor
 
 hl.on("hyprland.start", function()
     if boot.enabled ~= false then
-        hl.exec_cmd("BOOT_BLACK_MS=" .. (boot.black_ms or defaults.boot.black_ms) .. " qs -p ~/.config/hypr/utilities/boot.qml --daemonize")
+        hl.exec_cmd("BOOT_BLACK_MS=" .. (boot.black_ms or defaults.boot.black_ms) .. " qs -p ~/.config/hypr/Modern/utilities/boot.qml --daemonize")
     end
     hl.exec_cmd("hyprctl setcursor " .. (cursor.theme or defaults.cursor.theme) .. " " .. (cursor.size or defaults.cursor.size))
     -- portal doesn't survive a relog, restart it
@@ -18,10 +18,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("~/.config/hypr/utilities/pypr.sh")
     hl.exec_cmd("pactl set-sink-mute @DEFAULT_SINK@ 0")
     hl.exec_cmd("hypridle")
-    hl.exec_cmd("sleep .5 && swww restore")
     hl.exec_cmd("awww-daemon")
-    -- only loads hyprglass when something has glass on
-    hl.exec_cmd("~/.config/hypr/utilities/hypr-settings.py glass")
 end)
 
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "wayland")

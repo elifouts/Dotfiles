@@ -4,7 +4,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
-import Quickshell.Services.Mpris
 
 Singleton {
     id: root
@@ -13,7 +12,7 @@ Singleton {
     readonly property int pad: 14
 
     property real rounding: 10
-    property bool glass: false
+    property real gapsOut: 8
     property bool hyprAnimates: true
     property real hyprPace: 1
     property var hyprSettle: own
@@ -40,36 +39,21 @@ Singleton {
     function refresh() {
         optionProc.running = true
         curveProc.running = true
-        glassProc.running = true
     }
     Component.onCompleted: refresh()
 
     Process {
         id: optionProc
-        command: ["sh", "-c", "hyprctl -j getoption decoration:rounding; hyprctl -j getoption animations:enabled"]
+        command: ["sh", "-c", "hyprctl -j getoption decoration:rounding; hyprctl -j getoption animations:enabled; hyprctl -j getoption general:gaps_out"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    const [r, a] = text.trim().split(/\n(?=\{)/).map(s => JSON.parse(s))
+                    const [r, a, g] = text.trim().split(/\n(?=\{)/).map(s => JSON.parse(s))
                     if (typeof r.int === "number") root.rounding = r.int
                     root.hyprAnimates = a.bool ?? a.int !== 0
+                    const n = parseInt(String(g.custom ?? g.css ?? g.int ?? "").trim().split(/\s+/)[0])
+                    if (!isNaN(n)) root.gapsOut = n
                 } catch (e) {}
-            }
-        }
-    }
-
-    // hyprctl errors instead of JSON without the plugin
-    Process {
-        id: glassProc
-        command: ["sh", "-c", "for o in enabled namespaces exclude_namespaces; do hyprctl -j getoption plugin:hyprglass:layers:$o; done"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    const [on, only, except] = text.trim().split(/\n(?=\{)/).map(s => JSON.parse(s))
-                    const ns = "quickshell-bar"
-                    const has = o => (o.str || "").split(",").includes(ns)
-                    root.glass = on.int === 1 && (!only.str || only.str === "[[EMPTY]]" || has(only)) && !has(except)
-                } catch (e) { root.glass = false }
             }
         }
     }
@@ -107,7 +91,7 @@ Singleton {
     // file is written right before hyprland applies it, so retry a few times
     FileView {
         id: settingsFile
-        path: Quickshell.env("HOME") + "/.config/hypr/settings.lua"
+        path: Hypr.state + "/settings.lua"
         watchChanges: true
         printErrors: false
         onFileChanged: { reload(); settleTimer.n = 0; settleTimer.restart() }
@@ -123,75 +107,6 @@ Singleton {
     Connections {
         target: Hyprland
         function onRawEvent(event) { if (event.name === "configreloaded") root.refresh() }
-    }
-
-    // lua dispatch if hyprland.lua is in use
-    FileView {
-        id: luaFile
-        path: Quickshell.env("HOME") + "/.config/hypr/hyprland.lua"
-        blockLoading: true
-        printErrors: false
-    }
-    readonly property bool lua: luaFile.text() !== ""
-
-    function dispatch(lua, classic) {
-        Hyprland.dispatch(root.lua ? lua : classic)
-    }
-
-    function run(cmd) {
-        Quickshell.execDetached(["sh", "-c", cmd])
-    }
-
-    // skip playerctld, it keeps the last track after players stop
-    readonly property var players: Mpris.players.values.filter(p => !(p.dbusName || "").includes("playerctld"))
-
-    // pinned one, then spotify cause that's what i use, then whatever's playing, then whatever
-    function pickPlayer(pinned) {
-        const ps = players
-        return ps.find(p => pinned && p.dbusName === pinned) ?? ps.find(isSpotify) ?? ps.find(p => p.isPlaying) ?? ps[0] ?? null
-    }
-
-    function isSpotify(x) {
-        return !!x && [x.identity, x.dbusName, x.id, x.title, x.tooltipTitle].some(s => (s || "").toLowerCase().includes("spotify"))
-    }
-
-    function openSpotify() {
-        Quickshell.execDetached([Quickshell.shellDir + "/common/spotify.sh"])
-    }
-
-    // focusedMonitor can be stale at startup, so ask for the cursor position
-    function locate(done) {
-        located.push(done)
-        cursorQuery.running = true
-    }
-    function screenAt(x, y) {
-        return Quickshell.screens.find(s => x >= s.x && x < s.x + s.width && y >= s.y && y < s.y + s.height) ?? focusedScreen()
-    }
-    function focusedScreen() {
-        return Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
-    }
-    // ui scale for the popups, i tuned everything at 1080p
-    function scaleFor(s) {
-        return s ? Math.max(0.8, Math.min(1.35, Math.min(s.width / 1920, s.height / 1080))) : 1
-    }
-    property var located: []
-    function found(c) {
-        const scr = c ? screenAt(c.x, c.y) : screenAt(-1, -1)
-        const done = located
-        located = []
-        done.forEach(f => f(scr))
-    }
-    Process {
-        id: cursorQuery
-        command: ["hyprctl", "-j", "cursorpos"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let c = null
-                try { c = JSON.parse(text) } catch (e) {}
-                root.found(c)
-            }
-        }
-        onExited: code => { if (code !== 0) root.found(null) }
     }
 
     // keeps the last good palette, wal rewrites the file in pieces and a half-written read used to flash the defaults
@@ -219,13 +134,13 @@ Singleton {
 
     // what stuff actually uses, so it isn't color9 on everything
     // settings > colors can point any of these at another slot, saved as { role: slot }
-    Watched { id: rolesFile; path: Quickshell.env("HOME") + "/.config/hypr/.color-roles.json" }
+    Watched { id: rolesFile; path: Hypr.state + "/color-roles.json" }
     readonly property var roles: { try { return JSON.parse(rolesFile.text()) } catch (e) { return {} } }
     readonly property var roleSlots: ({ accent: 9, accent2: 13, ok: 10, caution: 11, info: 14, warn: 1 })
     function slotOf(role) { return roles[role] ?? roleSlots[role] }
     // picks stick to the scheme you're on, call it empty to undo them
     function setRole(role, slot) {
-        Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/utilities/color-roles.sh"].concat(role ? ["set", role, String(slot)] : ["reset"]))
+        Quickshell.execDetached([Hypr.util + "/color-roles.sh"].concat(role ? ["set", role, String(slot)] : ["reset"]))
     }
     readonly property color accent: c(slotOf("accent"), "#8fd3ff")
     readonly property color accent2: c(slotOf("accent2"), magenta)
@@ -239,6 +154,9 @@ Singleton {
     // based on the text color, color8 is too dark on some schemes
     readonly property color dim: alpha(fg, 0.5)
     readonly property color bg: wal ? wal.special.background : "#101418"
+    // the see-through card everything sits on, change it here not in each shell
+    readonly property color panel: alpha(bg, 0.6)
+    readonly property color edge: alpha(fg, 0.07)
 
     // "black" and "white" are the darkest and lightest colors the scheme has, not pure ones
     readonly property var shades: [bg].concat(Array.from({ length: 16 }, (_, i) => Qt.color(c(i, i < 8 ? "#101418" : "#ffffff"))))
@@ -255,7 +173,7 @@ Singleton {
     function against(fill) { return contrast(fill, darkest) >= contrast(fill, lightest) ? darkest : lightest }
     function readable(c) { c = Qt.color(c); return contrast(c, bg) >= 3 ? c : against(bg) }
 
-    // used to mix bg in for glass but pills came out muddier than the sliders. same color everywhere now
+    // used to mix bg in but pills came out muddier than the sliders. same color everywhere now
     function soft(c, hot) { return hot ? Qt.lighter(c, 1.12) : Qt.color(c) }
     function on(fill) { return against(soft(fill)) }
     readonly property color ink: on(accent)

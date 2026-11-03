@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Effects
 import Quickshell
-import Quickshell.Widgets
 import "../common"
 
 Item {
@@ -274,47 +273,19 @@ Item {
             width: 400 * face.u
             height: 156 * face.u
 
-            property string title: p ? p.trackTitle || "Unknown" : ""
-            property string artist: p ? p.trackArtist || "" : ""
-            property string shownTitle: title
-            property string shownArtist: artist
-            onTitleChanged: swap.restart()
-            onArtistChanged: swap.restart()
-            SequentialAnimation {
-                id: swap
-                NumberAnimation { target: info; property: "opacity"; to: 0; duration: Theme.ms(160) }
-                ScriptAction { script: { card.shownTitle = card.title; card.shownArtist = card.artist } }
-                NumberAnimation { target: info; property: "opacity"; to: 1; duration: Theme.ms(320); easing.type: Easing.OutCubic }
-            }
-
             Card { anchors.fill: parent; u: face.u }
 
-            ClippingRectangle {
+            Cover {
                 id: art
                 x: 18 * face.u
                 anchors.verticalCenter: parent.verticalCenter
                 width: 120 * face.u
                 height: width
                 radius: Lock.corner(width, face.u)
-                color: Theme.alpha(Theme.info, 0.12)
-
-                Label {
-                    anchors.centerIn: parent
-                    visible: cover.status !== Image.Ready
-                    text: ""
-                    font.pixelSize: 40 * face.u
-                    color: Theme.info
-                }
-                Image {
-                    id: cover
-                    anchors.fill: parent
-                    source: card.p ? card.p.trackArtUrl || "" : ""
-                    fillMode: Image.PreserveAspectCrop
-                    sourceSize: Qt.size(256, 256)
-                    asynchronous: true
-                    opacity: status === Image.Ready ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: Theme.ms(400) } }
-                }
+                fill: Theme.alpha(Theme.info, 0.12)
+                glyph: ""
+                glyphColor: Theme.info
+                url: Lock.track.art
             }
 
             Column {
@@ -343,16 +314,16 @@ Item {
                         playing: face.main && face.awake && Lock.cfg.music && !!card.p && card.p.isPlaying && Lock.t > 0 && !Lock.leaving
                     }
                 }
-                Label {
+                SwapText {
                     width: parent.width
-                    text: card.shownTitle
+                    value: card.p ? Lock.track.title || "Unknown" : ""
                     elide: Text.ElideRight
                     font.pixelSize: 17 * face.u
                     color: "#ffffff"
                 }
-                Label {
+                SwapText {
                     width: parent.width
-                    text: card.shownArtist
+                    value: Lock.track.artist
                     elide: Text.ElideRight
                     font.pixelSize: 13 * face.u
                     color: "#99ffffff"
@@ -360,40 +331,20 @@ Item {
 
                 Item { width: 1; height: 6 * face.u }
 
-                Rectangle {
+                Seek {
                     width: parent.width
-                    height: 3 * face.u
-                    radius: height / 2
-                    color: Theme.alpha(Theme.fg, 0.15)
-                    visible: !!card.p && card.p.lengthSupported && card.p.length > 0
-                    Rectangle {
-                        height: parent.height
-                        radius: parent.radius
-                        color: Theme.info
-                        width: card.p && card.p.length > 0 ? parent.width * Math.min(1, card.p.position / card.p.length) : 0
-                        Behavior on width { NumberAnimation { duration: 1000; easing.type: Easing.Linear } }
-                    }
+                    player: card.p
+                    u: face.u * 0.8
+                    active: face.main && face.awake && Lock.t > 0 && !Lock.leaving
                 }
 
                 Item { width: 1; height: 4 * face.u }
 
                 Row {
                     spacing: 8 * face.u
-                    RoundButton {
-                        u: face.u; size: 34 * face.u; glyph: ""
-                        opacity: card.p && card.p.canGoPrevious ? 1 : 0.4
-                        onClicked: if (card.p && card.p.canGoPrevious) card.p.previous()
-                    }
-                    RoundButton {
-                        u: face.u; size: 34 * face.u; filled: true
-                        glyph: card.p && card.p.isPlaying ? "" : ""
-                        onClicked: if (card.p && card.p.canTogglePlaying) card.p.togglePlaying()
-                    }
-                    RoundButton {
-                        u: face.u; size: 34 * face.u; glyph: ""
-                        opacity: card.p && card.p.canGoNext ? 1 : 0.4
-                        onClicked: if (card.p && card.p.canGoNext) card.p.next()
-                    }
+                    SkipButton { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: -1; size: 34 * face.u; tint: "#ffffff" }
+                    PlayButton { anchors.verticalCenter: parent.verticalCenter; player: card.p; size: 34 * face.u }
+                    SkipButton { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: 1; size: 34 * face.u; tint: "#ffffff" }
                 }
             }
         }

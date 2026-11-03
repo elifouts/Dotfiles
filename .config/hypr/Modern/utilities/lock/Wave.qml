@@ -1,6 +1,4 @@
 import QtQuick
-import Quickshell
-import Quickshell.Io
 import "../common"
 
 // same visualizer as the bar
@@ -9,26 +7,12 @@ Row {
 
     property bool playing: false
     property real u: 1
-    property var levels: []
     readonly property int bars: 10
+    readonly property var levels: feed.levels
 
     spacing: 2 * u
 
-    Process {
-        running: wave.playing
-        command: ["cava", "-p", Quickshell.shellPath("lock/cava.conf")]
-        stdout: SplitParser {
-            onRead: line => {
-                const parts = line.trim().split(";")
-                if (parts.length < wave.bars) return
-                const out = new Array(wave.bars)
-                for (let i = 0; i < wave.bars; i++)
-                    out[i] = Math.max(0, Math.min(1, (parseInt(parts[i]) || 0) / 1000))
-                wave.levels = out
-            }
-        }
-        onRunningChanged: if (!running) wave.levels = []
-    }
+    CavaFeed { id: feed; running: wave.playing; bars: wave.bars; framerate: 60 }
 
     Repeater {
         model: wave.bars

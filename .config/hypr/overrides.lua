@@ -2,61 +2,12 @@ local ok, S = pcall(require, "settings")
 if not ok or type(S) ~= "table" then S = {} end
 
 if S.config then
-    -- hl.config rejects plugin keys, thanks for nothing
+    -- old saves can still carry plugin keys and hl.config rejects those
     local core = {}
     for k, v in pairs(S.config) do
         if k ~= "plugin" then core[k] = v end
     end
     hl.config(core)
-
-    local glass = S.config.plugin and S.config.plugin.hyprglass
-    if glass then
-        local function apply_glass()
-            if hl.plugin and hl.plugin.hyprglass then
-                hl.plugin.hyprglass.config(glass)
-                return true
-            end
-            return false
-        end
-        if not apply_glass() then
-            hl.on("hyprland.start", apply_glass)
-        end
-    end
-end
-
-local QUICKSHELL_LAYERS = table.concat({
-    "quickshell-bar", "settings-panel", "settings-panel-outside", "app-drawer",
-    "music-player", "notification-popup", "osd", "home-screen", "boot-sequence", "profile-switcher",
-}, ",")
-local targets = S.hyprglass
-if targets and (targets.layers ~= nil or targets.quickshell ~= nil) then
-    local layers = targets.layers ~= false
-    local quickshell = targets.quickshell ~= false
-    local function apply_targets()
-        if not (hl.plugin and hl.plugin.hyprglass) then return false end
-        hl.plugin.hyprglass.config({ layers = {
-            enabled = layers or quickshell,
-            namespaces = (quickshell and not layers) and QUICKSHELL_LAYERS or "",
-            exclude_namespaces = (layers and not quickshell) and QUICKSHELL_LAYERS or "",
-        } })
-        return true
-    end
-    if not apply_targets() then
-        hl.on("hyprland.start", apply_targets)
-    end
-end
-
--- also copied into dark/light so they don't win. i think
-local look = S.glass
-local base = package.loaded.hyprglass
-if look and type(base) == "table" and hl.plugin and hl.plugin.hyprglass then
-    local values = { dark = {}, light = {} }
-    for k, v in pairs(look) do
-        values[k] = v
-        values.dark[k] = v
-        values.light[k] = v
-    end
-    hl.plugin.hyprglass.preset(base.preset, values)
 end
 
 local A = S.animation

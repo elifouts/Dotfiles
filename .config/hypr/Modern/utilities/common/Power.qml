@@ -11,13 +11,13 @@ Singleton {
     readonly property var actions: ({
         lock: { cmd: "l=~/.config/hypr/utilities/lock.sh; if [ -x \"$l\" ]; then exec \"$l\"; elif command -v hyprlock >/dev/null; then exec hyprlock; else loginctl lock-session; fi", confirm: false },
         suspend: { cmd: "systemctl suspend", confirm: false },
-        logout: { cmd: Theme.lua ? "hyprctl dispatch 'hl.dsp.exit()'" : "hyprctl dispatch exit", confirm: true },
+        logout: { cmd: Hypr.lua ? "hyprctl dispatch 'hl.dsp.exit()'" : "hyprctl dispatch exit", confirm: true },
         reboot: { cmd: "systemctl reboot || loginctl reboot", confirm: true },
         poweroff: { cmd: "systemctl poweroff || loginctl poweroff", confirm: true }
     })
     function cmd(id) { return actions[id].cmd }
     function confirm(id) { return actions[id].confirm }
-    function act(id) { Theme.run(cmd(id)) }
+    function act(id) { Hypr.run(cmd(id)) }
 
     // raw state only, each spot picks its own low threshold
     readonly property var battery: UPower.displayDevice

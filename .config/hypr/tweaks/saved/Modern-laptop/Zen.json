@@ -42,14 +42,6 @@
     "general": {
       "gaps_in": 1,
       "gaps_out": 2
-    },
-    "plugin": {
-      "hyprglass": {
-        "enabled": false,
-        "layers": {
-          "enabled": false
-        }
-      }
     }
   },
   "quickshell": {

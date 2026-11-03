@@ -11,13 +11,14 @@ from pathlib import Path
 HYPR = Path(__file__).resolve().parent.parent
 HOME = Path.home()
 TWEAKS = HYPR / "tweaks"
-LUA_FILE = HYPR / "settings.lua"
+LUA_FILE = HYPR / "state/settings.lua"
 SAVED = TWEAKS / "saved"
-ACTIVE_SAVED_FILE = HYPR / ".active-saved.json"
-THEME_FILE = HYPR / ".color-theme"
-PROFILE_FILE = HYPR / ".active-profile"
-BAR_FILE = HYPR / ".active-bar"
-QUICKSHELL_FILE = HYPR / ".quickshell-bar"
+STATE = HYPR / "state"
+ACTIVE_SAVED_FILE = STATE / "saved.json"
+THEME_FILE = STATE / "color-theme"
+PROFILE_FILE = STATE / "profile"
+BAR_FILE = STATE / "bar"
+QUICKSHELL_FILE = STATE / "bar-style"
 SCHEMES = HOME / ".config/wal/colorschemes"
 # Default only keeps wallpaper, colors and bar
 DEFAULT_LOOK_FILE = TWEAKS / "default-look.json"
@@ -145,7 +146,6 @@ def prune(tree):
 
 
 def reapply(reload=False):
-    reload = cmd_glass(reload=False) or reload
     run("hyprctl", "eval", 'package.loaded.settings=nil package.loaded.overrides=nil require("overrides")')
     if reload:
         run("hyprctl", "reload", "config-only")
@@ -159,21 +159,6 @@ def startup_defaults():
         return {"boot": {"enabled": parts[0] == "true", "black_ms": int(parts[1])},
                 "cursor": {"theme": parts[2], "size": int(parts[3])}}
     return {"boot": {"enabled": True, "black_ms": 100}, "cursor": {"theme": "default", "size": 16}}
-
-
-def glass_defaults():
-    code = ('local g=package.loaded.hyprglass if type(g)~="table" then return "" end local o={} '
-            'for k,v in pairs(g.values) do if type(v)=="table" then '
-            'for k2,v2 in pairs(v) do o[#o+1]=k.."."..k2.."="..tostring(v2) end '
-            'elseif type(v)~="string" then o[#o+1]=k.."="..tostring(v) end end return table.concat(o," ")')
-    out = {}
-    for pair in run("hyprctl", "repl", code).split():
-        key, _, raw = pair.partition("=")
-        try:
-            out[key] = json.loads(raw)
-        except ValueError:
-            pass
-    return out
 
 
 def option(path):
@@ -276,38 +261,6 @@ def has_touchpad():
     return any("touchpad" in m["name"] for m in devices.get("mice", []))
 
 
-def has_hyprglass():
-    return "hyprglass" in run("hyprpm", "list").lower()
-
-
-def hyprglass_loaded():
-    return "hyprglass" in run("hyprctl", "plugin", "list").lower()
-
-
-# same switches overrides.lua reads
-def glass_wanted(settings):
-    if dig(settings, "config.plugin.hyprglass.enabled"):
-        return True
-    targets = settings.get("hyprglass") or {}
-    if "layers" in targets or "quickshell" in targets:
-        return targets.get("layers") is not False or targets.get("quickshell") is not False
-    return bool(dig(settings, "config.plugin.hyprglass.layers.enabled"))
-
-
-# glass off everywhere means the plugin isn't loaded at all, it still hooks every frame otherwise
-def cmd_glass(reload=True):
-    wanted, loaded = glass_wanted(live_settings()), hyprglass_loaded()
-    if wanted and not loaded and has_hyprglass():
-        run("hyprpm", "reload", "-n")
-        if reload:
-            run("hyprctl", "reload", "config-only")
-        return True
-    if loaded and not wanted:
-        for so in Path("/var/cache/hyprpm").glob(f"{os.environ.get('USER', '*')}/*/hyprglass.so"):
-            run("hyprctl", "plugin", "unload", str(so))
-    return False
-
-
 def monitor_count():
     return len(json.loads(run("hyprctl", "monitors", "-j") or "[]"))
 
@@ -336,7 +289,6 @@ FALLBACKS = {
 def cmd_state(keys):
     settings = live_settings()
     defaults = None
-    glass = None
     values = {}
     live = [k for k in keys if k.startswith("config.")]
     with ThreadPoolExecutor(8) as pool:
@@ -350,14 +302,6 @@ def cmd_state(keys):
             if key.startswith(("boot.", "cursor.")):
                 defaults = defaults or startup_defaults()
                 value = dig(defaults, key)
-            elif key.startswith("glass."):
-                if glass is None:
-                    glass = glass_defaults()
-                    glass_theme = option("plugin.hyprglass.default_theme") or "dark"
-                name = key[len("glass."):]
-                value = glass.get(f"{glass_theme}.{name}", glass.get(name))
-            elif key.startswith("hyprglass."):
-                value = bool(option("plugin.hyprglass.layers.enabled"))
             else:
                 value = FALLBACKS.get(key)
         values[key] = value
@@ -372,7 +316,7 @@ def cmd_state(keys):
         "colorTheme": colors or "pywal",
         "wallpaper": wallpaper,
         "pywalPalette": wallpaper_palette(wallpaper),
-        "caps": {"touchpad": has_touchpad(), "multimonitor": monitor_count() > 1, "hyprglass": has_hyprglass()},
+        "caps": {"touchpad": has_touchpad(), "multimonitor": monitor_count() > 1},
         "cursors": cursors(),
         "waybar": waybar(),
         "bar": current_bar(),
@@ -400,8 +344,6 @@ def put(settings, pairs):
         else:
             node[leaf] = value
         if key in RELOAD_ON_CHANGE and not value:
-            reload = True
-        if key.startswith(("glass.", "hyprglass.")):
             reload = True
         if key == "config.input.sensitivity":
             settings["mice"] = mice()
@@ -487,7 +429,6 @@ def saved_preview():
                     "opacity": dig(s, "config.decoration.active_opacity") or 0.78,
                     "border": dig(s, "config.general.border_size") or 0,
                     "blur": dig(s, "config.decoration.blur.enabled") is not False,
-                    "glass": bool(dig(s, "config.plugin.hyprglass.enabled")),
                     "curve": dig(s, "animation.curve") or [0.15, 0.85, 0.25, 1],
                     "ms": 400 / max(0.1, dig(s, "animation.speed") or 1) if dig(s, "animation") else 300,
                     "style": dig(s, "animation.window") or "popin 5%"})
@@ -618,7 +559,7 @@ def cmd_ui(pairs):
 def main():
     command, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("", [])
     handlers = {"state": cmd_state, "set": cmd_set, "ui": cmd_ui, "saved": cmd_saved}
-    bare = {"reset": cmd_reset, "sync": cmd_sync, "cursor": cmd_cursor, "appearance": cmd_appearance, "glass": cmd_glass}
+    bare = {"reset": cmd_reset, "sync": cmd_sync, "cursor": cmd_cursor, "appearance": cmd_appearance}
     if command in bare:
         bare[command]()
     elif command in handlers:

@@ -35,19 +35,7 @@
       "gaps_in": 11,
       "gaps_out": 0,
       "gaps_workspaces": 0
-    },
-    "plugin": {
-      "hyprglass": {
-        "enabled": false,
-        "layers": {
-          "enabled": true
-        }
-      }
     }
-  },
-  "hyprglass": {
-    "layers": false,
-    "quickshell": true
   },
   "quickshell": {
     "style": "full"

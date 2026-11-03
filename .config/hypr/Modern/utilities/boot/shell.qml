@@ -8,7 +8,6 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string home: Quickshell.env("HOME")
     readonly property var sourceLabels: [
         "hypr/startup.lua",
         "hypr/shortcuts.lua",
@@ -81,12 +80,12 @@ ShellRoot {
     readonly property real closeT: 1 - exit
     readonly property real closeOpacity: Math.max(0.001, Math.min(1, closeT * 2.5))
 
-    Watched { id: wallFile; path: root.home + "/.cache/wal/wal" }
-    Watched { id: configFile; path: root.home + "/.config/hypr/startup.lua" }
-    Watched { id: modernConfigFile; path: root.home + "/.config/hypr/shortcuts.lua" }
-    Watched { id: styleFile; path: root.home + "/.config/hypr/style.lua" }
-    Watched { id: waybarFile; path: root.home + "/.config/waybar/config" }
-    Watched { id: bootFile; path: root.home + "/.config/hypr/utilities/boot/shell.qml" }
+    Watched { id: wallFile; path: Hypr.home + "/.cache/wal/wal" }
+    Watched { id: configFile; path: Quickshell.shellPath("../base/startup.lua") }
+    Watched { id: modernConfigFile; path: Quickshell.shellPath("../base/shortcuts.lua") }
+    Watched { id: styleFile; path: Quickshell.shellPath("../base/style.lua") }
+    Watched { id: waybarFile; path: Hypr.home + "/.config/waybar/config" }
+    Watched { id: bootFile; path: Quickshell.shellPath("boot/shell.qml") }
 
     readonly property string wallPath: wallFile.text().trim()
     function phase(start, length) {

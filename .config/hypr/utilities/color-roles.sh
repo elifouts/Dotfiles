@@ -2,14 +2,15 @@
 # every scheme (and every wallpaper on pywal) remembers its own role picks. took me way too long to get here
 # no args loads them, set ROLE N picks one, reset wipes them
 HYPR="$HOME/.config/hypr"
-saved="$HYPR/.color-roles-saved.json"
-active="$HYPR/.color-roles.json"
-key="$(cat "$HYPR/.color-theme" 2>/dev/null)"
+saved="$HYPR/state/color-roles-saved.json"
+active="$HYPR/state/color-roles.json"
+key="$(cat "$HYPR/state/color-theme" 2>/dev/null)"
 # color-apply writes wal/wal before calling this, picker/current only gets written after
 [ "${key:-pywal}" = pywal ] && key="pywal:$(cat "$HOME/.cache/wal/wal" 2>/dev/null)"
 
 # first run, whatever was picked before belongs to the applied scheme
-[ -f "$saved" ] || jq -c --arg k "$key" '{($k): .}' "$active" > "$saved" 2>/dev/null || echo '{}' > "$saved"
+# -s cause git had it empty and that nuked waybar
+[ -s "$saved" ] || jq -sc --arg k "$key" '{($k): (.[0] // {})}' "$active" > "$saved" 2>/dev/null || echo '{}' > "$saved"
 case "$1" in
     set) f='.[$k][$r] = ($n | tonumber)' ;;
     reset) f='del(.[$k])' ;;
@@ -21,8 +22,8 @@ jq -c --arg k "$key" '.[$k] // {}' "$saved" > "$active"
 # waybar gets @accent from the slot picked (9 by default)
 css="$HOME/.cache/wal/colors-waybar.css"
 if [ -f "$css" ]; then
-    slot="$(jq '.accent // 9' "$active")"
-    hex="$(sed -n "s/^@define-color color$slot \(#[0-9a-fA-F]*\);/\1/p" "$css")"
+    slot="$(jq '.accent // 9' "$active" 2>/dev/null)"
+    hex="$(sed -n "s/^@define-color color${slot:-9} \(#[0-9a-fA-F]*\);/\1/p" "$css")"
     sed -i '/^@define-color accent /d' "$css"
     printf '@define-color accent %s;\n' "$hex" >> "$css"
     # waybar only watches style.css

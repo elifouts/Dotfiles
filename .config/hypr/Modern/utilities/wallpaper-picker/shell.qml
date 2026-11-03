@@ -10,7 +10,6 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string home: Quickshell.env("HOME")
     property var all: []
     property var items: []
     property var themes: ["all"]
@@ -52,8 +51,8 @@ ShellRoot {
     }
 
     // waybar only watches style.css so i just rewrite it. there's probably a better way
-    FileView { id: colorTheme; path: root.home + "/.config/hypr/.color-theme"; blockLoading: true; printErrors: false }
-    FileView { id: activeBar; path: root.home + "/.config/hypr/.active-bar"; blockLoading: true; printErrors: false }
+    FileView { id: colorTheme; path: Hypr.state + "/color-theme"; blockLoading: true; printErrors: false }
+    FileView { id: activeBar; path: Hypr.state + "/bar"; blockLoading: true; printErrors: false }
     property bool tinted: false
 
     // null puts the saved palette back
@@ -96,7 +95,7 @@ ShellRoot {
     // sync read, async made opening jump. i think
     Watched {
         id: curFile
-        path: root.home + "/.cache/wallpaper-picker/current"
+        path: Hypr.home + "/.cache/wallpaper-picker/current"
     }
     readonly property string applied: curFile.text().trim()
 
@@ -152,7 +151,7 @@ ShellRoot {
     function favorite() {
         if (!current || favProc.running) return
         const path = current.path
-        favProc.command = [home + "/.config/hypr/utilities/wallpaper-fav.sh", path]
+        favProc.command = [Hypr.util + "/wallpaper-fav.sh", path]
         favProc.running = true
         const i = cur
         setAll(all.map(w => w.path === path ? Object.assign({}, w, { fav: !w.fav }) : w))
@@ -171,7 +170,7 @@ ShellRoot {
         if (!current || leaving) return
         holding = current.path !== applied
         holdTimer.restart()
-        Quickshell.execDetached([home + "/.config/hypr/utilities/wallpaper-apply.sh", current.path])
+        Quickshell.execDetached([Hypr.util + "/wallpaper-apply.sh", current.path])
         close()
     }
 
@@ -182,7 +181,7 @@ ShellRoot {
         activeBar.reload()
         colorTheme.reload()
         locating = true
-        Theme.locate(open)
+        Hypr.locate(open)
     }
 
     function open(screen) {
@@ -266,11 +265,11 @@ ShellRoot {
         id: indexer
         running: true
         command: ["flock", "-w", "5", (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/wallpaper-index.lock",
-                  "python3", root.home + "/.config/hypr/utilities/wallpaper-index.py"]
-        onExited: { idx.running = true; if (reindex.again) { reindex.again = false; running = true } }
+                  "python3", Hypr.util + "/wallpaper-index.py"]
+        onExited: { idx.reload(); if (reindex.again) { reindex.again = false; running = true } }
     }
 
-    readonly property string library: home + "/wallpapers/library"
+    readonly property string library: Hypr.home + "/wallpapers/library"
     Variants {
         model: [""].concat(root.themes.slice(1))
         delegate: FolderListModel {
@@ -288,26 +287,26 @@ ShellRoot {
         onTriggered: { if (indexer.running) again = true; else indexer.running = true }
     }
 
-    Process {
+    FileView {
         id: idx
-        command: ["cat", root.home + "/.cache/wallpaper-picker/index.json"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text === root.indexText) return
-                let parsed
-                try {
-                    parsed = JSON.parse(text)
-                } catch (e) {
-                    parsed = []
-                }
-                root.indexText = text
-                root.setAll(parsed)
-                if (parsed.length === 0) {
-                    root.close()
-                    return
-                }
-                root.rebuild(root.shown && root.current ? root.current.path : root.applied)
+        path: Hypr.home + "/.cache/wallpaper-picker/index.json"
+        printErrors: false
+        onLoaded: {
+            const text = idx.text()
+            if (text === root.indexText) return
+            let parsed
+            try {
+                parsed = JSON.parse(text)
+            } catch (e) {
+                parsed = []
             }
+            root.indexText = text
+            root.setAll(parsed)
+            if (parsed.length === 0) {
+                root.close()
+                return
+            }
+            root.rebuild(root.shown && root.current ? root.current.path : root.applied)
         }
     }
 
@@ -469,7 +468,7 @@ ShellRoot {
                         height: row.h
                         opacity: chip.shown
                         scale: 0.6 + 0.4 * chip.shown
-                        Pill { radius: row.radius; fill: Theme.alpha(Theme.bg, 0.6); edge: Theme.alpha(Theme.fg, 0.07) }
+                        Pill { radius: row.radius; fill: Theme.panel; edge: Theme.edge }
                         CenterText { id: label; text: chip.modelData; color: "#ffffff" }
                         MouseArea {
                             anchors.fill: parent

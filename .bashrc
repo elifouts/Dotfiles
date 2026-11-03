@@ -28,13 +28,7 @@ alias pacq='pacman -Qs'
 alias pacinfo='pacman -Qi'
 alias pacfiles='pacman -Ql'
 alias pacclean='sudo paccache -r'
-# hyprglass breaks on every update, because of course it does
-hyprplugins() {
-    command -v hyprpm >/dev/null || return 0
-    hyprpm list 2>/dev/null | grep -qi hyprglass || return 0
-    hyprpm update && hyprpm reload -n >/dev/null
-}
-pacup() { sudo pacman -Syu "$@" && hyprplugins; }
+pacup() { sudo pacman -Syu "$@"; }
 pacorphans() {
     local packages
     packages=$(pacman -Qdtq) || return
@@ -74,7 +68,6 @@ alias hypr='cd ~/.config/hypr && nvim'
 alias bashrc='n .bashrc'
 alias bye='sudo shutdown -h now'
 alias loop='sudo reboot'
-# pull then relink. apply.sh does the plugins and cast ports too
 dotpull() { git -C ~/Dotfiles pull && ~/Dotfiles/InstallScripts/apply.sh; }
 dotpush() {
     local dir=~/Dotfiles msg
@@ -94,7 +87,6 @@ dotpush() {
 alias InstallDots='~/Dotfiles/InstallScripts/install.sh'
 alias reload='source "$HOME/.bashrc"'
 alias Dotfiles='cd ~/Dotfiles/ && nvim'
-alias Savepro='~/.config/hypr/utilities/save-profile.sh'
 alias Nvim='cd ~/.config/nvim/ && nvim'
 function y() {
         local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd

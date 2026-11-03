@@ -1,11 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-HYPR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/paths.sh"
 WAYBAR="$HOME/.config/waybar"
-
-style="$(cut -d/ -f1 "$HYPR/.active-profile" 2>/dev/null || true)"
-dir="$HYPR/$style/waybar"
+dir="$STYLE/waybar"
 
 case "${1:-}" in
     list)
@@ -16,17 +14,17 @@ case "${1:-}" in
     apply)
         name="${2:?name}"
         [ -f "$dir/$name/config" ] && [ -f "$dir/$name/style.css" ] || {
-            echo "No waybar style '$name' for $style" >&2
+            echo "No waybar style '$name' for ${STYLE##*/}" >&2
             exit 1
         }
         cp "$dir/$name/config" "$WAYBAR/config"
         cp "$dir/$name/style.css" "$WAYBAR/style.css"
         # restart waybar so module changes apply
-        if [ "$("$HYPR/utilities/bar.sh" current)" = waybar ]; then
+        if [ "$("$UTIL/bar.sh" current)" = waybar ]; then
             pkill -x waybar 2>/dev/null || true
             setsid -f waybar >/dev/null 2>&1 </dev/null
         fi
-        [ -n "${HYPR_SETTINGS_NO_RECORD:-}" ] || python3 "$HYPR/utilities/hypr-settings.py" set "waybar.style=\"$name\"" >/dev/null 2>&1 || true
+        [ -n "${HYPR_SETTINGS_NO_RECORD:-}" ] || python3 "$UTIL/hypr-settings.py" set "waybar.style=\"$name\"" >/dev/null 2>&1 || true
         ;;
     *)
         echo "usage: waybar-style.sh apply <name> | list" >&2

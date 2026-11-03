@@ -1,8 +1,8 @@
 #!/bin/bash
 set -uo pipefail
 
-HYPR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
-STATE="$HYPR/.color-theme"
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/paths.sh"
+STATE="$HYPR/state/color-theme"
 SCHEMES="$HOME/.config/wal/colorschemes"
 
 theme="${1:-}"

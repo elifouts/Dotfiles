@@ -170,7 +170,7 @@ ShellRoot {
     }
 
     function special() {
-        Theme.dispatch("hl.dsp.workspace.toggle_special(\"magic\")", "togglespecialworkspace magic")
+        Hypr.dispatch("hl.dsp.workspace.toggle_special(\"magic\")", "togglespecialworkspace magic")
         open = false
     }
 
@@ -349,7 +349,7 @@ ShellRoot {
                                 }
                             }
 
-                            Workspaces.Tile {
+                            Workspaces.SpaceTile {
                                 width: ov.tileW
                                 big: true
                                 expose: ex
@@ -395,7 +395,7 @@ ShellRoot {
                                 activeId: ov.activeId
                             }
                         }
-                        Workspaces.Tile {
+                        Workspaces.SpaceTile {
                             width: ov.tileW * 0.6
                             big: true
                             expose: ex

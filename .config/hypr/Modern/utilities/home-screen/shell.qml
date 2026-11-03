@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
-import Quickshell.Services.Pipewire
 import "../music" as Music
 import Quickshell.Services.Notifications
 import "../common"
@@ -12,7 +11,6 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string home: Quickshell.env("HOME")
     readonly property bool portrait: win.screen ? win.screen.height > win.screen.width : false
     readonly property real u: unitFor(win.screen)
     readonly property real rounding: Theme.rounding
@@ -82,12 +80,11 @@ ShellRoot {
     }
 
     readonly property var player: {
-        const list = Theme.players
+        const list = Media.players
         return list.find(p => p.isPlaying) ?? list[0] ?? null
     }
-    readonly property var sink: Pipewire.defaultAudioSink
-    readonly property real volume: sink && sink.audio ? sink.audio.volume : 0
-    readonly property bool muted: sink && sink.audio ? sink.audio.muted : false
+    NowPlaying { id: track; player: root.player }
+    MediaView { on: root.shown && !root.closing }
 
     function seg(delay) {
         return Math.max(0, Math.min(1, (t - delay) / (1 - delay)))
@@ -123,7 +120,7 @@ ShellRoot {
         }
         if (locating) return
         locating = true
-        Theme.locate(open)
+        Hypr.locate(open)
     }
 
     property bool locating: false
@@ -179,7 +176,7 @@ ShellRoot {
         onTriggered: {
             const c = root.pendingCmd
             root.pendingCmd = ""
-            if (c !== "") Theme.run(c)
+            if (c !== "") Hypr.run(c)
         }
     }
 
@@ -232,17 +229,6 @@ ShellRoot {
         if (s < 3600) return Math.floor(s / 60) + "m ago"
         if (s < 86400) return Math.floor(s / 3600) + "h ago"
         return Math.floor(s / 86400) + "d ago"
-    }
-
-    function setVolume(v) {
-        if (!sink || !sink.audio) return
-        sink.audio.volume = Math.max(0, Math.min(1, v))
-        if (v > 0 && sink.audio.muted) sink.audio.muted = false
-    }
-
-    function fmtTime(s) {
-        s = Math.max(0, Math.floor(s))
-        return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0")
     }
 
     function fmtUptime(s) {
@@ -298,7 +284,6 @@ ShellRoot {
     Timer { id: watchdog; interval: Theme.ms(1200) + 100; onTriggered: if (root.closing) root.finish() }
 
     SystemClock { id: clock; precision: SystemClock.Minutes; enabled: root.shown }
-    PwObjectTracker { objects: [Pipewire.defaultAudioSink] }
 
     IpcHandler {
         target: "home"
@@ -351,12 +336,6 @@ ShellRoot {
 
     NotificationPopups { shell: root }
 
-    Timer {
-        interval: 1000
-        running: root.shown && root.player !== null && root.player.isPlaying
-        repeat: true
-        onTriggered: root.player.positionChanged()
-    }
 
     component Glass: Item {
         id: g
@@ -391,7 +370,7 @@ ShellRoot {
         }
     }
 
-    component IconButton: Item {
+    component RoundIcon: Item {
         id: ib
         property string glyph: ""
         property color tint: Theme.bright
@@ -570,12 +549,12 @@ ShellRoot {
                 else if (k === Qt.Key_E) root.run(Power.cmd("logout"))
                 else if (k === Qt.Key_R) root.run(Power.cmd("reboot"))
                 else if (k === Qt.Key_S) root.run(Power.cmd("poweroff"))
-                else if (k === Qt.Key_Space && pl) pl.togglePlaying()
-                else if (k === Qt.Key_Right && pl) pl.next()
-                else if (k === Qt.Key_Left && pl) pl.previous()
-                else if (k === Qt.Key_Up) root.setVolume(root.volume + 0.05)
-                else if (k === Qt.Key_Down) root.setVolume(root.volume - 0.05)
-                else if (k === Qt.Key_M && root.sink) root.sink.audio.muted = !root.muted
+                else if (k === Qt.Key_Space && pl) Media.toggle(pl)
+                else if (k === Qt.Key_Right && pl) Media.skip(pl, 1)
+                else if (k === Qt.Key_Left && pl) Media.skip(pl, -1)
+                else if (k === Qt.Key_Up) Audio.setVolume(Audio.volume + 0.05)
+                else if (k === Qt.Key_Down) Audio.setVolume(Audio.volume - 0.05)
+                else if (k === Qt.Key_M) Audio.toggleMute()
                 else if (k === Qt.Key_PageUp || k === Qt.Key_BracketLeft) root.shiftMonth(-1)
                 else if (k === Qt.Key_PageDown || k === Qt.Key_BracketRight) root.shiftMonth(1)
                 else if (k === Qt.Key_D) root.dnd = !root.dnd
@@ -651,7 +630,7 @@ ShellRoot {
                         Hover {
                             id: spotifyMa
                             anchors.fill: parent
-                            onClicked: { root.close(); Theme.openSpotify() }
+                            onClicked: { root.close(); Media.openSpotify() }
                         }
                     }
 
@@ -677,92 +656,52 @@ ShellRoot {
                         anchors.fill: parent
                         visible: media.pl !== null
 
-                        ClippingRectangle {
+                        Cover {
                             id: art
                             width: 100 * root.u
                             height: 100 * root.u
                             radius: root.rr(18)
-                            color: Theme.alpha(Theme.bright, 0.13)
-                            Image {
-                                anchors.fill: parent
-                                source: media.pl && media.pl.trackArtUrl ? media.pl.trackArtUrl : ""
-                                sourceSize.width: 200
-                                sourceSize.height: 200
-                                fillMode: Image.PreserveAspectCrop
-                                asynchronous: true
-                                opacity: status === Image.Ready ? 1 : 0
-                                Behavior on opacity { NumberAnimation { duration: Theme.ms(300) } }
-                            }
+                            fill: Theme.alpha(Theme.bright, 0.13)
+                            glyph: "\uf001"
+                            res: 200
+                            url: track.art
                         }
                         Column {
                             x: 116 * root.u
                             width: parent.width - x
                             anchors.verticalCenter: art.verticalCenter
                             spacing: 4 * root.u
-                            Label {
+                            SwapText {
                                 width: parent.width
-                                text: media.pl ? media.pl.trackTitle : ""
+                                value: track.title
                                 elide: Text.ElideRight
                                 font.pixelSize: 17 * root.u
                                 color: Theme.bright
                             }
-                            Label {
+                            SwapText {
                                 width: parent.width
-                                text: media.pl ? media.pl.trackArtist : ""
+                                value: track.artist
                                 elide: Text.ElideRight
                                 font.pixelSize: 13 * root.u
                                 color: Theme.alpha(Theme.bright, 0.6)
                             }
                         }
 
-                        Item {
-                            id: prog
+                        Seek {
                             y: 126 * root.u
                             width: parent.width
-                            height: 36 * root.u
-                            readonly property real len: media.pl ? media.pl.length : 0
-                            readonly property real ratio: len > 0 ? media.pl.position / len : 0
-                            Rectangle {
-                                width: parent.width
-                                height: 5 * root.u
-                                radius: height / 2
-                                color: Theme.alpha(Theme.bright, 0.15)
-                                Rectangle {
-                                    height: parent.height
-                                    radius: height / 2
-                                    width: parent.width * Math.min(1, prog.ratio)
-                                    color: Theme.alpha(Theme.bright, 0.95)
-                                }
-                            }
-                            Label {
-                                y: 14 * root.u
-                                text: root.fmtTime(media.pl ? media.pl.position : 0)
-                                font.pixelSize: 11 * root.u
-                                color: Theme.alpha(Theme.bright, 0.5)
-                            }
-                            Label {
-                                y: 14 * root.u
-                                anchors.right: parent.right
-                                text: root.fmtTime(prog.len)
-                                font.pixelSize: 11 * root.u
-                                color: Theme.alpha(Theme.bright, 0.5)
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: mouse => {
-                                    if (media.pl && media.pl.canSeek && prog.len > 0)
-                                        media.pl.position = mouse.x / width * prog.len
-                                }
-                            }
+                            player: media.pl
+                            u: root.u
+                            active: root.shown && !root.closing
                         }
 
                         Row {
                             anchors.horizontalCenter: parent.horizontalCenter
                             y: 176 * root.u
                             spacing: 18 * root.u
-                            IconButton { size: 52 * root.u; glyph: "\uf048"; onClicked: media.pl.previous() }
-                            IconButton { size: 52 * root.u; glyph: media.pl && media.pl.isPlaying ? "\uf04c" : "\uf04b"; onClicked: media.pl.togglePlaying() }
-                            IconButton { size: 52 * root.u; glyph: "\uf051"; onClicked: media.pl.next() }
+                            SkipButton { anchors.verticalCenter: parent.verticalCenter; player: media.pl; dir: -1; size: 52 * root.u; glyphSize: 22 * root.u; tint: Theme.bright }
+                            PlayButton { anchors.verticalCenter: parent.verticalCenter; player: media.pl; size: 52 * root.u }
+                            SkipButton { anchors.verticalCenter: parent.verticalCenter; player: media.pl; dir: 1; size: 52 * root.u; glyphSize: 22 * root.u; tint: Theme.bright }
                         }
 
                         Music.Visualizer {
@@ -785,8 +724,8 @@ ShellRoot {
                         anchors.right: parent.right
                         y: -34 * root.u
                         spacing: 2 * root.u
-                        IconButton { size: 28 * root.u; glyph: "\uf053"; onClicked: root.shiftMonth(-1) }
-                        IconButton { size: 28 * root.u; glyph: "\uf054"; onClicked: root.shiftMonth(1) }
+                        RoundIcon { size: 28 * root.u; glyph: "\uf053"; onClicked: root.shiftMonth(-1) }
+                        RoundIcon { size: 28 * root.u; glyph: "\uf054"; onClicked: root.shiftMonth(1) }
                     }
 
                     Grid {
@@ -1016,7 +955,7 @@ ShellRoot {
                             Label {
                                 anchors.right: parent.right
                                 y: -32 * root.u
-                                text: root.muted ? "Muted" : Math.round(root.volume * 100) + "%"
+                                text: Audio.muted ? "Muted" : Math.round(Audio.volume * 100) + "%"
                                 font.pixelSize: 13 * root.u
                                 color: Theme.alpha(Theme.bright, 0.6)
                             }
@@ -1033,7 +972,7 @@ ShellRoot {
                                     clip: true
                                     Rectangle {
                                         height: parent.height
-                                        width: Math.max(parent.height, parent.width * (root.muted ? 0 : root.volume))
+                                        width: Math.max(parent.height, parent.width * (Audio.muted ? 0 : Audio.volume))
                                         radius: height / 2
                                         color: Theme.soft(Theme.info)
                                         Behavior on width { enabled: !volDrag.pressed; NumberAnimation { duration: Theme.ms(120); easing.type: Easing.OutCubic } }
@@ -1042,7 +981,7 @@ ShellRoot {
                                 Label {
                                     x: 13 * root.u
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: root.muted || root.volume === 0 ? "\uf026" : "\uf028"
+                                    text: Audio.muted || Audio.volume === 0 ? "\uf026" : "\uf028"
                                     font.pixelSize: 15 * root.u
                                     color: Theme.on(Theme.info)
                                 }
@@ -1050,13 +989,13 @@ ShellRoot {
                                     id: volDrag
                                     anchors.fill: parent
                                     preventStealing: true
-                                    onPressed: mouse => root.setVolume(mouse.x / width)
-                                    onPositionChanged: mouse => { if (pressed) root.setVolume(mouse.x / width) }
+                                    onPressed: mouse => Audio.setVolume(mouse.x / width)
+                                    onPositionChanged: mouse => { if (pressed) Audio.setVolume(mouse.x / width) }
                                 }
                                 MouseArea {
                                     width: parent.height
                                     height: parent.height
-                                    onClicked: if (root.sink) root.sink.audio.muted = !root.muted
+                                    onClicked: Audio.toggleMute()
                                 }
                             }
                         }
@@ -1064,7 +1003,7 @@ ShellRoot {
                         MouseArea {
                             anchors.fill: parent
                             acceptedButtons: Qt.NoButton
-                            onWheel: wheel => root.setVolume(root.volume + wheel.angleDelta.y / 120 * 0.03)
+                            onWheel: wheel => Audio.setVolume(Audio.volume + wheel.angleDelta.y / 120 * 0.03)
                         }
                     }
 
@@ -1078,13 +1017,13 @@ ShellRoot {
                             anchors.right: parent.right
                             y: -34 * root.u
                             spacing: 2 * root.u
-                            IconButton {
+                            RoundIcon {
                                 size: 28 * root.u
                                 glyph: root.dnd ? "\uf1f6" : "\uf0f3"
                                 tint: root.dnd ? Theme.accent2 : Theme.bright
                                 onClicked: root.dnd = !root.dnd
                             }
-                            IconButton {
+                            RoundIcon {
                                 size: 28 * root.u
                                 glyph: "\uf1f8"
                                 visible: root.notifCount > 0

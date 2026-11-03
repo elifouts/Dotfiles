@@ -5,6 +5,7 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Widgets
 import "../common"
+import "menus" as Menus
 
 Item {
     id: ex
@@ -115,25 +116,25 @@ Item {
     }
 
     function focusWindow(t) {
-        Theme.dispatch("hl.dsp.focus({ window = \"address:" + addr(t) + "\" })", "focuswindow address:" + addr(t))
+        Hypr.dispatch("hl.dsp.focus({ window = \"address:" + addr(t) + "\" })", "focuswindow address:" + addr(t))
     }
 
     // ws is a number or a name like "special:magic"; mon sends a new workspace where it was dropped
     function moveTo(t, ws, mon) {
         const w = typeof ws === "string" ? "\"" + ws + "\"" : ws
-        Theme.dispatch("hl.dsp.window.move({ workspace = " + w + ", window = \"address:" + addr(t) + "\", follow = false })",
+        Hypr.dispatch("hl.dsp.window.move({ workspace = " + w + ", window = \"address:" + addr(t) + "\", follow = false })",
                        "movetoworkspacesilent " + ws + ",address:" + addr(t))
         if (mon && typeof ws === "number")
-            Theme.dispatch("hl.dsp.workspace.move({ workspace = " + ws + ", monitor = \"" + mon + "\" })",
+            Hypr.dispatch("hl.dsp.workspace.move({ workspace = " + ws + ", monitor = \"" + mon + "\" })",
                            "moveworkspacetomonitor " + ws + " " + mon)
         debounce.restart()
     }
 
     // Hyprland warps the cursor on every goddamn move, so put it back
     function keepCursor(lua, classic) {
-        const back = Theme.lua ? "hl.dsp.cursor.move({ x = $x, y = $y })" : "movecursor $x $y"
+        const back = Hypr.lua ? "hl.dsp.cursor.move({ x = $x, y = $y })" : "movecursor $x $y"
         Quickshell.execDetached(["sh", "-c", 'p=$(hyprctl cursorpos); x=${p%%,*}; y=${p##* }; hyprctl dispatch "$1" >/dev/null; hyprctl dispatch "' + back + '" >/dev/null',
-                                 "sh", Theme.lua ? lua : classic])
+                                 "sh", Hypr.lua ? lua : classic])
         debounce.restart()
     }
 
@@ -151,7 +152,7 @@ Item {
     function closeWindow(t) {
         const kill = /kitty/i.test(t.lastIpcObject ? t.lastIpcObject.class : "")
         closing = closing.concat(addr(t))
-        Theme.dispatch("hl.dsp.window." + (kill ? "kill" : "close") + "({ window = \"address:" + addr(t) + "\" })",
+        Hypr.dispatch("hl.dsp.window." + (kill ? "kill" : "close") + "({ window = \"address:" + addr(t) + "\" })",
                        (kill ? "killwindow" : "closewindow") + " address:" + addr(t))
     }
 
@@ -163,7 +164,7 @@ Item {
     }
 
     function goTo(id) {
-        Theme.dispatch("hl.dsp.focus({ workspace = " + id + " })", "workspace " + id)
+        Hypr.dispatch("hl.dsp.focus({ workspace = " + id + " })", "workspace " + id)
     }
 
     // saved in the repo so git syncs them. keyed by the commands so a rename slides instead of popping in
@@ -285,7 +286,7 @@ Item {
             const w = queue.shift()
             if (!w) return stop()
             const f = w.floating ? ", float = true, move = \"" + w.x + " " + w.y + "\", size = \"" + w.w + " " + w.h + "\"" : ""
-            Theme.dispatch("hl.dsp.exec_cmd([==[" + w.cmd + "]==], { workspace = \"" + ws + " silent\"" + f + " })",
+            Hypr.dispatch("hl.dsp.exec_cmd([==[" + w.cmd + "]==], { workspace = \"" + ws + " silent\"" + f + " })",
                            "exec [workspace " + ws + " silent" + (w.floating ? "; float; move " + w.x + " " + w.y + "; size " + w.w + " " + w.h : "") + "] " + w.cmd)
         }
     }
@@ -307,7 +308,7 @@ Item {
         }
 
         function go(id) {
-            if (id !== activeId) Theme.dispatch("hl.dsp.focus({ workspace = " + id + " })", "workspace " + id)
+            if (id !== activeId) Hypr.dispatch("hl.dsp.focus({ workspace = " + id + " })", "workspace " + id)
         }
 
         spacing: 6
@@ -349,7 +350,7 @@ Item {
         }
     }
 
-    component Tile: Item {
+    component SpaceTile: Item {
         id: tile
 
         property var expose
@@ -748,7 +749,7 @@ Item {
                         readonly property int count: page.expose.windowsOn(wsId).length
                         spacing: 5
 
-                        Tile {
+                        SpaceTile {
                             width: page.tileW
                             expose: page.expose
                             monitor: page.monitor

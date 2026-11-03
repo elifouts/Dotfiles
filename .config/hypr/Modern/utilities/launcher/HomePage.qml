@@ -8,7 +8,7 @@ Item {
     property real intro: 1
     signal run(string id, string cmd, bool afterClose)
 
-    readonly property string util: "~/.config/hypr/utilities/"
+    readonly property string util: Hypr.util + "/"
     readonly property var commands: [
         { id: "lock", icon: "", label: "Lock", sub: "Lock the session", cmd: Power.cmd("lock") },
         { id: "suspend", icon: "", label: "Suspend", sub: "Sleep the machine", cmd: Power.cmd("suspend") },
