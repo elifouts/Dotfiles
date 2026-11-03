@@ -62,10 +62,6 @@ ShellRoot {
 
             function run(cmd) { Hypr.run(cmd) }
 
-            function pickColor() {
-                run("sleep 0.3; p=~/.config/waybar/scripts/colorpicker.sh; [ -x \"$p\" ] || p='" + Quickshell.shellDir + "/colorpicker.sh'; \"$p\"")
-            }
-
             function pillFor(page) {
                 const w = windows[Hyprland.focusedMonitor?.name ?? ""]
                 return w ? w.pills.find(p => p.visible && p.has(page)) ?? null : null
@@ -102,39 +98,8 @@ ShellRoot {
             Forecast { id: forecast }
             readonly property alias weather: forecast
 
-            property int updates: 0
-            Process {
-                id: checkProc
-                command: ["sh", "-c", "checkupdates 2>/dev/null | wc -l"]
-                stdout: StdioCollector { onStreamFinished: root.updates = parseInt(text) || 0 }
-            }
-            function recount() {
-                if (!checkProc.running) checkProc.running = true
-            }
-            Timer {
-                interval: 30 * 60 * 1000
-                running: true
-                repeat: true
-                triggeredOnStart: true
-                onTriggered: root.recount()
-            }
-            FileView {
-                path: "/var/log/pacman.log"
-                watchChanges: true
-                preload: false
-                printErrors: false
-                onFileChanged: pacmanRan.restart()
-            }
-            Timer { id: pacmanRan; interval: 3000; onTriggered: root.recount() }
-
-            Process {
-                id: updateProc
-                command: ["kitty", "--title", "System update", "sh", "-c", "yay -Syu; echo; read -rp 'Done. Press enter to close.' _"]
-                onExited: root.recount()
-            }
-            function runUpdate() {
-                if (!updateProc.running) updateProc.running = true
-            }
+            readonly property int updates: Updates.count
+            function runUpdate() { Updates.run() }
 
             readonly property var players: Media.players
             property string pinned: ""

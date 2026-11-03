@@ -10,9 +10,7 @@ from pathlib import Path
 
 HYPR = Path(__file__).resolve().parent.parent
 HOME = Path.home()
-TWEAKS = HYPR / "tweaks"
 LUA_FILE = HYPR / "state/settings.lua"
-SAVED = TWEAKS / "saved"
 STATE = HYPR / "state"
 ACTIVE_SAVED_FILE = STATE / "saved.json"
 THEME_FILE = STATE / "color-theme"
@@ -20,8 +18,6 @@ PROFILE_FILE = STATE / "profile"
 BAR_FILE = STATE / "bar"
 QUICKSHELL_FILE = STATE / "bar-style"
 SCHEMES = HOME / ".config/wal/colorschemes"
-# Default only keeps wallpaper, colors and bar
-DEFAULT_LOOK_FILE = TWEAKS / "default-look.json"
 LOOK_KEYS = ("wallpaper.", "colors.", "bar.", "waybar.", "quickshell.")
 # pywal16 internals, not themes
 INTERNAL_SCHEMES = {"pywal16", "ywal16"}
@@ -65,13 +61,49 @@ def active_profile():
     return PROFILE_FILE.read_text().strip() if PROFILE_FILE.exists() else "default"
 
 
+# each style keeps its own tweaks/
+def tweaks_dir():
+    return HYPR / active_profile().partition("/")[0] / "tweaks"
+
+
 def tweaks_file(variant=None):
-    style, _, own = active_profile().partition("/")
-    return TWEAKS / f"{style}-{variant or own}.json"
+    return tweaks_dir() / f"{variant or active_profile().partition('/')[2]}.json"
 
 
 def saved_dir():
-    return SAVED / active_profile().replace("/", "-")
+    return tweaks_dir() / "saved" / active_profile().partition("/")[2]
+
+
+# Default only keeps wallpaper, colors and bar, keyed by variant
+def default_look_file():
+    return tweaks_dir() / "default-look.json"
+
+
+# old hypr/tweaks layout, can go once the laptop has run it
+def migrate():
+    old = HYPR / "tweaks"
+    if not old.is_dir():
+        return
+    for path in old.glob("saved/*/*.json"):
+        style, _, variant = path.parent.name.partition("-")
+        dest = HYPR / style / "tweaks/saved" / variant / path.name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        path.replace(dest)
+    for path in old.glob("*-*.json"):
+        if path.name == "default-look.json":
+            continue
+        style, _, variant = path.stem.partition("-")
+        (HYPR / style / "tweaks").mkdir(parents=True, exist_ok=True)
+        path.replace(HYPR / style / "tweaks" / f"{variant}.json")
+    looks = {}
+    for profile, look in load(old / "default-look.json", {}).items():
+        style, _, variant = profile.partition("/")
+        looks.setdefault(style, {})[variant] = look
+    for style, look in looks.items():
+        write_atomic(HYPR / style / "tweaks/default-look.json", json.dumps(look, indent=2, sort_keys=True) + "\n")
+    (old / "default-look.json").unlink(missing_ok=True)
+    for d in sorted(old.glob("**/"), reverse=True):
+        d.rmdir() if not any(d.iterdir()) else None
 
 
 def own_variant():
@@ -104,7 +136,7 @@ def set_live_entry(entry):
 
 def entry_settings(entry):
     if entry == "default":
-        return load(DEFAULT_LOOK_FILE, {}).get(active_profile(), {})
+        return load(default_look_file(), {}).get(active_profile().partition("/")[2], {})
     path = entry_file(entry)
     return load(path, {}) if path else {}
 
@@ -125,7 +157,9 @@ def write_lua(settings):
 def portable(settings):
     path = dig(settings, "wallpaper.path")
     if isinstance(path, str):
-        settings["wallpaper"]["path"] = re.sub(r"^/home/[^/]+/", "/home/$USER/", path)
+        # $HOME not /home/$USER, home isn't always under /home. settings_wallpaper expands it back
+        home = str(HOME)
+        settings["wallpaper"]["path"] = "$HOME" + path[len(home):] if path.startswith(home + "/") else re.sub(r"^/home/[^/]+/", "$HOME/", path)
     return settings
 
 
@@ -334,6 +368,9 @@ def put(settings, pairs):
     for pair in pairs:
         key, _, raw = pair.partition("=")
         value = json.loads(raw)
+        # a stray list or object in a hyprland option makes hl.config refuse the whole file
+        if isinstance(value, (list, dict)) and key.startswith("config."):
+            continue
         node = settings
         *parents, leaf = key.split(".")
         for part in parents:
@@ -354,10 +391,10 @@ def put(settings, pairs):
 def cmd_set(pairs):
     default = live_entry() == "default"
     if default and all(p.partition("=")[0].startswith(LOOK_KEYS) for p in pairs):
-        looks = load(DEFAULT_LOOK_FILE, {})
-        put(looks.setdefault(active_profile(), {}), pairs)
-        portable(looks[active_profile()])
-        write_atomic(DEFAULT_LOOK_FILE, json.dumps(looks, indent=2, sort_keys=True) + "\n")
+        looks, variant = load(default_look_file(), {}), active_profile().partition("/")[2]
+        put(looks.setdefault(variant, {}), pairs)
+        portable(looks[variant])
+        write_atomic(default_look_file(), json.dumps(looks, indent=2, sort_keys=True) + "\n")
         return
     settings = load(tweaks_file(), {}) if default else live_settings()
     reload = put(settings, pairs)
@@ -484,6 +521,9 @@ def cmd_appearance():
         detached(str(HYPR / "utilities/wallpaper-apply.sh"), wallpaper, env={"HYPR_SETTINGS_NO_RECORD": "1", "WALLPAPER_TRANSITION": "fade"})
     elif theme != current_theme():
         detached(str(HYPR / "utilities/color-apply.sh"), theme)
+    # styles with no bar folders (space) draw their own
+    if not any((style_dir() / d).is_dir() for d in ("waybar", "quickshellbar")):
+        return
     kind = dig(settings, "bar.kind") or DEFAULT_BAR
     if kind != current_bar():
         subprocess.run([str(HYPR / "utilities/bar.sh"), "apply", kind], env={**os.environ, "HYPR_SETTINGS_NO_RECORD": "1"},
@@ -538,9 +578,11 @@ def cmd_saved(args):
     elif action == "preview":
         print(json.dumps(saved_preview()))
     elif action == "wipe":
-        for path in list(SAVED.glob("*/*.json")) + list(TWEAKS.glob("*.json")):
-            path.unlink()
-        for d in SAVED.glob("*/"):
+        # only this style's, default-look stays
+        for path in list((tweaks_dir() / "saved").glob("*/*.json")) + list(tweaks_dir().glob("*.json")):
+            if path.name != "default-look.json":
+                path.unlink()
+        for d in (tweaks_dir() / "saved").glob("*/"):
             d.rmdir()
         ACTIVE_SAVED_FILE.unlink(missing_ok=True)
         go_live("default")
@@ -557,6 +599,7 @@ def cmd_ui(pairs):
 
 
 def main():
+    migrate()
     command, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("", [])
     handlers = {"state": cmd_state, "set": cmd_set, "ui": cmd_ui, "saved": cmd_saved}
     bare = {"reset": cmd_reset, "sync": cmd_sync, "cursor": cmd_cursor, "appearance": cmd_appearance}

@@ -1,0 +1,33 @@
+{
+  "desktop": {
+    "bar": {
+      "kind": "waybar"
+    },
+    "colors": {
+      "theme": "pywal"
+    },
+    "quickshell": {
+      "style": "experimental"
+    },
+    "wallpaper": {
+      "path": "$HOME/wallpapers/library/nature/nat-09.jpg"
+    },
+    "waybar": {
+      "style": "default"
+    }
+  },
+  "laptop": {
+    "bar": {
+      "kind": "waybar"
+    },
+    "colors": {
+      "theme": "pywal"
+    },
+    "wallpaper": {
+      "path": "$HOME/wallpapers/library/sunset/sun-17.jpg"
+    },
+    "waybar": {
+      "style": "default"
+    }
+  }
+}

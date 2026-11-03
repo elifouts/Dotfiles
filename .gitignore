@@ -6,3 +6,4 @@ __pycache__/
 .config/cava/themes/
 .config/cava/config
 .config/kitty/current-theme.conf
+.config/wal/colorschemes/dark/space.json

@@ -1,0 +1,67 @@
+{
+  "animation": {
+    "curve": [
+      0.31,
+      0.9,
+      0.85,
+      1
+    ],
+    "preset": "custom",
+    "speed": 2.5,
+    "window": "popin 60%",
+    "workspace": "slidefadevert"
+  },
+  "bar": {
+    "kind": "quickshell"
+  },
+  "colors": {
+    "theme": "dark/gruvbox"
+  },
+  "config": {
+    "animations": {
+      "enabled": true
+    },
+    "decoration": {
+      "active_opacity": 0.85,
+      "blur": {
+        "enabled": true
+      },
+      "dim_inactive": true,
+      "dim_strength": 0.25,
+      "glow": {
+        "enabled": false
+      },
+      "inactive_opacity": 0.7,
+      "motion_blur": {
+        "enabled": false
+      },
+      "rounding": 3,
+      "rounding_power": 5,
+      "shadow": {
+        "enabled": true,
+        "range": 1,
+        "render_power": 4,
+        "scale": 1,
+        "sharp": true
+      }
+    },
+    "general": {
+      "border_size": 0,
+      "gaps_in": 11,
+      "gaps_out": 0,
+      "gaps_workspaces": 0
+    }
+  },
+  "quickshell": {
+    "style": "experimental"
+  },
+  "utilities": {
+    "animations": false
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/industrial/ind-15.jpg"
+  },
+  "waybar": {
+    "style": "default"
+  }
+}

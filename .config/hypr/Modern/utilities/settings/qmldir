@@ -2,7 +2,6 @@ singleton Store 1.0 Store.qml
 Segmented 1.0 Segmented.qml
 Dropdown 1.0 Dropdown.qml
 Picker 1.0 Picker.qml
-RoundedImage 1.0 RoundedImage.qml
 Themes 1.0 Themes.qml
 CurvePlot 1.0 CurvePlot.qml
 SettingSlider 1.0 SettingSlider.qml

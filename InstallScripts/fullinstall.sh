@@ -93,8 +93,10 @@ apply_colors() {
     section "Applying Colors"
 
     # nothing starts the daemon till login, thats why no wallpaper till reboot
-    if [[ -n "${WAYLAND_DISPLAY:-}" ]] && ! pgrep -x awww-daemon >/dev/null; then
-        setsid -f awww-daemon >/dev/null 2>&1
+    local daemon
+    daemon="$(command -v awww-daemon || true)"
+    if [[ -n "${WAYLAND_DISPLAY:-}" && -n $daemon ]] && ! pgrep -x "${daemon##*/}" >/dev/null; then
+        setsid -f "$daemon" >/dev/null 2>&1
         sleep 0.5
     fi
     if "$HOME/.config/hypr/utilities/wallpaper-apply.sh" "$DOTFILES_DIR/wallpapers/pywallpaper.jpg" >/dev/null; then
@@ -108,6 +110,17 @@ apply_colors() {
 pull_wallpapers() {
     ask "Pull the full wallpaper library?" || return 0
     "$HOME/.config/hypr/utilities/wallpapers.sh" install || warn "Couldn't pull wallpapers, sticking with the defaults."
+}
+
+# space's shaders, the repo ships them compiled too so this is just to keep them fresh
+setup_space() {
+    section "Space Theme"
+    local qsb=/usr/lib/qt6/bin/qsb f
+    [[ -x $qsb ]] || { warn "qsb not found (qt6-shadertools), using the precompiled shaders."; return 0; }
+    for f in "$DOTFILES_DIR"/.config/hypr/*/utilities/*.frag "$DOTFILES_DIR"/.config/hypr/*/utilities/*/*.frag; do
+        [[ -f $f ]] && "$qsb" --qt6 -o "$f.qsb" "$f"
+    done
+    success "Shaders compiled."
 }
 
 setup_mirrors() {
@@ -189,6 +202,7 @@ run_install() {
     fi
 
     apply_dotfiles
+    setup_space
     pull_wallpapers
     cast_firewall allow
     ask "Set up autologin?" && { install_or_remove Autologin autologin_install autologin_uninstall || warn "Autologin setup failed."; }

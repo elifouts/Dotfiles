@@ -1,33 +1,17 @@
 import QtQuick
-import "Schema.js" as Schema
+import "Motion.js" as Motion
 
 Dropdown {
     id: control
 
     property var def
-    readonly property var curve: Store.values["animation.curve"] || [0.15, 0.85, 0.25, 1]
+    readonly property var curve: Store.values["animation.curve"] || Motion.CURVE
 
     label: "Preset"
     current: Store.values["animation.preset"] || "theme"
-    options: [
-        { v: "theme", l: "Profile" }, { v: "calm", l: "Calm" }, { v: "balanced", l: "Balanced" },
-        { v: "snappy", l: "Snappy" }, { v: "bouncy", l: "Bouncy" }, { v: "custom", l: "Custom" }
-    ]
+    options: Motion.PRESET_OPTIONS
 
-    onPicked: v => {
-        if (v === "theme") {
-            Store.setValues({ "animation.preset": "theme" })
-            Store.setMany({ "animation": null })
-        } else if (v === "custom") {
-            Store.setMany({ "animation.preset": "custom", "animation.curve": control.curve })
-        } else {
-            const p = Schema.PRESETS[v]
-            Store.setMany({
-                "animation.preset": v, "animation.curve": p.curve, "animation.speed": p.speed,
-                "animation.window": p.window, "animation.workspace": p.workspace
-            })
-        }
-    }
+    onPicked: v => Motion.pick(Store, v, control.curve)
 
     // right-click resets to the profile value
     MouseArea {

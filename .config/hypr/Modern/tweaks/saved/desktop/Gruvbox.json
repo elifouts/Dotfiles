@@ -1,0 +1,65 @@
+{
+  "bar": {
+    "kind": "quickshell"
+  },
+  "border": {
+    "gradient": false
+  },
+  "colors": {
+    "theme": "dark/gruvbox"
+  },
+  "config": {
+    "animations": {
+      "enabled": true
+    },
+    "decoration": {
+      "active_opacity": 0.9,
+      "blur": {
+        "enabled": true,
+        "passes": 4,
+        "size": 3,
+        "vibrancy": 0.2
+      },
+      "dim_inactive": true,
+      "dim_strength": 0.1,
+      "glow": {
+        "enabled": false
+      },
+      "inactive_opacity": 0.8,
+      "motion_blur": {
+        "enabled": false
+      },
+      "rounding": 5,
+      "rounding_power": 5,
+      "shadow": {
+        "enabled": true,
+        "range": 12,
+        "render_power": 4,
+        "scale": 1,
+        "sharp": false
+      }
+    },
+    "general": {
+      "border_size": 0,
+      "gaps_in": 8,
+      "gaps_out": 0,
+      "gaps_workspaces": 0
+    },
+    "master": {
+      "mfact": 0.7,
+      "new_status": "master"
+    }
+  },
+  "quickshell": {
+    "style": "experimental"
+  },
+  "utilities": {
+    "animations": false
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/gruvbox/gru-04.jpg"
+  },
+  "waybar": {
+    "style": "default"
+  }
+}

@@ -1,22 +1,4 @@
-local function load_wal_colors(path)
-    local colors = {}
-    local file = io.open(path, "r")
-    if not file then return colors end
-    for line in file:lines() do
-        local idx, value = line:match("%$?color(%d+)%s*=%s*(%S+)")
-        if idx then
-            colors["color" .. idx] = value
-        end
-    end
-    file:close()
-    return colors
-end
-
-local colors = load_wal_colors(os.getenv("HOME") .. "/.cache/wal/colors-hyprland")
--- primary picked in settings > colors, same file quickshell reads
-local roles = io.open(os.getenv("HOME") .. "/.config/hypr/state/color-roles.json", "r")
-local accent = roles and roles:read("a"):match('"accent"%s*:%s*(%d+)') or "9"
-if roles then roles:close() end
+local wal = require("wal")
 
 hl.config({
     general = {
@@ -24,8 +6,8 @@ hl.config({
         gaps_out = 10,
         border_size = 0,
         col = {
-            active_border = colors["color" .. accent],
-            inactive_border = colors.color5,
+            active_border = wal.color(wal.accent),
+            inactive_border = wal.color(5),
         },
         resize_on_border = true,
         allow_tearing = false,

@@ -33,15 +33,7 @@ end
 
 local B = S.border
 if B and B.gradient then
-    local colors = {}
-    local file = io.open(os.getenv("HOME") .. "/.cache/wal/colors-hyprland", "r")
-    if file then
-        for line in file:lines() do
-            local idx, hex = line:match("%$color(%d+)%s*=%s*0x%x%x(%x%x%x%x%x%x)")
-            if idx then colors[tonumber(idx)] = "rgba(" .. hex .. "ff)" end
-        end
-        file:close()
-    end
+    local wal = require("wal")
     local PALETTES = {
         accent = { 9, 13 },
         ocean = { 9, 12, 14 },
@@ -52,7 +44,7 @@ if B and B.gradient then
     }
     local stops = {}
     for _, i in ipairs(PALETTES[B.palette] or PALETTES.accent) do
-        if colors[i] then stops[#stops + 1] = colors[i] end
+        if wal.hex[i] then stops[#stops + 1] = wal.color(i) end
     end
     if #stops == 1 then stops[2] = stops[1] end
     if #stops >= 2 then

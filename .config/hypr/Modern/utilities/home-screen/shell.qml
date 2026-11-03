@@ -35,7 +35,6 @@ ShellRoot {
     property string pendingCmd: ""
     property bool startWaited: false
     readonly property color glass: Theme.alpha(Theme.bg, 0.5)
-    readonly property color popupBg: Theme.alpha(Theme.bg, 0.86)
 
     property real cpu: 0
     property real prevTotal: 0
@@ -58,12 +57,11 @@ ShellRoot {
     property real gpuMemTotal: 1
     property real gpuTemp: 0
 
-    property bool dnd: false
-    onDndChanged: Quickshell.execDetached(["sh", "-c", "echo " + (dnd ? 1 : 0) + " > \"${XDG_RUNTIME_DIR:-/tmp}/home-dnd\""])
-    property var popups: []
-    property var arrived: ({})
-    readonly property var notifs: server.trackedNotifications.values.slice().reverse()
-    readonly property int notifCount: notifs.length
+    // the daemon itself is shared/system/Notifs.qml
+    readonly property bool dnd: Notifs.dnd
+    readonly property var notifs: Notifs.notifs
+    readonly property int notifCount: Notifs.count
+    Binding { target: Notifs; property: "quiet"; value: root.shown }
 
     property int calY: new Date().getFullYear()
     property int calM: new Date().getMonth()
@@ -128,7 +126,7 @@ ShellRoot {
         locating = false
         if (shown) return
         t = 0
-        popups = []
+        Notifs.popups = []
         const now = new Date()
         calY = now.getFullYear()
         calM = now.getMonth()
@@ -185,51 +183,7 @@ ShellRoot {
         close()
     }
 
-    function received(n) {
-        n.tracked = true
-        arrived[n.id] = Date.now()
-        n.closed.connect(() => {
-            hidePopup(n)
-            delete arrived[n.id]
-        })
-        if (shown || (dnd && n.urgency !== NotificationUrgency.Critical)) {
-            if (n.transient) n.expire()
-            return
-        }
-        popups = [n].concat(popups.filter(p => p !== n)).slice(0, 5)
-    }
-
-    function hidePopup(n) {
-        popups = popups.filter(p => p !== n)
-    }
-
-    function expirePopup(n) {
-        if (n.transient) n.expire()
-        else hidePopup(n)
-    }
-
-    function clearAll() {
-        for (const n of server.trackedNotifications.values.slice()) n.dismiss()
-        popups = []
-    }
-
-    function iconFor(n) {
-        if (n.image !== "") return n.image
-        if (n.appIcon !== "") {
-            if (n.appIcon.startsWith("/")) return "file://" + encodeURI(n.appIcon)
-            const p = Quickshell.iconPath(n.appIcon, true)
-            if (p !== "") return p
-        }
-        return n.desktopEntry !== "" ? Quickshell.iconPath(n.desktopEntry, true) : ""
-    }
-
-    function ago(n) {
-        const s = Math.max(0, (clock.date.getTime() - (arrived[n.id] ?? Date.now())) / 1000)
-        if (s < 60) return "now"
-        if (s < 3600) return Math.floor(s / 60) + "m ago"
-        if (s < 86400) return Math.floor(s / 3600) + "h ago"
-        return Math.floor(s / 86400) + "d ago"
-    }
+    function clearAll() { Notifs.clearAll() }
 
     function fmtUptime(s) {
         const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60)
@@ -291,7 +245,7 @@ ShellRoot {
         function open(): void { root.show() }
         function close(): void { root.close() }
         function clearNotifications(): void { root.clearAll() }
-        function toggleDnd(): void { root.dnd = !root.dnd }
+        function toggleDnd(): void { Notifs.dnd = !Notifs.dnd }
     }
 
     Process {
@@ -323,18 +277,7 @@ ShellRoot {
         onTriggered: if (!stats.running) stats.running = true
     }
 
-    NotificationServer {
-        id: server
-        keepOnReload: true
-        actionsSupported: true
-        bodySupported: true
-        bodyMarkupSupported: true
-        imageSupported: true
-        persistenceSupported: true
-        onNotification: n => root.received(n)
-    }
-
-    NotificationPopups { shell: root }
+    NotificationPopups { hidden: root.shown }
 
 
     component Glass: Item {
@@ -557,7 +500,7 @@ ShellRoot {
                 else if (k === Qt.Key_M) Audio.toggleMute()
                 else if (k === Qt.Key_PageUp || k === Qt.Key_BracketLeft) root.shiftMonth(-1)
                 else if (k === Qt.Key_PageDown || k === Qt.Key_BracketRight) root.shiftMonth(1)
-                else if (k === Qt.Key_D) root.dnd = !root.dnd
+                else if (k === Qt.Key_D) Notifs.dnd = !Notifs.dnd
                 else if (k === Qt.Key_C) root.clearAll()
             }
 
@@ -1021,7 +964,7 @@ ShellRoot {
                                 size: 28 * root.u
                                 glyph: root.dnd ? "\uf1f6" : "\uf0f3"
                                 tint: root.dnd ? Theme.accent2 : Theme.bright
-                                onClicked: root.dnd = !root.dnd
+                                onClicked: Notifs.dnd = !Notifs.dnd
                             }
                             RoundIcon {
                                 size: 28 * root.u
@@ -1061,7 +1004,6 @@ ShellRoot {
                                 required property var modelData
                                 width: notifList.width
                                 n: modelData
-                                shell: root
                                 u: root.u
                             }
 

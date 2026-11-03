@@ -29,3 +29,19 @@ singleton Audio 1.0 Audio.qml
 singleton Brightness 1.0 Brightness.qml
 Panel 1.0 Panel.qml
 CavaFeed 1.0 CavaFeed.qml
+singleton OsdState 1.0 OsdState.qml
+singleton Updates 1.0 Updates.qml
+singleton Notifs 1.0 Notifs.qml
+MiniWave 1.0 MiniWave.qml
+singleton Todos 1.0 Todos.qml
+ThemeBase 1.0 ThemeBase.qml
+Field 1.0 Field.qml
+Osd 1.0 Osd.qml
+NotificationCard 1.0 NotificationCard.qml
+NotificationPopups 1.0 NotificationPopups.qml
+TimerTab 1.0 TimerTab.qml
+WeatherTab 1.0 WeatherTab.qml
+ColorTab 1.0 ColorTab.qml
+CaptureTab 1.0 CaptureTab.qml
+Fade 1.0 Fade.qml
+Calendar 1.0 Calendar.qml

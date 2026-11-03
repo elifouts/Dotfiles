@@ -5,7 +5,6 @@ Card 1.0 Card.qml
 Chips 1.0 Chips.qml
 DeviceRow 1.0 DeviceRow.qml
 Entry 1.0 Entry.qml
-Field 1.0 Field.qml
 Group 1.0 Group.qml
 Header 1.0 Header.qml
 Level 1.0 Level.qml

@@ -12,7 +12,17 @@ hypr/<style>/<variant>/     per-machine overrides (desktop, laptop...), incl. ma
 hypr/<style>/utilities/     quickshell config (shell.qml, lock.qml, boot.qml and one folder per utility)
 hypr/<style>/waybar/<name>/ waybar styles (config, style.css, preview.png)
 hypr/<style>/quickshellbar/<name>/  quickshell bar styles (config.json, preview.svg)
-hypr/tweaks/                tweaks and saved profiles from the settings panel
+hypr/<style>/tweaks/        that style's tweaks and saved profiles from the settings panel
+hypr/<style>/base/session.sh  optional, extra daemons the style runs next to its shell
+hypr/shared/                stuff both styles symlink in, split up by what it does:
+  core/                     Hypr, Store, ThemeBase, Motion.js, Watched
+  ui/                       small building blocks (Label, Hover, Morph, IconButton...) and the bezier editor bits
+  media/                    audio, players, cava, spotify.sh
+  system/                   power, brightness, osd, notifications, updates, stats.sh, the lock's pam file
+  widgets/                  calendar, todos, weather, timers and the island/panel tabs
+  capture/                  capture.sh, share.sh (xdph's picker), cast.py
+  machine/                  machine-<variant>.lua (monitors, linked into every style)
+hypr/session.lua, wal.lua   login stuff and the pywal palette every style's lua uses
 hypr/state/                 what's live right now, gitignored: profile, bar, bar-style, saved.json,
                             color-theme, color-roles*.json, settings.lua, todos.json
 hypr/utilities/             scripts that work for any style, paths.sh is where they find the active one
@@ -32,11 +42,13 @@ hypr-profile.sh apply <style> <variant> [--offline]
 hypr-profile.sh list
 ```
 
-Applying just writes `state/profile` and reloads. Nothing gets copied anymore, so there's nothing to save back.
+Applying runs `session.sh stop` (the old style's shell, waybar, pypr), writes `state/profile`, reloads (the lua config reruns from scratch so the old binds and rules are just gone), then `session.sh start` starts the new style's shell and its `base/session.sh`. Running it twice does nothing extra. Nothing gets copied, so there's nothing to save back.
+
+Quickshell won't import files outside the folder it started in, so shared qml lives in `hypr/shared/` and each style's `utilities/common/` has symlinks to it. Imports inside a symlinked file resolve from where the link is.
 
 ## Settings panel
 
-`hypr-settings.py` is the backend. Tweaks live in `hypr/tweaks/<Style>-<variant>.json` and the active one is mirrored to `hypr/state/settings.lua`. Profile files are never touched.
+`hypr-settings.py` is the backend. Tweaks live in `hypr/<Style>/tweaks/<variant>.json` and the active one is mirrored to `hypr/state/settings.lua`. Profile files are never touched. Old `hypr/tweaks/` files get moved over the first time it runs.
 
 ```
 hypr-settings.py state KEY...       # current values as JSON
@@ -50,9 +62,9 @@ hypr-settings.py saved wipe         # delete all saved profiles and tweaks files
 
 The live entry is one of:
 
-- `default`: no overrides, but it still remembers its own wallpaper, colors and bar in `tweaks/default-look.json`
-- `variant:NAME`: `tweaks/<Style>-NAME.json`
-- `saved:NAME`: `tweaks/saved/<Style>-<variant>/NAME.json`
+- `default`: no overrides, but it still remembers its own wallpaper, colors and bar in `<Style>/tweaks/default-look.json`
+- `variant:NAME`: `<Style>/tweaks/NAME.json`
+- `saved:NAME`: `<Style>/tweaks/saved/<variant>/NAME.json`
 
 Editing a Hyprland setting while on Default writes to the active variant's file and makes that live. The current entry is tracked in `hypr/state/saved.json`.
 
@@ -133,3 +145,20 @@ Upstream pypr dies when Hyprland drops its IPC socket during a reload. Two files
 
 - `pypr.py`: installed as `~/.local/bin/pypr`, patches the bug at runtime so `/usr/lib` stays untouched.
 - `pypr.sh`: restarts the daemon if it dies anyway. It stops when Hyprland does.
+
+## Space
+
+The other style. Same scripts, settings storage, profiles and color themes as Modern, none of its visuals. One quickshell process (`Space/utilities/shell.qml`): per monitor the land and the bar, everything else is a LazyLoader thrown away when it closes.
+
+- **land**: the wallpaper is a shader (`land/land.frag`), dark sky into a glowing horizon, a big faint moon, hills and pines. no image files. switching workspace pans across it, colors come from the palette.
+- **world**: `common/World.qml` keeps the planet's hue and terrain seed and where each workspace sits on the star map. a new world writes a 16 color scheme from one hue to `wal/colorschemes/dark/space.json` and applies it with `color-apply.sh`, so kitty, borders and everything pywal follow.
+- **bar**: two slanted glass wings. workspace dots like modern's (lit = focused, ring = on this monitor) and readouts that open panels: media, network + bluetooth, sound, power, tray, calendar. cpu/mem opens the scan.
+- **star map** (`Super+Tab`): every monitor. mouse aims, wasd / arrows / hjkl fly, q e turn, shift fast, tab cycles your systems. your workspaces are named stars in a constellation. each has its home planet (the land), every open window adds another planet further out, and scratchpads are moons of the home planet. any other star is an empty system, warping there makes a new workspace and lands you on a new world.
+- **scan** (`ALT+Tab`): everything blurs back and a visor slides in with system info from `shared/system/stats.sh` (the same script modern's home screen uses).
+- **launcher** (tap `Super`): a little terminal under the bar, results type themselves out.
+- **desk** (`ALT+D`): clock, stats, media (with controls), notes. layouts per monitor shape in `~/.config/space/layouts/`.
+- **settings** (`ALT+S`) and **profiles** (`Super+P`): core hyprland bits, colors (world hue, palette, schemes), fonts for the whole theme, profiles.
+- **lock** (`Super+L`): `lock.qml`, the land dimmed behind a small hud.
+- `ALT+W` rolls a new world without the star map.
+
+Binds go through `shells.sh space toggle <name>`, quickshell's GlobalShortcut crashed the shell on exit and the crash handler kept respawning it on style switches.

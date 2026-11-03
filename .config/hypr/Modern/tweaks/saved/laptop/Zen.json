@@ -1,0 +1,56 @@
+{
+  "animation": {
+    "curve": [
+      0.5,
+      0.25,
+      0.47,
+      1.03
+    ],
+    "preset": "custom",
+    "speed": 1.2,
+    "window": "gnomed",
+    "workspace": "slidefadevert"
+  },
+  "bar": {
+    "kind": "quickshell"
+  },
+  "config": {
+    "decoration": {
+      "active_opacity": 1,
+      "blur": {
+        "brightness": 0.5,
+        "contrast": 0.2,
+        "enabled": true,
+        "noise": 0.045,
+        "passes": 8,
+        "popups": true,
+        "size": 20,
+        "vibrancy": 0.2
+      },
+      "dim_inactive": true,
+      "dim_strength": 0.2,
+      "glow": {
+        "enabled": false
+      },
+      "inactive_opacity": 1,
+      "rounding": 6,
+      "shadow": {
+        "enabled": false,
+        "range": 0
+      }
+    },
+    "general": {
+      "gaps_in": 1,
+      "gaps_out": 2
+    }
+  },
+  "quickshell": {
+    "style": "zen"
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/sunset/sun-10.png"
+  },
+  "waybar": {
+    "style": "default"
+  }
+}

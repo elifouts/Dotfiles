@@ -1,0 +1,1 @@
+../../../shared/widgets/ColorTab.qml

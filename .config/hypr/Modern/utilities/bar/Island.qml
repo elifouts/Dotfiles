@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell
 import "../common"
 import "island"
 
@@ -31,19 +30,6 @@ Item {
             width: parent.width - 50
             height: parent.height
 
-            // tabs keep the 440 they were laid out for, centred. media takes the whole width
-            component Fade: Item {
-                property bool on: false
-                property real maxW: 440
-                width: Math.min(maxW, parent.width)
-                height: parent.height
-                x: (parent.width - width) / 2
-                opacity: on ? 1 : 0
-                visible: opacity > 0
-                transform: Translate { y: (1 - opacity) * 6 }
-                Behavior on opacity { Settle { duration: Theme.move } }
-            }
-
             Fade {
                 on: page.current === "media"
                 maxW: Infinity
@@ -71,8 +57,7 @@ Item {
                 on: page.current === "color"
                 ColorTab {
                     anchors.fill: parent
-                    onPick: { page.pill.close(); page.ctx.pickColor() }
-                    onCopy: c => page.ctx.run("printf %s '" + c + "' | wl-copy")
+                    onDone: page.pill.close()
                 }
             }
             Fade {
@@ -82,18 +67,7 @@ Item {
                     anchors.fill: parent
                     active: page.pill.open && parent.visible
                     open: page.pill.open
-                    onCapture: (kind, mode) => {
-                        page.pill.close()
-                        page.ctx.run("sleep 0.35; '" + Quickshell.shellDir + "/bar/" + (kind === "share" ? "share.sh' pick " : "capture.sh' " + kind + " ") + mode)
-                    }
-                    onCancelShare: page.ctx.run("'" + Quickshell.shellDir + "/bar/share.sh' cancel")
-                    onCast: (tv, mode) => {
-                        page.pill.close()
-                        Quickshell.execDetached(["sh", "-c", 'sleep 0.35; exec "$0" start "$1" "$2" "$3" "$4"',
-                            Quickshell.shellDir + "/bar/cast.py", tv.kind, tv.target, tv.name, mode])
-                    }
-                    onStopCast: Quickshell.execDetached([Quickshell.shellDir + "/bar/cast.py", "stop"])
-                    onStop: page.ctx.run("'" + Quickshell.shellDir + "/bar/capture.sh' stop")
+                    onDone: page.pill.close()
                 }
             }
             Fade {

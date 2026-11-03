@@ -1,0 +1,27 @@
+{
+  "bar": {
+    "kind": "waybar"
+  },
+  "colors": {
+    "theme": "dark/space"
+  },
+  "config": {
+    "decoration": {
+      "blur": {
+        "enabled": true
+      }
+    },
+    "general": {
+      "border_size": 0,
+      "gaps_in": 0,
+      "gaps_out": 12
+    }
+  },
+  "space": {
+    "font": "JetBrainsMono Nerd Font Mono",
+    "parallax": 0.2
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/gruvbox/gru-04.jpg"
+  }
+}

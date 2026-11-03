@@ -7,6 +7,7 @@ CORE_PACKAGES=(
     materia-gtk-theme bibata-cursor-theme-bin
     thunar gvfs tumbler eza bottom htop libreoffice-fresh yazi lazygit hyprdvd quickshell unzip zip mpv
     avahi xdg-desktop-portal-hyprland libvips kitty networkmanager wireplumber playerctl imagemagick
+    qt6-shadertools ttf-jetbrains-mono-nerd
 )
 
 OPTIONAL_PACKAGES=(

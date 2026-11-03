@@ -2,9 +2,9 @@
 set -euo pipefail
 . "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/paths.sh"
 
-selected_wallpaper="${1:?usage: wallpaper-apply.sh <image>}"
+selected_wallpaper="${1:?usage: wallpaper-apply.sh <image> [output,output...]}"
 
-awww img "$selected_wallpaper" --transition-type "${WALLPAPER_TRANSITION:-none}" --transition-duration .5 || true
+awww img ${2:+-o "$2"} "$selected_wallpaper" --transition-type "${WALLPAPER_TRANSITION:-none}" --transition-duration .5 || true
 "$UTIL/color-apply.sh" "" "$selected_wallpaper"
 
 mkdir -p ~/.cache/wallpaper-picker && printf "%s\n" "$selected_wallpaper" > ~/.cache/wallpaper-picker/current

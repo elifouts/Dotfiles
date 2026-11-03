@@ -91,14 +91,11 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 10
 
-                    Cover {
+                    Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 20
-                        height: 20
-                        radius: Math.min(Theme.rounding, 6)
-                        fill: Theme.alpha(Theme.fg, 0.14)
-                        res: 64
-                        url: mod.ctx.track.art
+                        text: "󰝚"
+                        font.pixelSize: 16
+                        color: Theme.fg
                     }
 
                     SwapText {
@@ -121,9 +118,10 @@ Item {
                         elide: Text.ElideRight
                     }
 
-                    Wave {
+                    MiniWave {
                         anchors.verticalCenter: parent.verticalCenter
                         playing: mod.ctx.playing
+                        tint: t => Theme.along(Theme.spectrum, t)
                     }
                 }
             }
@@ -523,47 +521,6 @@ Item {
         Row {
             id: inner
             anchors.verticalCenter: parent.verticalCenter
-        }
-    }
-    component Wave: Row {
-        id: wave
-        property bool playing: false
-        readonly property int bars: 10
-
-        spacing: 2
-
-        // shared cava, both monitors' bars used to each run their own
-        onPlayingChanged: Cava.users += playing ? 1 : -1
-        Component.onCompleted: if (playing) Cava.users++
-        Component.onDestruction: if (playing) Cava.users--
-
-        Repeater {
-            model: wave.bars
-            
-            Rectangle {
-                required property int index
-
-                readonly property real level:
-                    wave.playing ? (Cava.levels[index] || 0) : 0
-
-                // even pixel heights so bars don't flicker
-                readonly property real targetHeight:
-                    Math.max(4, Math.round((3 + level * 12) / 2) * 2)
-
-                anchors.verticalCenter: parent.verticalCenter
-                width: 2.5
-                height: targetHeight
-                radius: 1.25
-
-                color: Theme.along(
-                    Theme.spectrum,
-                    index / (wave.bars - 1)
-                )
-
-                opacity: wave.playing ? 0.35 + 0.65 * level : 0.45
-
-                // no Behaviors here, they never settled so the 240hz screen redrew nonstop and the gpu sat at ~55W
-            }
         }
     }
 }

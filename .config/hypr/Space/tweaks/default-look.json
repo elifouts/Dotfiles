@@ -1,0 +1,12 @@
+{
+  "desktop": {
+    "colors": {
+      "theme": "dark/space"
+    }
+  },
+  "laptop": {
+    "colors": {
+      "theme": "dark/space"
+    }
+  }
+}

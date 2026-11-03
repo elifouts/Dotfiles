@@ -1,5 +1,1 @@
-import QtQuick
-
-Text {
-    font.family: Theme.sans
-}
+../../../shared/ui/Label.qml

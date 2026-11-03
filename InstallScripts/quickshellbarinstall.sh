@@ -46,9 +46,10 @@ install_config() {
     mkdir -p "$DEST/styles"
 
     cp "$UTIL/shell.qml" "$DEST/shell.qml"
-    cp -a "$UTIL/bar" "$UTIL/common" "$UTIL/overview" "$DEST/"
+    # -L, common/ links into hypr/shared
+    cp -aL "$UTIL/bar" "$UTIL/common" "$UTIL/overview" "$DEST/"
     cp "$REPO/.config/waybar/scripts/colorpicker.sh" "$DEST/colorpicker.sh"
-    chmod +x "$DEST/colorpicker.sh" "$DEST/common/spotify.sh" "$DEST/bar/procs.sh" "$DEST/bar/capture.sh" "$DEST/bar/net.sh"
+    chmod +x "$DEST/colorpicker.sh" "$DEST/common/spotify.sh" "$DEST/bar/procs.sh" "$DEST/bar/net.sh"
 
     local f
     for f in "$REPO"/.config/hypr/*/quickshellbar/*/config.json; do

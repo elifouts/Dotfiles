@@ -17,16 +17,14 @@ list() {
 
 apply() {
     local style="${1:?style}" variant="${2:?variant}" offline="${3:-}"
-    local src="$HYPR/$style/$variant" startup
 
-    [ -f "$src/machine.lua" ] && [ -f "$HYPR/$style/base/hyprland.lua" ] && [ -d "$HYPR/$style/utilities" ] || {
+    [ -f "$HYPR/$style/$variant/machine.lua" ] && [ -f "$HYPR/$style/base/hyprland.lua" ] && [ -d "$HYPR/$style/utilities" ] || {
         echo "Profile not found: $style/$variant" >&2
         exit 1
     }
 
-    if [ "$offline" != "--offline" ]; then
-        "$UTIL/shells.sh" stop
-    fi
+    # old style's shell and daemons go first
+    [ "$offline" = "--offline" ] || "$UTIL/session.sh" stop
 
     mkdir -p "$HYPR/state"
     printf '%s/%s\n' "$style" "$variant" > "$HYPR/state/profile"
@@ -35,14 +33,10 @@ apply() {
 
     [ "$offline" = "--offline" ] && return 0
 
+    # lua reruns from scratch so the old binds are gone
     hyprctl reload >/dev/null 2>&1 || true
     python3 "$UTIL/hypr-settings.py" cursor
-    "$UTIL/shells.sh" start
-    startup="$src/startup.lua"
-    [ -f "$startup" ] || startup="$HYPR/$style/base/startup.lua"
-    if grep -q 'bar.sh' "$startup" 2>/dev/null; then
-        "$UTIL/bar.sh" start
-    fi
+    "$UTIL/session.sh" start
     python3 "$UTIL/hypr-settings.py" appearance
     notify-send "Hyprland Profile" "Loaded $style / $variant" 2>/dev/null || true
 }

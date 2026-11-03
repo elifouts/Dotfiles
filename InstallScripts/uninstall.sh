@@ -143,7 +143,7 @@ undo_configs() {
     done < <(git -C "$REPO" ls-files -oi --exclude-standard .config ':!.config/cava/shaders' ':!.config/cava/themes')
     for made in .cache/wal .cache/wallpaper-picker .cache/hypr-home .cache/launcher .cache/colorpicker \
                 .cache/capture-thumb.png .cache/dotfiles-welcome .local/state/hypr-settings .local/state/music-player \
-                .local/state/overview .local/state/quickshell-lock.json; do
+                .local/state/overview .local/state/quickshell-lock.json .cache/space .config/space; do
         stash "$HOME/$made"
     done
     success "Cleared out what the dotfiles generated."

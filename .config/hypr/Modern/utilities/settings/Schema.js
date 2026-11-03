@@ -1,4 +1,5 @@
 .pragma library
+.import "Motion.js" as Motion
 
 function slider(key, label, min, max, step, unit, extra) {
     return Object.assign({ type: "slider", key: key, label: label, min: min, max: max, step: step, unit: unit || "" }, extra)
@@ -132,12 +133,8 @@ var PAGES = [
                 toggle("utilities.animations", "Default quickshell animations"),
                 { type: "animpreset", when: { key: "config.animations.enabled", eq: true } },
                 slider("animation.speed", "Speed", 0.3, 2.5, 0.05, "×", { when: NOT_THEME }),
-                choice("animation.window", "Windows", [
-                    opt("popin 90%", "Soft pop"), opt("popin 60%", "Deep pop"), opt("slide", "Slide"), opt("gnomed", "Gnome")],
-                    { when: NOT_THEME }),
-                choice("animation.workspace", "Workspaces", [
-                    opt("slide", "Slide"), opt("slidevert", "Slide vertical"), opt("fade", "Fade"),
-                    opt("slidefade", "Slide + fade"), opt("slidefadevert", "Slide + fade vertical")], { when: NOT_THEME })
+                choice("animation.window", "Windows", Motion.WINDOWS, { when: NOT_THEME }),
+                choice("animation.workspace", "Workspaces", Motion.WORKSPACES, { when: NOT_THEME })
             ]),
             section("Curve", [{ type: "bezier", when: { key: "config.animations.enabled", eq: true } }]),
             section("Details", [
@@ -251,11 +248,4 @@ function keys() {
         });
     });
     return out;
-}
-
-var PRESETS = {
-    calm: { curve: [0.16, 1, 0.3, 1], speed: 0.6, window: "popin 90%", workspace: "slide" },
-    balanced: { curve: [0.15, 0.85, 0.25, 1], speed: 1, window: "popin 90%", workspace: "slide" },
-    snappy: { curve: [0.3, 1, 0.4, 1], speed: 1.7, window: "popin 60%", workspace: "slide" },
-    bouncy: { curve: [0.34, 1.56, 0.64, 1], speed: 1, window: "popin 60%", workspace: "slidefade" }
 }
