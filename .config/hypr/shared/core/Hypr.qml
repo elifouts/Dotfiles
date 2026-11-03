@@ -42,6 +42,8 @@ Singleton {
     function focusedScreen() {
         return Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
     }
+    // only the widest screen gets the moon, the rest get extra stars
+    readonly property var moonScreen: Quickshell.screens.reduce((a, b) => b.width > a.width ? b : a, Quickshell.screens[0])
     function screenNamed(name) {
         return Quickshell.screens.find(s => s.name === name) ?? focusedScreen()
     }

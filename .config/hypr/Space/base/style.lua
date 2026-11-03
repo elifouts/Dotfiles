@@ -81,7 +81,7 @@ hl.window_rule({
 hl.window_rule({ name = "spotify-float", match = { class = "(?i)^spotify$" }, float = true })
 
 -- the shell animates itself, hyprland just blurs the hud
-for _, ns in ipairs({ "space-bar", "space-launcher", "space-settings", "space-toast", "space-panel" }) do
+for _, ns in ipairs({ "space-bar", "space-launcher", "space-settings", "space-toast", "space-panel", "notification-popup" }) do
     hl.layer_rule({ name = ns .. "-blur", match = { namespace = ns }, blur = true, ignore_alpha = 0.2, no_anim = true })
 end
 hl.layer_rule({ name = "osd-blur", match = { namespace = "osd" }, blur = true, ignore_alpha = 0.05, no_anim = true })

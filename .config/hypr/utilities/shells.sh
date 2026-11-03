@@ -15,7 +15,8 @@ launch() (
     # 9>&- so the daemon doesn't keep the lock
     # simple animation driver: qt otherwise ticks every animation at one screen's rate (the 75hz one), so on the 240hz
     # screen frames landed every 3 or 4 refreshes and everything juddered. took forever to find
-    QSG_USE_SIMPLE_ANIMATION_DRIVER=1 qs -n -p "$QS" --daemonize </dev/null >/dev/null 2>&1 9>&-
+    # no vsync: qt waited on every screen's vsync each frame, so the slowest monitor held the rest back
+    QSG_USE_SIMPLE_ANIMATION_DRIVER=1 QSG_NO_VSYNC=1 qs -n -p "$QS" --daemonize </dev/null >/dev/null 2>&1 9>&-
     for _ in $(seq 1 60); do
         qs ipc -p "$QS" show 2>/dev/null | grep -q '^target' && exit 0
         sleep 0.05

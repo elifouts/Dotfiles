@@ -51,6 +51,7 @@ ShaderEffect {
     // see land.frag: 0 draws it all and twinkles itself, 1 is still (cache it with layer.enabled), 2 is Twinkle's pass
     property real layerMode: 0
     property real starClock: 0
+    property real moonless: 0
     NumberAnimation on starClock {
         running: layerMode === 0
         from: 0

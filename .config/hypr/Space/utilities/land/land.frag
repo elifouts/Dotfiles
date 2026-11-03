@@ -30,6 +30,8 @@ layout(std140, binding = 0) uniform buf {
     // 0 everything, twinkle included. 1 the still land with every star at its dimmest, drawn once and cached.
     // 2 only the twinkle, added over a 1 (see Twinkle.qml), so the full scene never redraws per frame
     float layerMode;
+    // 1 drops the sky moon and fills its spot with stars (side monitors)
+    float moonless;
 };
 
 // no sin() hashes, they lost precision far out
@@ -169,7 +171,7 @@ void main() {
     vec2 md = vec2(x - pan * 0.02 + lift * 0.35, y - 0.56 - lift);
     float mr = length(md);
     float tex = n1(md.x * 14.0 + md.y * 9.0 + 3.0) * n1(md.y * 17.0 - md.x * 5.0 + 9.0);
-    float disc = smoothstep(0.31 + fwidth(mr), 0.31 - fwidth(mr), mr);
+    float disc = smoothstep(0.31 + fwidth(mr), 0.31 - fwidth(mr), mr) * (1.0 - moonless);
     // when it's about to fly up and become a real moon (star map) the one below takes over straight away
     float handed = step(0.5, moonEnd.w) * smoothstep(0.0, 0.04, rise);
     col = mix(col, mix(col, mix(moon.rgb, warm.rgb * 1.1, glow * 0.75), 0.09 + tex * 0.07 + 0.05 * smoothstep(0.3, 0.0, length(md + vec2(0.08, -0.08))) + max(smoothstep(0.0, 0.3, abs(lift)), glow) * 0.5), disc * (1.0 - handed));
@@ -178,7 +180,7 @@ void main() {
     vec2 cell = floor(g), f = fract(g) - 0.5;
     float r = h2(cell);
     float clusters = smoothstep(0.25, 0.75, n2(g * 0.16 + vec2(3.1, 7.7)));
-    float starOn = step(mix(0.72, 0.28, clusters), r);
+    float starOn = step(mix(0.72, 0.28, clusters) - moonless * 0.14, r);
     vec2 p = f - (vec2(h2(cell + 3.1), h2(cell + 7.7)) - 0.5) * 0.7;
     float dist = length(p);
     float size = mix(0.009, 0.022, h2(cell + 1.3));

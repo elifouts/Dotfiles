@@ -15,6 +15,7 @@ Terrain {
     glow: under.glow
     seed: under.seed
     rise: under.rise
+    moonless: under.moonless
 
     // the stars drift ~1% brightness a tick, smooth to the eye. the clock wraps every 12s like the old animation
     Timer {

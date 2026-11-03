@@ -315,7 +315,7 @@ Scope {
     // play with these: how long each takes and the curve, a cubic bezier like css (x1, y1, x2, y2).
     // this is css "ease": quick to get going, long gentle finish
     readonly property int takeoffMs: 3800
-    readonly property int landMs: 3600
+    readonly property int landMs: 3100
     readonly property var curve: [0.25, 0.1, 0.25, 1.0]
     // landing starts from your click so it gets going sooner
     readonly property var landCurve: [0.15, 0.25, 0.25, 1.0]
@@ -492,6 +492,8 @@ Scope {
     // flying: keys push, momentum carries, it eases to a stop. only ticks while something is moving
     readonly property bool busy: takeoff.running || fly.running || descend.running
     // done() sometimes never came and left invisible overlays eating the launcher
+    // fully covered, so the wallpaper can stop twinkling under it
+    Binding { target: Ui; property: "overview"; value: map.veil > 0.99 }
     readonly property bool drawn: busy || veil > 0 || ascent > 0.001
     onDrawnChanged: if (!drawn) done()
     readonly property bool flying: Object.keys(held).length > 0 || Math.hypot(...vel) > 0.05
@@ -900,7 +902,8 @@ Scope {
                 endR: map.endR
                 // same sun the map's copy gets, so the handoff doesn't flip the lighting
                 sun: map.sunDir(map.transitLight?.[0], map.transitLight?.[1])
-                moonEnd: win.main ? map.moonEnd : Qt.vector4d(0, 0, 0, 0)
+                moonless: win.modelData === Hypr.moonScreen ? 0 : 1
+                moonEnd: win.main && !moonless ? map.moonEnd : Qt.vector4d(0, 0, 0, 0)
             }
 
             MouseArea {

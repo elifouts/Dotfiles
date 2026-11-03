@@ -15,7 +15,7 @@
     "kind": "quickshell"
   },
   "colors": {
-    "theme": "pywal"
+    "theme": "dark/catppuccin-macchiato-copy"
   },
   "config": {
     "decoration": {
@@ -52,7 +52,7 @@
     "style": "zen"
   },
   "wallpaper": {
-    "path": "$HOME/wallpapers/library/catppuccin/cat-12.png"
+    "path": "$HOME/wallpapers/library/catppuccin/cat-08.jpg"
   },
   "waybar": {
     "style": "default"
