@@ -433,6 +433,12 @@ ShellRoot {
                                     cw: Math.min(130, 70 * o.size[0] / Math.max(1, o.size[1]))
                                     onPicked: { Quickshell.execDetached(["pypr", "toggle", label]); root.open = false }
                                     onRemoved: ex.closeWindow(modelData)
+                                    // under the capture, hidden pads hand back blank frames that still count as content
+                                    IconImage {
+                                        anchors.centerIn: parent
+                                        implicitSize: 32
+                                        source: ex.iconFor(pad.o.class)
+                                    }
                                     ScreencopyView {
                                         anchors.fill: parent
                                         captureSource: ex.active && !ex.isClosing(pad.modelData) ? pad.modelData.wayland : null

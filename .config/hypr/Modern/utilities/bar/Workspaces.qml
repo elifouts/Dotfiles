@@ -101,7 +101,8 @@ Item {
     }
 
     function iconFor(cls) {
-        const e = DesktopEntries.heuristicLookup(cls || "")
+        // custom classes like kitty-dropterm match nothing, so try the app before the dash
+        const e = DesktopEntries.heuristicLookup(cls || "") || DesktopEntries.heuristicLookup((cls || "").split("-")[0])
         return Quickshell.iconPath(e && e.icon ? e.icon : (cls || "").toLowerCase(), true)
             || Quickshell.iconPath("application-x-executable", true)
     }
