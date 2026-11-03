@@ -8,7 +8,7 @@ local urgency = {
   [L.ERROR] = "critical",
 }
 
-local LOG = "/tmp/nvim-notify.log" -- temporary, delete once this is solved
+local LOG = "/tmp/nvim-notify.log"
 
 local function dbg(line)
   local f = io.open(LOG, "a")
@@ -42,7 +42,6 @@ function M.setup()
 
     table.insert(M.history, msg)
 
-    -- fall back to vim messages if notify-send fails
     local function fallback()
       vim.schedule(function() original(msg, level, opts) end)
     end
@@ -73,7 +72,6 @@ function M.setup()
   end
 end
 
--- for daemons without action buttons
 vim.api.nvim_create_user_command("NotifyCopy", function()
   local last = M.history[#M.history]
   if last then

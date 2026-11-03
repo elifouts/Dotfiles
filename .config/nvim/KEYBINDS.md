@@ -47,17 +47,16 @@ Leader key: `<Space>`
 ## AI (Claude)
 
 - Mode: normal
-- `<leader>ap`: Toggle Claude right panel
+- `<leader>ap`: Toggle Claude panel
 - `<leader>ao`: Focus Claude panel
-- `<leader>ar`: Resume an old session
-- `<leader>ac`: Continue last chat
-- `<leader>an`: New session
+- `<leader>ar`: Resume a session
+- `<leader>ac`: Continue last session
+- `<leader>an`: Start a new session
 - `<leader>am`: Pick model
-- `<leader>ab`: Add current file to Claude
-- `<leader>aa`: Accept Claude's diff
-- `<leader>ad`: Deny Claude's diff
-- Mode: visual
-- `<leader>as`: Send selection to Claude
+- `<leader>ab`: Add current file
+- `<leader>aa`: Accept Claude diff
+- `<leader>ad`: Reject Claude diff
+- Visual `<leader>as`: Send selection to Claude
 
 ## LSP (buffer-local, active when an LSP attaches)
 

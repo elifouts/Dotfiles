@@ -4,7 +4,9 @@ return {
         lazy = false,
         priority = 1000,
         config = function()
-            require("pywal").setup()
+            if require("ui_theme").has_pywal() then
+                require("pywal").setup()
+            end
             require("ui_theme").init()
         end,
     },
@@ -146,4 +148,3 @@ return {
         end,
     },
 }
-

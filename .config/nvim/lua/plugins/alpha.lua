@@ -4,7 +4,6 @@ return {
     config = function()
         local dashboard = require("alpha.themes.dashboard")
 
-        -- utf-8 aware length
         local function getCharLen(s, pos)
             local byte = string.byte(s, pos)
             if not byte then return nil end
@@ -96,9 +95,13 @@ return {
             dashboard.button("r", "  > Recent", ":Telescope oldfiles<CR>"),
             dashboard.button("c", "  > Config", ":cd ~/.config/nvim | Telescope find_files<CR>"),
             dashboard.button("l", "󰒲 > Lazy", ":Lazy<CR>"),
-            dashboard.button("h", "  > Settings", ":cd ~/.config/hypr | Telescope find_files<CR>"),
             dashboard.button("q", "  > Quit", ":qa<CR>"),
         }
+
+        if vim.fn.isdirectory(vim.fn.expand("~/.config/hypr")) == 1 then
+            table.insert(dashboard.section.buttons.val, #dashboard.section.buttons.val,
+                dashboard.button("h", "  > Settings", ":cd ~/.config/hypr | Telescope find_files<CR>"))
+        end
 
         dashboard.section.footer.val = { "", "Welcome!" }
 

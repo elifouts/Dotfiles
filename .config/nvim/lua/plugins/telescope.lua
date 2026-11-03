@@ -7,7 +7,7 @@ return {
             "nvim-treesitter/nvim-treesitter",
         },
         config = function()
-            -- shim for parser builds missing ft_to_lang
+            -- Telescope 0.1.x expects this parser API.
             local ok_parsers, ts_parsers = pcall(require, "nvim-treesitter.parsers")
             if ok_parsers and ts_parsers and ts_parsers.ft_to_lang == nil then
                 ts_parsers.ft_to_lang = function(ft)

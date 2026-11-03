@@ -5,12 +5,11 @@ return {
         "MunifTanjim/nui.nvim",
     },
     config = function()
-        vim.cmd("source ~/.cache/wal/colors-wal.vim")
+        pcall(vim.cmd.source, vim.fn.expand("~/.cache/wal/colors-wal.vim"))
         local color9 = vim.g.color9 or "#808080"
         local color5 = vim.g.color5 or "#ffffff"
 
         require("noice").setup({
-            -- notify_system handles vim.notify
             notify = { enabled = false },
             lsp = {
                 override = {
@@ -29,7 +28,6 @@ return {
             messages = { enabled = true },
             routes = {
                 {
-                    -- send errors to a system notification instead
                     filter = {
                         event = "msg_show",
                         cond = function(message)

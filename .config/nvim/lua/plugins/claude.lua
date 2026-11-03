@@ -1,4 +1,3 @@
--- claude cli in a split. sees my buffers, edits show up as diffs
 return {
     "coder/claudecode.nvim",
     dependencies = { "folke/snacks.nvim" },
@@ -16,7 +15,6 @@ return {
         { "<leader>ac", "<cmd>ClaudeCode --continue<cr>", desc = "Claude: Continue Last Chat" },
         {
             "<leader>an",
-            -- shows the running one and /clears it. ClaudeCode toggles so it'd close the panel, Open doesn't
             function()
                 local term = require("claudecode.terminal")
                 local running = term.get_active_terminal_bufnr and term.get_active_terminal_bufnr()
