@@ -51,6 +51,10 @@ if B and B.gradient then
     end
 end
 
+hl.layer_rule({ name = "style-transition-noanim", match = { namespace = "style-transition" }, no_anim = true })
+local held, hold = pcall(dofile, (os.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/style-transition.lua")
+if held then hl.config({ general = hold }) end
+
 if S.mice and S.config and S.config.input and S.config.input.sensitivity ~= nil then
     for _, name in ipairs(S.mice) do
         hl.device({ name = name, sensitivity = S.config.input.sensitivity })

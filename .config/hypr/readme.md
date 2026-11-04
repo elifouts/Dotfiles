@@ -66,13 +66,21 @@ The block at the top of `hyprland.lua` moves state out of the old `.active-*` fi
 
 `settings/hypr-profile.sh apply <style> <variant>` runs this:
 
-1. `session.sh stop` kills the old shell, waybar and awww
-2. writes `state/profile`
-3. `hypr-settings.py sync` writes `state/settings.lua` and `state/bar`
-4. `hyprctl reload`
-5. `session.sh start`, then applies cursor, colors and wallpaper
+1. `transition.sh begin` freezes the screen behind a blurred frame and a loading bar
+2. `session.sh stop` kills the old shell, waybar and awww, in the background
+3. writes `state/profile`
+4. `hypr-settings.py sync` writes `state/settings.lua` and `state/bar`
+5. `hyprctl reload`
+6. `session.sh start` and `hypr-settings.py colors` run together, then the wallpaper
+7. `transition.sh reveal` fades into the new style
 
-A style counts if it has `base/hyprland.lua`, `<variant>/machine.lua` and `utilities/`.
+A style counts if it has `base/hyprland.lua`, `<variant>/machine.lua` and `utilities/`. It gets the transition for free, nothing in it knows about styles.
+
+`transition.qml` runs as its own process because the shell it covers gets killed. It keeps the old bar's space with empty layers on the background level, which get arranged last so they don't push the new bar down. The old gaps stay through `$XDG_RUNTIME_DIR/style-transition.lua`, which `overrides.lua` reads. Both get released right as the fade starts, so windows resize during it.
+
+Windows only resize during the fade when the new bar reserves less than the old one. A bigger bar pushes them as soon as it maps, there's no way to hold that back, so they move behind the frame.
+
+The bar runs on a timer, it doesn't track real steps. It waits at 90% until the reveal.
 
 </details>
 
@@ -114,6 +122,8 @@ wallpaper-apply.sh → awww + color-apply.sh → wal → ~/.cache/wal/*
                                                  ├ cava       rewrites ~/.config/cava/config
                                                  └ firefox    pywalfox update
 ```
+
+In Space each profile keeps its color in `space.world`, with the finished palette so the switch doesn't need the shell to make it. `sync_world` writes it to `dark/space.json` and `~/.config/space/world.json`. A profile without one uses Default, which is gruvbox. Picking a color on Default moves you onto the variant entry. Hopping worlds or landing on a star doesn't touch the profile, so switching back brings its color back.
 
 `state/color-theme` is `pywal` or a scheme from `~/.config/wal/colorschemes/`. Role picks like the accent slot are saved per scheme, and per wallpaper on pywal.
 
@@ -192,7 +202,7 @@ Same scripts, settings and color themes as Modern, none of the visuals. One proc
 | Part | Key | What it is |
 |---|---|---|
 | land | | the wallpaper is a shader, workspaces pan across it |
-| world | `Alt+W` | hue and seed in `World.qml`, writes `wal/colorschemes/dark/space.json` |
+| world | `Alt+W` | hue and seed in `World.qml`, writes `wal/colorschemes/dark/space.json`, not saved to the profile |
 | star map | `Super+Tab` | workspaces and special workspaces with windows are stars, windows are planets, pypr scratchpads are moons |
 | scan | `Alt+Tab` | visor with system info |
 | launcher | tap `Super` | little terminal under the bar, `Tab` cycles apps, commands and a bare kitty prompt, `Shift+Enter` runs in the background instead of kitty |
@@ -240,7 +250,7 @@ settings/hypr-profile.sh apply <style> <variant> [--offline] | list
 
 settings/hypr-settings.py state KEY...         # current values as json
 settings/hypr-settings.py set KEY=JSON ...     # save and apply, null removes
-settings/hypr-settings.py reset | sync | cursor | appearance
+settings/hypr-settings.py reset | sync | cursor | colors | appearance
 settings/hypr-settings.py saved save NAME | apply ID | delete ID | preview | wipe
 
 session/shells.sh start | stop | restart | <utility> [call]
@@ -404,6 +414,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 
 - `WifiEditor` never reads the password back, and only touches the ip method if you changed it, or link-local gets wiped
 - New wifi goes through nmcli because it says when the password is wrong
+- Hyprland's capture includes the cursor even when asked not to, so the transition's frame has a copy baked in. The blur is what hides it
 - `eap` in `net.sh` uses peap and mschapv2 because UC_Secure wants it
 - `procs.sh` only counts a shell on a tty as a terminal, pywalfox spawns one without
 - `tabs.py` decodes mozlz4 itself so I don't need `python-lz4`
@@ -415,7 +426,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 
 ## Every file
 
-All 376 of them. `→` means it's a symlink, the real file is in that `shared/` folder.
+All 378 of them. `→` means it's a symlink, the real file is in that `shared/` folder.
 
 <details>
 <summary><b>hypr/ (root)</b></summary>
@@ -472,7 +483,9 @@ utilities/
 │  ├─ lock.sh                 grabs monitor frames, runs lock.qml as its own process
 │  ├─ osd.sh                  brightness and volume keys, then shows the osd
 │  ├─ session.sh              start or stop a style's shell and daemons
-│  └─ shells.sh               start, stop or call the quickshell process over ipc
+│  ├─ shells.sh               start, stop or call the quickshell process over ipc
+│  ├─ transition.qml          blurred frame and loading bar that hide a style switch
+│  └─ transition.sh           starts it, holds the old layout, then reveals
 ├─ settings/
 │  ├─ hypr-profile.sh         switch or list Style/variant
 │  └─ hypr-settings.py        settings backend: tweaks, saved entries, settings.lua

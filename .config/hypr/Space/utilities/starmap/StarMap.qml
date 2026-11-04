@@ -126,7 +126,7 @@ Scope {
     Connections {
         target: World
         function onSeedChanged() { map.reroll() }
-        function onPoolChanged2() { map.reroll() }
+        function onOffersChanged() { map.reroll() }
         function onCurThemeChanged() { if (!map.landing) map.reroll() }
     }
     function hash(a, b, c) { return r3(a + World.seed * 31, b, c) }

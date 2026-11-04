@@ -56,7 +56,7 @@ record() {
     fi
     mkdir -p "$VIDEOS"
     date +%s > "$STATE"
-    wf-recorder "${args[@]}" -f "$out" >/dev/null 2>&1
+    wf-recorder "${args[@]}" --audio="$(pactl get-default-sink).monitor" -f "$out" >/dev/null 2>&1
     rm -f "$STATE"
     [ -s "$out" ] && note "Recording saved" "$out" "$(thumb "$out")"
 }

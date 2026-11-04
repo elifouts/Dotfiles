@@ -11,7 +11,7 @@ Column {
 
     QsMenuOpener { id: opener; menu: tray.item?.menu ?? null }
 
-    Kit.Title { glyph: "󰇘"; text: tray.item ? (tray.item.tooltipTitle || tray.item.title || tray.item.id) : "tray" }
+    Kit.Title { glyph: "󱊔"; text: tray.item ? (tray.item.tooltipTitle || tray.item.title || tray.item.id) : "tray" }
     Repeater {
         model: tray.item ? [] : SystemTray.items.values
         Kit.Line {

@@ -18,5 +18,6 @@ Singleton {
         sink.audio.volume = Math.max(0, Math.min(1, v))
         if (v > 0) sink.audio.muted = false
     }
+    function nudge(dir) { setVolume(Math.round((volume + dir * 0.02) * 50) / 50) }
     function toggleMute() { if (sink?.audio) sink.audio.muted = !sink.audio.muted }
 }

@@ -4,8 +4,8 @@ set -euo pipefail
 
 selected_wallpaper="${1:?usage: wallpaper-apply.sh <image> [output,output...]}"
 
-awww img ${2:+-o "$2"} "$selected_wallpaper" --transition-type "${WALLPAPER_TRANSITION:-none}" --transition-duration .5 || true
-"$UTIL/colors/color-apply.sh" "" "$selected_wallpaper"
+! pgrep -x awww-daemon >/dev/null || awww img ${2:+-o "$2"} "$selected_wallpaper" --transition-type "${WALLPAPER_TRANSITION:-none}" --transition-duration .5 || true
+[ -n "${COLORS_DONE:-}" ] || "$UTIL/colors/color-apply.sh" "" "$selected_wallpaper"
 
 mkdir -p ~/.cache/wallpaper-picker && printf "%s\n" "$selected_wallpaper" > ~/.cache/wallpaper-picker/current
 cp -r "$selected_wallpaper" "$HOME/wallpapers/pywallpaper.jpg"

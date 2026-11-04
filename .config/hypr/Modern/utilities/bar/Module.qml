@@ -306,7 +306,7 @@ Item {
                 if (b === Qt.MiddleButton) Audio.toggleMute()
                 else if (b === Qt.RightButton) mod.ctx.run("pavucontrol")
             }
-            onWheel: dir => Audio.setVolume(Math.round((volume + dir * 0.02) * 50) / 50)
+            onWheel: dir => Audio.nudge(dir)
 
             Item {
                 anchors.verticalCenter: parent.verticalCenter

@@ -187,8 +187,8 @@ PanelWindow {
                 Caption { text: "random" }
                 Kit.Toggle { on: World.random; onFlip: World.setRandom(!World.random) }
                 Item { width: 24; height: 1 }
-                Button { label: "new world"; onPressed: World.reroll() }
-                Hud { height: 24; color: Theme.alpha(Theme.fg, 0.3); text: World.random ? "any colour goes" : "swatch pins accent  //  tile adds or drops it" }
+                Button { label: "new world"; onPressed: { World.reroll(); World.commit() } }
+                Hud { height: 24; color: Theme.alpha(Theme.fg, 0.3); text: World.random ? "any colour goes" : "click to apply  //  swatch picks accent" }
             }
             Row {
                 spacing: 12
@@ -210,19 +210,18 @@ PanelWindow {
                     Item {
                         id: tile
                         required property var modelData
-                        readonly property bool on: World.themeOn(modelData.id)
                         readonly property bool used: World.applied?.t.id === modelData.id
                         readonly property int usedAccent: used ? World.applied.i : -1
                         width: 88
                         height: 150
                         Rectangle {
                             anchors.fill: parent
-                            color: Theme.alpha(Theme.accent, tile.on ? 0.1 : ma.containsMouse ? 0.06 : 0.02)
+                            color: Theme.alpha(Theme.accent, tile.used ? 0.1 : ma.containsMouse ? 0.06 : 0.02)
                             border.width: 1
-                            border.color: tile.used ? Theme.accent : tile.on ? Theme.alpha(Theme.accent, 0.45) : Theme.alpha(Theme.fg, 0.12)
+                            border.color: tile.used ? Theme.accent : Theme.alpha(Theme.fg, 0.12)
                             Behavior on color { ColorAnimation { duration: 140 } }
                         }
-                        Hud { x: 8; y: 8; font.pixelSize: 9; text: tile.modelData.name; color: tile.on ? Theme.fg : Theme.dim }
+                        Hud { x: 8; y: 8; font.pixelSize: 9; text: tile.modelData.name; color: tile.used ? Theme.fg : Theme.dim }
                         Column {
                             z: 2
                             x: 8
@@ -249,9 +248,9 @@ PanelWindow {
                                 }
                             }
                         }
-                        Rectangle { x: 8; y: 128; width: 72; height: 2; color: tile.on ? Theme.accent : "transparent" }
-                        Hud { x: 8; y: 133; font.pixelSize: 9; text: tile.used ? "applied" : tile.on ? "in pool" : "off"; color: tile.on ? Theme.accent : Theme.alpha(Theme.fg, 0.3) }
-                        MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; onClicked: World.toggleTheme(tile.modelData.id) }
+                        Rectangle { x: 8; y: 128; width: 72; height: 2; color: tile.used ? Theme.accent : "transparent" }
+                        Hud { x: 8; y: 133; font.pixelSize: 9; visible: tile.used; text: "applied"; color: Theme.accent }
+                        MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; onClicked: World.use(tile.modelData.id, World.pins[tile.modelData.id] ?? 6) }
                     }
                 }
             }

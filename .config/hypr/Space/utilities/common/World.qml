@@ -23,12 +23,10 @@ Singleton {
         { id: "solarized", name: "solarized", c: ["#002b36", "#93a1a1", "#586e75", "#dc322f", "#859900", "#b58900", "#268bd2", "#6c71c4", "#2aa198"] }
     ]
     function accentHue(hex) { return Qt.color(hex).hslHue }
-    property var pool: themes.map(t => t.id)
     property bool random: false
-    readonly property var active: themes.filter(t => pool.indexOf(t.id) >= 0)
     property var pins: ({})
     property string curTheme: ""
-    signal poolChanged2()
+    signal offersChanged()
     property var stars: ({})
     signal landed()
     property bool heldReload: false
@@ -62,25 +60,34 @@ Singleton {
         path: Hypr.home + "/.config/space/world.json"
         atomicWrites: true
         printErrors: false
+        watchChanges: true
+        onFileChanged: reload()
         onLoaded: {
             try {
+                if (text() === root.written) return
                 const w = JSON.parse(text())
                 root.hue = w.hue ?? root.hue
                 root.seed = w.seed ?? root.seed
                 root.landSeed = w.landSeed ?? root.seed
                 root.stars = w.stars ?? {}
                 root.pins = w.pins ?? ({})
-                if (Array.isArray(w.pool)) { const k = w.pool.filter(x => root.themes.some(t => t.id === x)); if (k.length) root.pool = k }
                 root.random = !!w.random
                 root.curTheme = w.curTheme || (root.random ? "" : root.themeFor(root.hue)?.t.id ?? "")
             } catch (e) {}
         }
     }
-    function save() { file.setText(JSON.stringify({ hue: hue, seed: seed, landSeed: landSeed, stars: stars, pool: pool, pins: pins, curTheme: curTheme, random: random })) }
+    property string written: ""
+    function save() {
+        written = JSON.stringify({ hue: hue, seed: seed, landSeed: landSeed, stars: stars, pins: pins, curTheme: curTheme, random: random })
+        file.setText(written)
+    }
+    function commit() {
+        Store.set("space.world", { theme: curTheme, hue: hue, random: random, palette: palette(hue) })
+    }
 
     function offers() {
         const out = []
-        for (const t of active) {
+        for (const t of themes) {
             const p = pins[t.id]
             if (p !== undefined) out.push([t, p])
             else for (let i = 3; i < 9; i++) out.push([t, i])
@@ -109,12 +116,12 @@ Singleton {
         if (was) delete p[id]
         else p[id] = i
         pins = p
-        poolChanged2()
-        if (!was && themeOn(id)) use(id, i)
+        offersChanged()
+        if (!was) use(id, i)
         else save()
     }
     function themeFor(h) {
-        const list = (active.length ? active : themes).slice().sort((x, y) => (y.id === curTheme) - (x.id === curTheme))
+        const list = themes.slice().sort((x, y) => (y.id === curTheme) - (x.id === curTheme))
         let best = null, bi = 3, d = 9
         for (const t of list) for (let i = 3; i < 9; i++) {
             const x = Math.abs(accentHue(t.c[i]) - h), dd = Math.min(x, 1 - x)
@@ -125,23 +132,18 @@ Singleton {
     readonly property var applied: random || !curTheme ? null : themeFor(hue)
     function use(id, i) {
         const t = themes.find(x => x.id === id)
+        random = false
         curTheme = id
         recolor(accentHue(t.c[i]))
-    }
-    function themeOn(id) { return pool.indexOf(id) >= 0 }
-    function toggleTheme(id) {
-        const on = themeOn(id)
-        if (on && pool.length === 1) return
-        pool = on ? pool.filter(x => x !== id) : pool.concat([id])
-        if (on) { curTheme = ""; recolor(nearest(hue)) }
-        else use(id, pins[id] ?? 6)
-        poolChanged2()
+        offersChanged()
+        commit()
     }
     function setRandom(v) {
         random = v
         save()
-        poolChanged2()
+        offersChanged()
         if (!v) recolor(nearest(hue))
+        commit()
     }
 
     function starOf(id) {

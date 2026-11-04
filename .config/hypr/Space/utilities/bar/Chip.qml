@@ -10,6 +10,7 @@ Item {
     property string tab: ""
     property bool hot: false
     property bool show: true
+    signal wheel(int dir)
     readonly property var wing: parent?.parent
     readonly property bool open: Ui.panel === panel && Ui.panelScreen === wing?.scr && (tab === "" || Ui.tab === tab)
 
@@ -72,5 +73,6 @@ Item {
         hoverEnabled: true
         onEntered: if (chip.panel !== "scan" && !chip.open) chip.openIt()
         onClicked: if (chip.panel === "scan" || !chip.open) chip.openIt()
+        onWheel: w => chip.wheel(w.angleDelta.y > 0 ? 1 : -1)
     }
 }

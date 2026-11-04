@@ -21,7 +21,7 @@ SCHEMES = HOME / ".config/wal/colorschemes"
 LOOK_KEYS = ("wallpaper.", "colors.", "bar.", "waybar.", "quickshell.")
 INTERNAL_SCHEMES = {"pywal16", "ywal16"}
 UI_FILE = HOME / ".local/state/hypr-settings/ui.json"
-USAGE = "usage: hypr-settings.py state KEY... | set KEY=JSON... | reset | sync | cursor | appearance | ui KEY=JSON... | saved save|apply|delete|preview|wipe [ID]"
+USAGE = "usage: hypr-settings.py state KEY... | set KEY=JSON... | reset | sync | cursor | colors | appearance | ui KEY=JSON... | saved save|apply|delete|preview|wipe [ID]"
 CURSOR_DIRS = [HOME / ".icons", HOME / ".local/share/icons", Path("/usr/share/icons")]
 
 
@@ -449,7 +449,7 @@ def saved_preview():
         if theme == "pywal":
             colors = wallpaper_palette(wallpaper, index)
         else:
-            scheme = load(SCHEMES / f"{theme}.json", {}).get("colors", {})
+            scheme = (theme == "dark/space" and dig(world_of(s) or {}, "palette.colors")) or load(SCHEMES / f"{theme}.json", {}).get("colors", {})
             colors = [scheme.get(f"color{i}") for i in range(16)]
         kind = dig(s, "bar.kind") or DEFAULT_BAR
         look = dig(s, "quickshell.style") or DEFAULT_QUICKSHELL if kind == "quickshell" else dig(s, "waybar.style") or DEFAULT_WAYBAR
@@ -486,8 +486,9 @@ def current_theme():
 
 
 def detached(*cmd, env=None):
-    subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                     start_new_session=True, env={**os.environ, **(env or {})})
+    spawn = subprocess.run if os.environ.get("HYPR_SETTINGS_WAIT") else subprocess.Popen
+    spawn(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+          start_new_session=True, env={**os.environ, **(env or {})})
 
 
 def real_wallpaper(path):
@@ -504,13 +505,36 @@ def load_text(path):
         return ""
 
 
+def world_of(settings):
+    return dig(settings, "space.world") or dig(entry_settings("default"), "space.world")
+
+
+def sync_world(settings):
+    world = world_of(settings)
+    if not world:
+        return
+    write_atomic(SCHEMES / "dark/space.json", json.dumps(world["palette"]))
+    path = HOME / ".config/space/world.json"
+    write_atomic(path, json.dumps({**load(path, {}), "hue": world["hue"], "curTheme": world["theme"], "random": world["random"]}))
+
+
+def cmd_colors():
+    settings = live_settings()
+    sync_world(settings)
+    theme = dig(settings, "colors.theme") or DEFAULT_THEME
+    subprocess.run([str(HYPR / "utilities/colors/color-apply.sh"), theme, settings_wallpaper(settings)], env={**os.environ, "COLOR_NO_RELOAD": "1"},
+                   stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
 def cmd_appearance():
     settings = live_settings()
+    if not os.environ.get("COLORS_DONE"):
+        sync_world(settings)
     theme = dig(settings, "colors.theme") or DEFAULT_THEME
     wallpaper = settings_wallpaper(settings)
     if wallpaper:
         write_atomic(THEME_FILE, theme + "\n")
-        detached(str(HYPR / "utilities/wallpaper/wallpaper-apply.sh"), wallpaper, env={"HYPR_SETTINGS_NO_RECORD": "1", "WALLPAPER_TRANSITION": "fade"})
+        detached(str(HYPR / "utilities/wallpaper/wallpaper-apply.sh"), wallpaper, env={"HYPR_SETTINGS_NO_RECORD": "1", "WALLPAPER_TRANSITION": os.environ.get("WALLPAPER_TRANSITION", "fade")})
     elif theme != current_theme():
         detached(str(HYPR / "utilities/colors/color-apply.sh"), theme)
     if not any((style_dir() / d).is_dir() for d in ("waybar", "quickshellbar")):
@@ -592,7 +616,7 @@ def main():
     migrate()
     command, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("", [])
     handlers = {"state": cmd_state, "set": cmd_set, "ui": cmd_ui, "saved": cmd_saved}
-    bare = {"reset": cmd_reset, "sync": cmd_sync, "cursor": cmd_cursor, "appearance": cmd_appearance}
+    bare = {"reset": cmd_reset, "sync": cmd_sync, "cursor": cmd_cursor, "colors": cmd_colors, "appearance": cmd_appearance}
     if command in bare:
         bare[command]()
     elif command in handlers:

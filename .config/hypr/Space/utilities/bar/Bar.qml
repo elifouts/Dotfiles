@@ -40,7 +40,7 @@ PanelWindow {
         Chip { show: Live.timer.active; glyph: "󰔛"; text: Live.timer.format(Live.timer.remaining); panel: "media"; tab: "timer"; hot: !Live.timer.running }
         Chip { show: Updates.count > 0; glyph: "󰚰"; text: Updates.count; panel: "updates" }
         Chip { glyph: Sys.net === "OFFLINE" ? "󰤭" : Sys.net === "WLAN" ? "󰤨" : "󰈀"; panel: "net"; hot: Sys.net === "OFFLINE" }
-        Chip { glyph: Audio.muted ? "󰝟" : "󰕾"; text: Audio.muted ? "" : Math.round(Audio.volume * 100); panel: "audio" }
+        Chip { glyph: Audio.muted ? "󰝟" : "󰕾"; text: Audio.muted ? "" : Math.round(Audio.volume * 100); panel: "audio"; onWheel: dir => Audio.nudge(dir) }
         Chip {
             show: Power.hasBattery
             glyph: Power.charging ? "󰂄" : "󰁹"
@@ -48,7 +48,7 @@ PanelWindow {
             panel: "power"
             hot: Power.discharging && Power.charge < 0.15
         }
-        Chip { show: SystemTray.items.values.length > 0; glyph: "󰇘"; panel: "tray" }
+        Chip { show: SystemTray.items.values.length > 0; glyph: "󱊔"; panel: "tray" }
         Chip { glyph: Notifs.dnd ? "󰂛" : "󰂚"; text: Notifs.count || ""; panel: "notifs" }
         Chip {
             SystemClock { id: clock; precision: SystemClock.Minutes }

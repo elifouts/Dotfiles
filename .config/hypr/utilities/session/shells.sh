@@ -14,7 +14,7 @@ launch() (
     QSG_USE_SIMPLE_ANIMATION_DRIVER=1 QSG_NO_VSYNC=1 qs -n -p "$QS" --daemonize </dev/null >/dev/null 2>&1 9>&-
     for _ in $(seq 1 60); do
         qs ipc -p "$QS" show 2>/dev/null | grep -q '^target' && exit 0
-        sleep 0.05
+        sleep 0.02
     done
     exit 1
 )
@@ -29,7 +29,7 @@ case "${1:-}" in
             qs kill -p "$QS" </dev/null >/dev/null 2>&1
             for _ in $(seq 1 40); do
                 qs list -p "$QS" 2>/dev/null | grep -q '^Instance' || exit 0
-                sleep 0.05
+                sleep 0.02
             done
         done
         exit 0
