@@ -21,6 +21,7 @@ begin() {
         sleep 0.02
     done
     call hold "$(cat "$OLD")"
+    hyprctl eval 'package.loaded.overrides=nil require("overrides")' >/dev/null 2>&1
 }
 
 reveal() {

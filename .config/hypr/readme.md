@@ -80,6 +80,8 @@ A style counts if it has `base/hyprland.lua`, `<variant>/machine.lua` and `utili
 
 Windows only resize during the fade when the new bar reserves less than the old one. A bigger bar pushes them as soon as it maps, there's no way to hold that back, so they move behind the frame.
 
+Layer close animations stay off until the reveal. Hyprland draws a dead shell's closing panels above the overlay otherwise, sharp on top of the blur.
+
 The bar runs on a timer, it doesn't track real steps. It waits at 90% until the reveal.
 
 </details>
