@@ -1,8 +1,5 @@
-/* set "cssPriority": "user" and "ignore-gtk-theme": true in config.json */
-
 @import url('../../.cache/wal/colors-waybar.css');
 
-/* pywal color aliases */
 @define-color mpris-album-art-overlay  alpha(@background, 0.55);
 @define-color mpris-button-hover       alpha(@background, 0.45);
 @define-color text                     @color15;
@@ -11,38 +8,29 @@
 @define-color mycolor                  @color9;
 @define-color border-color             alpha(@mycolor, 0.18);
 
-/* slide-in for floating notifications */
 @keyframes slideIn {
     from { opacity: 0; margin-top: -6px; }
     to   { opacity: 1; margin-top: 0;    }
 }
 
-/* global */
 * {
     outline: none;
     box-sizing: border-box;
 }
 
-/* clear every wrapper background or the cards stack */
-
-/* row container (gtk listboxrow) */
 .notification-row {
     background: transparent;
     padding: 0;
     margin: 0;
 }
 
-/* most gtk themes paint this one */
 .notification-background {
     background: transparent;
 }
 
-/* floating window background layer */
 .floating-notifications.background {
     background: transparent;
 }
-
-/* floating notifications */
 
 .floating-notifications .notification-row .notification-background .notification {
     background: alpha(@mycolor, 0.42);
@@ -52,8 +40,6 @@
     box-shadow: 0px 0px 2px rgba(0, 0, 0, .6);
 }
 
-/* control center notifications */
-
 .control-center .notification-row .notification-background .notification {
     background: alpha(@mycolor, 0.22);
     border-radius: 12px;
@@ -62,44 +48,37 @@
     box-shadow: 0px 0px 2px rgba(0, 0, 0, .6);
 }
 
-/* inherit radius so nothing pokes out */
 .notification box,
 .notification widget,
 .notification .notification-content {
     border-radius: 12px;
 }
 
-/* hover on action widgets */
 .notification widget:hover {
     background: alpha(@mycolor, 0.15);
     border-radius: 8px;
     transition: background 0.2s ease;
 }
 
-/* notification content padding */
 .notification-content {
     padding: 8px 10px;
 }
 
-/* labels, low/normal urgency */
 .notification.low .notification-content label,
 .notification.normal .notification-content label {
     padding: 4px 8px 2px 8px;
 }
 
-/* app icons, always transparent bg */
 .notification .notification-content image {
     background-color: transparent;
     border-radius: 6px;
 }
 
-/* body text color */
 .notification.low .notification-content .body,
 .notification.normal .notification-content .body {
     color: @text;
 }
 
-/* critical urgency */
 .notification.critical .notification-content {
     background: rgba(200, 50, 40, 0.20);
     border-radius: 12px;
@@ -113,7 +92,6 @@
     color: #ffb4a9;
 }
 
-/* typography */
 .notification-content .summary {
     font-family: 'CodeNewRoman Nerd Font Propo', monospace;
     font-size: 0.94rem;
@@ -136,7 +114,6 @@
     color: alpha(@text, 0.82);
 }
 
-/* close button */
 .close-button {
     all: unset;
     background: transparent;
@@ -145,7 +122,6 @@
     min-height: 20px;
     min-width: 20px;
     margin: 4px 4px 0 0;
-    /* not `all`, it flashes on hover */
     transition: background 0.2s ease, color 0.2s ease;
 }
 
@@ -155,8 +131,6 @@
     border-radius: 50%;
 }
 
-/* control center panel window */
-
 .control-center {
     background: @bg;
     color: @text;
@@ -164,7 +138,6 @@
     box-shadow: 0px 0px 10px rgba(0, 0, 0, .4);
 }
 
-/* panel title bar */
 .widget-title {
     color: alpha(@text, 0.50);
     padding: 14px 20px 6px 20px;
@@ -175,7 +148,6 @@
     text-transform: uppercase;
 }
 
-/* "clear all" / dismiss button */
 .widget-title > button {
     font-size: 0.85rem;
     font-weight: 500;
@@ -196,7 +168,6 @@
     border-color: alpha(#ff5555, 0.50);
 }
 
-/* label widget */
 .widget-label {
     margin: 4px 10px;
 }
@@ -205,8 +176,6 @@
     font-size: 0.95rem;
     color: alpha(@text, 0.70);
 }
-
-/* mpris widget */
 
 .widget-mpris .widget-mpris-player {
     background: transparent;
@@ -257,7 +226,6 @@
     color: alpha(@text, 0.60);
     margin-top: 2px;
 }
-/* buttons grid widget */
 .widget-buttons-grid {
     font-family: 'CodeNewRoman Nerd Font Propo', monospace;
     padding: 4px 8px 8px 8px;
@@ -319,7 +287,6 @@
     background: alpha(@color9, 0.58);
     box-shadow: inset 0 0 16px alpha(@color9, 0.40), 0 0 10px alpha(@color9, 0.28);
 }
-/* sliders, volume & backlight */
 
 scale trough {
     border-radius: 20px;
@@ -332,7 +299,6 @@ scale trough highlight {
     background: @mycolor;
     border-radius: 20px;
     min-height: 4px;
-    /* soft glow on the filled portion */
     box-shadow: 0 0 5px alpha(@mycolor, 0.40);
     transition: box-shadow 0.25s ease;
 }
@@ -341,7 +307,6 @@ scale trough highlight:hover {
     box-shadow: 0 0 10px alpha(@mycolor, 0.65);
 }
 
-/* hide the knob */
 scale trough slider {
     background: transparent;
     border: none;
@@ -350,7 +315,6 @@ scale trough slider {
     min-height: 0;
 }
 
-/* volume widget */
 .widget-volume {
     background: transparent;
     padding: 6px 12px;
@@ -358,7 +322,6 @@ scale trough slider {
     border-radius: 10px;
 }
 
-/* backlight widget */
 .widget-backlight {
     background: transparent;
     padding: 6px 12px;

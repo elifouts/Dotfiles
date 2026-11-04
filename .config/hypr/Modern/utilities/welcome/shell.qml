@@ -14,7 +14,6 @@ ShellRoot {
     property int shown: 0
     property real fade: 1
 
-    // where = what the blob sits next to, flip = page through it while you're there
     readonly property var steps: [
         { title: "Keybinds", keys: ["SUPER", "launcher / Keybinds", "SUPER Q", "terminal", "SUPER B", "close", "SUPER 1-9", "workspaces", "SUPER TAB", "overview"] },
         { title: "Settings", hint: "ALT S", where: "settings", pages: [
@@ -27,7 +26,6 @@ ShellRoot {
         { title: "Thanks", text: "Thanks for using my dotfiles.\n— Eli" }
     ]
     readonly property var cur: steps[shown]
-    // first and last wait for you, the middle ones move on their own
     readonly property bool held: shown === 0 || shown === steps.length - 1
     property bool auto: true
     property real prog: 0
@@ -36,8 +34,7 @@ ShellRoot {
 
     function panel(name, call) {
         if (!name || name === "bar") return
-        // put settings back on the page you left it on
-        Quickshell.execDetached(["sh", "-c", (name === "settings" && call === "close" ? util + "shells.sh settings unflip; " : "") + util + "shells.sh " + name + " " + call])
+        Quickshell.execDetached(["sh", "-c", (name === "settings" && call === "close" ? util + "session/shells.sh settings unflip; " : "") + util + "session/shells.sh " + name + " " + call])
     }
 
     function show() {
@@ -64,11 +61,9 @@ ShellRoot {
         if (step + d < 0) return
         if (step + d >= steps.length) return close()
         step += d
-        // old panel goes first so the blob never slides over it
         if (steps[step].where !== cur.where) panel(cur.where, "close")
         swap.restart()
     }
-    // you touched it, so no auto till you leave it alone for 5s
     function nudge(d) {
         auto = false
         idle.restart()
@@ -85,7 +80,6 @@ ShellRoot {
         sub = 0
         tick()
     }
-    // the blob's landed, now the panel can open next to it
     function arrive() {
         panel(cur.where, "open")
         if (cur.pages) peek()
@@ -93,9 +87,8 @@ ShellRoot {
         else raise.stop()
     }
 
-    function peek() { Quickshell.execDetached([util + "shells.sh", "settings", "peek", cur.pages[sub][0]]) }
+    function peek() { Quickshell.execDetached([util + "session/shells.sh", "settings", "peek", cur.pages[sub][0]]) }
 
-    // settings gets 5s a page, everything else 7s
     NumberAnimation { id: clock; target: root; property: "prog"; from: 0; to: 1; duration: root.cur.pages ? root.cur.pages.length * 5000 : 7000; onFinished: if (root.prog >= 1) root.go(1) }
     Timer { id: idle; interval: 5000; onTriggered: { root.auto = true; root.tick() } }
     Timer {
@@ -103,7 +96,7 @@ ShellRoot {
         repeat: true
         running: morph.active && (!!root.cur.flip || !!root.cur.pages) && root.fade === 1
         onTriggered: {
-            if (!root.cur.pages) return Quickshell.execDetached([root.util + "shells.sh", "profiles", "flip"])
+            if (!root.cur.pages) return Quickshell.execDetached([root.util + "session/shells.sh", "profiles", "flip"])
             root.sub = (root.sub + 1) % root.cur.pages.length
             root.peek()
         }
@@ -123,7 +116,6 @@ ShellRoot {
 
     Morph { id: morph }
 
-    // fade out, move, land, then the panel and text show up. all at once looked glitchy
     SequentialAnimation {
         id: swap
         NumberAnimation { target: root; property: "fade"; to: 0; duration: Theme.ms(140); easing.type: Easing.OutCubic }
@@ -133,16 +125,12 @@ ShellRoot {
         Settle { target: root; property: "fade"; to: 1; duration: Theme.ms(240) }
     }
 
-    // aim off the final size, the animated one restarted the slide every frame. that was the jitter
     readonly property real tw: (front ? b1 : b0).bodyW + 44
     readonly property real th: (front ? b1 : b0).bodyH + 40
-    // snap while it opens, otherwise it starts at the size from last time
     readonly property bool glide: morph.t > 0.98 && !morph.leaving
     property rect box: { const p = spot(tw, th); return Qt.rect(p.x, p.y, tw, th) }
-    // hyprland's curve does the whole trip in one frame, in-out glides
     Behavior on box { enabled: root.glide; PropertyAnimation { duration: Theme.ms(440); easing.type: Easing.InOutCubic } }
 
-    // panels map over us, so a second copy maps on top and takes over once laid out
     property int front: 0
     property bool swapping: false
     SequentialAnimation {
@@ -155,7 +143,6 @@ ShellRoot {
         PropertyAction { target: root; property: "swapping"; value: false }
     }
 
-    // installer drops the flag, wait out the boot animation first
     FileView {
         path: root.flag
         printErrors: false
@@ -182,7 +169,6 @@ ShellRoot {
         anchors { top: true; bottom: true; left: true; right: true }
         exclusionMode: ExclusionMode.Ignore
         color: "transparent"
-        // no mask on purpose, eats every click off the blob. you're stuck till the end
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "welcome"
         WlrLayershell.keyboardFocus: on && morph.active && !morph.leaving ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
@@ -190,7 +176,6 @@ ShellRoot {
         Item {
             id: blob
             readonly property real dot: 52
-            // whole pixels or the text shimmers while it moves
             width: Math.round(dot + (root.box.width - dot) * Math.min(1, morph.mw))
             height: Math.round(dot + (root.box.height - dot) * Math.min(1, morph.mh))
             x: Math.round(root.box.x + (root.box.width - width) / 2)
@@ -250,7 +235,6 @@ ShellRoot {
                 }
 
                 Item {
-                    // off the stuff above, parent.width fed back into itself and never shrank
                     width: Math.max(root.shown ? 180 : 240, top.implicitWidth, words.implicitWidth, keys.implicitWidth)
                     height: 22
 
@@ -267,7 +251,6 @@ ShellRoot {
                                 radius: 2.5
                                 color: Theme.alpha(Theme.fg, 0.2)
                                 Behavior on width { Settle { duration: Theme.move } }
-                                // the active dot doubles as the countdown
                                 Rectangle {
                                     width: parent.on ? Math.max(5, parent.width * (root.held ? 1 : root.prog)) : 0
                                     height: parent.height

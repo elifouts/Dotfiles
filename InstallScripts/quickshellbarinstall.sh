@@ -1,5 +1,4 @@
 #!/bin/bash
-# installs only the bar to ~/.config/quickshell/dotfiles-bar
 
 set -euo pipefail
 
@@ -46,7 +45,6 @@ install_config() {
     mkdir -p "$DEST/styles"
 
     cp "$UTIL/shell.qml" "$DEST/shell.qml"
-    # -L, common/ links into hypr/shared
     cp -aL "$UTIL/bar" "$UTIL/common" "$UTIL/overview" "$DEST/"
     cp "$REPO/.config/waybar/scripts/colorpicker.sh" "$DEST/colorpicker.sh"
     chmod +x "$DEST/colorpicker.sh" "$DEST/common/spotify.sh" "$DEST/bar/procs.sh" "$DEST/bar/net.sh"
@@ -69,7 +67,6 @@ enable_services() {
     command -v systemctl >/dev/null || return 0
     local unit
 
-    # avahi is how the cast button finds tvs
     for unit in NetworkManager bluetooth avahi-daemon; do
         systemctl is-enabled --quiet "$unit" 2>/dev/null && continue
         ask "Enable the $unit service (used by the bar)?" || continue
@@ -105,9 +102,9 @@ Add these to your Hyprland config to start the bar at login and control it from 
 
 ${BOLD}~/.config/hypr/hyprland.conf${RESET}
     exec-once = qs -c $NAME
-    bind = ALT, A, exec, $ipc toggle          # hide / show the bar
-    bind = SUPER, TAB, exec, qs -c $NAME ipc call overview toggle    # workspace overview
-    bind = SUPER, ESCAPE, exec, $ipc close    # close any open page
+    bind = ALT, A, exec, $ipc toggle
+    bind = SUPER, TAB, exec, qs -c $NAME ipc call overview toggle
+    bind = SUPER, ESCAPE, exec, $ipc close
 
 ${BOLD}~/.config/hypr/hyprland.lua${RESET} (if you configure Hyprland in Lua)
     hl.on("hyprland.start", function()

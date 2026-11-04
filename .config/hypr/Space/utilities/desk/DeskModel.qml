@@ -3,14 +3,12 @@ import Quickshell
 import Quickshell.Io
 import "../common"
 
-// one monitor's widgets, saved per monitor shape
 Scope {
     id: dm
 
     required property var screen
     readonly property bool tall: (screen?.height ?? 0) > (screen?.width ?? 1)
     readonly property string file: Hypr.home + "/.config/space/layouts/" + role + ".json"
-    // orientation + size so it survives replugging
     readonly property string role: {
         const s = screen
         if (!s) return "none"
@@ -21,10 +19,8 @@ Scope {
 
     property var items: []
     property int picked: -1
-    // views fade on this when the layout swaps
     property real shown: 1
 
-    // portrait gets a column, wide gets a corner
     function fallback() {
         return tall ? [{ type: "clock", x: 0.08, y: 0.08, s: 1, style: "plain", align: "left" },
                        { type: "stats", x: 0.08, y: 0.2, s: 1, style: "plain", align: "left" },
@@ -58,7 +54,6 @@ Scope {
         items = next
         saveTimer.restart()
     }
-    // saves without swapping the list, swapping rebuilt every widget and the note lost focus after one letter
     function quiet(i, patch) {
         Object.assign(items[i], patch)
         saveTimer.restart()

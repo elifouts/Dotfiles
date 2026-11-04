@@ -70,7 +70,6 @@ ShellRoot {
         interval: 200
         repeat: true
         running: root.active && !root.leaving
-        // skip a tick if the last lookup hasn't come back
         onTriggered: if (Hypr.located.length === 0) Hypr.locate(root.followCursor)
     }
 
@@ -99,7 +98,6 @@ ShellRoot {
 
     property int pageDir: 1
 
-    // welcome flips through pages without saving, unflip puts you back
     property string flippedFrom: ""
     function selectPage(id, peek) {
         if (id === page) return
@@ -343,7 +341,6 @@ ShellRoot {
                                                             required property int index
                                                             readonly property bool on: root.controlShown(modelData, Store.values, Store.caps, Store.waybar)
                                                             readonly property int lead: root.firstShown(sec.modelData.controls, Store.values, Store.caps, Store.waybar)
-                                                            // animate an amount not the height, otherwise live resizing lags. i think
                                                             property real reveal: on ? 1 : 0
                                                             Behavior on reveal { NumberAnimation { duration: Theme.ms(220); easing.type: Easing.OutCubic } }
 

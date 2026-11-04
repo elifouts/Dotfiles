@@ -60,7 +60,6 @@ Column {
                     visible: !entry.modelData.isSeparator
                     readonly property bool check: entry.modelData.buttonType !== QsMenuButtonType.None
                     readonly property bool checked: entry.modelData.checkState === Qt.Checked
-                    // some apps put underscores in labels for accelerators, strip them
                     label: (entry.modelData.text || "").replace(/_(?=[^_])/g, "")
                     iconSource: entry.modelData.icon || ""
                     glyph: check ? (checked ? (entry.modelData.buttonType === QsMenuButtonType.RadioButton ? "" : "") : (entry.modelData.buttonType === QsMenuButtonType.RadioButton ? "" : "")) : ""

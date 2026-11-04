@@ -1,7 +1,6 @@
 import QtQuick
 
 
-// lives in the shell so it keeps running with the island closed, i think that's why
 Item {
     id: ft
 
@@ -43,13 +42,11 @@ Item {
         remaining = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000))
         if (remaining === 0 && running) {
             running = false
-            // back to full so the bar chip hides
             remaining = total
             finished()
         }
     }
 
-    // "1 hour 5 minute", for the alarm text
     function words(s) {
         const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), r = s % 60
         return [h && h + " hour", m && m + " minute", r && r + " second"].filter(Boolean).join(" ")

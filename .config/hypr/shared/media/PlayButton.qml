@@ -1,6 +1,5 @@
 import QtQuick
 
-// accent circle with the play/pause morph, same one everywhere
 Item {
     id: pb
 

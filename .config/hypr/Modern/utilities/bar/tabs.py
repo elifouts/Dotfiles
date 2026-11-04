@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# per window title: that firefox window's tab urls split by \037
-# from the session store, firefox rewrites it every ~15s i think
 import json
 import re
 import sys
@@ -10,8 +8,6 @@ HOME = Path.home()
 STORES = [HOME / ".config/mozilla/firefox", HOME / ".mozilla/firefox", HOME / ".librewolf"]
 SUFFIX = re.compile(r"\s+[—–-]\s+(Mozilla Firefox|Firefox|LibreWolf)\b.*$")
 
-
-# lz4 block, enough for mozlz4 so i don't need python-lz4. i think it works
 def unlz4(src):
     out = bytearray()
     i = 0
@@ -89,7 +85,6 @@ def main():
         if w:
             found[i] = w
             left.remove(w)
-    # if one window is left on each side just pair them, probably right
     missing = [i for i, t in enumerate(titles) if t is not None and found[i] is None]
     if len(missing) == 1 and len(left) == 1:
         found[missing[0]] = left[0]

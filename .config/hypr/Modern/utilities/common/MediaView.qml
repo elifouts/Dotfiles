@@ -1,6 +1,5 @@
 import QtQuick
 
-// keeps the osd card off media screens
 QtObject {
     property bool on: false
     property bool counted: false

@@ -88,7 +88,7 @@ Uninstall:
   A little tool I made to see what's installed, where it came from, and how big it is.
 
   ```bash
-  ~/Dotfiles/.config/hypr/utilities/package-tui.sh
+  ~/Dotfiles/.config/hypr/utilities/packages/package-tui.sh
   ```
 
   `j`/`k` to scroll, `d` to uninstall, `r` to reinstall, `q` to quit.
@@ -109,7 +109,7 @@ Uninstall:
 
   ![profiles](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/profiles.gif)
 
-  How the folders and scripts fit together is in [`.config/hypr/utilities/readme.md`](.config/hypr/utilities/readme.md).
+  How the folders and scripts fit together is in [`.config/hypr/readme.md`](.config/hypr/readme.md).
 </details>
 
 ## My Applications
@@ -124,7 +124,7 @@ Every screenshot below is shown three times, once for each of my saved profiles:
   ### *How To Install*
   1. **Install [Quickshell](https://quickshell.org)** (`yay -S quickshell`)
   2. Copy `Dotfiles/.config/hypr` into `~/.config` (or just use the install script)
-  3. Run `~/.config/hypr/utilities/shells.sh start`. `Modern/base/startup.lua` already does this.
+  3. Run `~/.config/hypr/utilities/session/shells.sh start`. `Modern/base/startup.lua` already does this.
 </details>
 
 <details>
@@ -266,7 +266,7 @@ Every screenshot below is shown three times, once for each of my saved profiles:
 
   ### *How To Install*
   1. **Install [Quickshell](https://quickshell.org/)** and `hypridle`
-  2. Copy `Dotfiles/.config/hypr/Modern/utilities` to `~/.config/hypr/Modern/utilities` (lock needs `common` and `lock.qml` next to it), plus `utilities/lock.sh`, `utilities/paths.sh` and `hypridle.conf`
+  2. Copy `Dotfiles/.config/hypr/Modern/utilities` to `~/.config/hypr/Modern/utilities` (lock needs `common` and `lock.qml` next to it), plus `utilities/session/lock.sh`, `utilities/paths.sh` and `hypridle.conf`
 </details>
 
 <details>

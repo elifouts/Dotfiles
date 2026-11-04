@@ -2,7 +2,6 @@ import QtQuick
 import "../common"
 import "../ui"
 
-// pending updates, same shared Updates as modern's bar
 Column {
     spacing: 8
     Kit.Title { glyph: "󰚰"; text: "updates" }

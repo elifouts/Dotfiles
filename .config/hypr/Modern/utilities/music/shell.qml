@@ -26,7 +26,6 @@ ShellRoot {
     readonly property real shown: Math.max(minSide, Math.min(maxSide, dragging ? dragSide : side))
     Behavior on side { enabled: !root.dragging; Settle { duration: Theme.move } }
 
-    // laid out for 380px and scaled
     readonly property real k: shown / 380
     function px(v) { return Math.round(v * k) }
     readonly property real pad: px(30)
@@ -104,7 +103,6 @@ ShellRoot {
         close()
     }
 
-    // dim is see-through so it lied about its color, this is what it really looks like
     readonly property color volTint: Audio.muted ? Theme.along([Theme.bg, Theme.fg], 0.5) : Theme.info
 
     property real vizIntro: 0
@@ -169,7 +167,6 @@ ShellRoot {
         else show()
     }
 
-    // closes on settle too, not leave. i think leave looked too snappy on it
     Panel {
         id: morph
         openMs: 400
@@ -212,7 +209,6 @@ ShellRoot {
         WlrLayershell.keyboardFocus: root.active && !root.leaving && !root.tucked
             ? (ld.item && ld.item.hovered ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand) : WlrKeyboardFocus.None
 
-        // no fill, a sized Loader stretches the card across the window. no clue why
         Loader {
             id: ld
             active: root.active || morph.warm
@@ -228,7 +224,6 @@ ShellRoot {
                     opacity: root.active ? Math.min(1, root.t * 8) : 0
                     focus: true
 
-                    // hovering is enough for keys, clicking used to be the only thing that grabbed focus
                     HoverHandler { id: hover; onHoveredChanged: if (hovered) card.forceActiveFocus() }
 
                     Keys.onPressed: event => {

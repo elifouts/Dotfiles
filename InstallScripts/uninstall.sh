@@ -1,15 +1,11 @@
 #!/bin/bash
-# undoes fullinstall.sh. you pick the packages, everything else just happens
-# nothing that isn't a symlink gets deleted, it gets moved to ~/.dotfiles_uninstalled_<time> instead. been burned before
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/fullinstall.sh"
-# fullinstall turns on -e, one failed step shouldn't leave you half uninstalled
 set +e -uo pipefail
 shopt -s nullglob dotglob
 
 LEFT="$HOME/.dotfiles_uninstalled_$(date +%Y%m%d_%H%M%S)"
-# stuff your system probably still needs even after the dotfiles are gone
 KEEP=" networkmanager pipewire pipewire-pulse pipewire-alsa pipewire-jack wireplumber kitty xdg-desktop-portal-hyprland rsync unzip zip "
 MODE=defaults
 PICKED=()
@@ -22,7 +18,6 @@ stash() {
 }
 picked() { [[ " ${PICKED[*]} " == *" $1 "* ]]; }
 
-# oldest first, a reinstall backs up the dotfiles' own links so the first backup is the real one
 backup_of() {
     local rel="$1" c alts=()
     case "$rel" in
@@ -73,7 +68,6 @@ choose_packages() {
         mapfile -t PICKED < "$out"
         rm -f "$out"
     else
-        # no python, the slow way
         for pkg in "${args[@]}"; do
             [[ "$pkg" == @* ]] && { echo -e "\n${BOLD}${pkg#@}${RESET}"; continue; }
             ask "Uninstall ${pkg%!}?" n && PICKED+=("${pkg%!}")
@@ -84,14 +78,12 @@ choose_packages() {
 undo_autologin() {
     [[ -f /etc/greetd/config.toml ]] && grep -q start-hyprland /etc/greetd/config.toml || return 0
     info "Turning off autologin..."
-    # initial_session is the autologin part and it's the last block fullinstall writes
     sudo sed -i '/^\[initial_session\]/,$d' /etc/greetd/config.toml
     sudo systemctl disable greetd.service >/dev/null 2>&1
     sudo systemctl enable getty@tty1.service >/dev/null 2>&1
     success "Back to the normal tty1 login."
 }
 
-# only turn off what's actually getting uninstalled, no point killing bluetooth if you're keeping it
 undo_services() {
     picked avahi && sudo systemctl disable --now avahi-daemon.service avahi-daemon.socket >/dev/null 2>&1
     picked bluez && sudo systemctl disable --now bluetooth.service >/dev/null 2>&1
@@ -127,16 +119,12 @@ undo_configs() {
     ours "$HOME/.local/bin/pypr" && rm "$HOME/.local/bin/pypr"
     [[ $MODE == restore ]] && b="$(backup_of .local/bin/pypr)" && cp -a "$b" "$HOME/.local/bin/pypr"
 
-    # ~/wallpapers didn't exist before, but it might have your own stuff in it now so it gets moved not deleted
     ours "$HOME/wallpapers/library/favorites.txt" && rm "$HOME/wallpapers/library/favorites.txt"
     stash "$HOME/wallpapers"
     if [[ $MODE == restore ]] && b="$(backup_of wallpapers)"; then
         mkdir -p "$HOME/wallpapers" && cp -a "$b/." "$HOME/wallpapers/" && success "Restored ~/wallpapers"
     fi
 
-    # everything the dotfiles generate. the gitignored stuff sits in the repo behind the links
-    # (hypr/state, cava/config, kitty theme...)
-    # cava makes shaders/themes on its own, only the config is ours
     local made
     while IFS= read -r made; do
         ours "$REPO/$made" && rm "$REPO/$made" || stash "$REPO/$made"
@@ -148,7 +136,6 @@ undo_configs() {
     done
     success "Cleared out what the dotfiles generated."
 
-    # stuff the apps would just remake
     if [[ $MODE == defaults ]]; then
         stash "$HOME/.local/share/nvim"
         stash "$HOME/.local/state/nvim"
@@ -163,7 +150,6 @@ undo_packages() {
     section "Removing packages"
     sudo pacman -Rns --noconfirm "${PICKED[@]}" && { success "Removed ${#PICKED[@]} packages."; return; }
 
-    # one of them is needed by something else and pacman bails on the whole batch, so go one by one
     warn "Batch removal failed, trying them one at a time..."
     local pkg stuck=()
     for pkg in "${PICKED[@]}"; do

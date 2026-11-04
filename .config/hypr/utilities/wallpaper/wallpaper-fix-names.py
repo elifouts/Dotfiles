@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# renames files to <prefix>-NN.<ext>, [--dry-run]
 import os
 import re
 import sys

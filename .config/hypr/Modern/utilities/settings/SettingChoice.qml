@@ -11,7 +11,6 @@ Picker {
         ? Object.assign({}, o, { swatch: o.stops.map(i => Theme.wal ? Theme.wal.colors["color" + i] : "#888888") })
         : o)
     ready: raw !== undefined && raw !== null
-    // "" from hyprctl means the default option
     current: {
         if (raw === "") {
             const d = def.options.find(o => o.dflt === true)
@@ -21,7 +20,6 @@ Picker {
     }
     onPicked: v => Store.set(def.key, v)
 
-    // right-click resets to the profile value
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.RightButton

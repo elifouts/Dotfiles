@@ -6,7 +6,6 @@ Item {
 
     property var timer
 
-    // drag the ring. each lap is the next unit: 0-60 sec, 1-60 min, 1-8 hr
     function toTurns(s) { return s <= 60 ? s / 60 : s <= 3600 ? 1 + (s / 60 - 1) / 59 : 2 + (s / 60 - 60) / 420 }
     function fromTurns(u) {
         return Math.max(1, u < 1 ? Math.round(u * 60) : u < 2 ? 60 * (1 + Math.round((u - 1) * 59)) : 60 * (60 + 5 * Math.round((u - 2) * 84)))
@@ -49,7 +48,6 @@ Item {
             }
         }
 
-        // knob at the end of the arc so it looks grabbable
         Rectangle {
             readonly property real a: (page.sweep * 360 - 90) * Math.PI / 180
             visible: !page.timer.running
@@ -72,7 +70,6 @@ Item {
                 font.bold: true
                 color: Theme.bright
             }
-            // which lap you're on: sec, min, hr
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter
                 spacing: 5
@@ -92,11 +89,9 @@ Item {
             }
         }
 
-        // tracks angle change so going past 12 keeps counting into the next lap
         MouseArea {
             id: spin
             property real last: 0
-            // unrounded while dragging, or slow drags round back to the same step and it feels stuck
             property real u: 0
             anchors.fill: parent
             enabled: !page.timer.running

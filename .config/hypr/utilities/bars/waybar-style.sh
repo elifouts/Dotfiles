@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/paths.sh"
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../paths.sh"
 WAYBAR="$HOME/.config/waybar"
 dir="$STYLE/waybar"
 
@@ -19,12 +19,11 @@ case "${1:-}" in
         }
         cp "$dir/$name/config" "$WAYBAR/config"
         cp "$dir/$name/style.css" "$WAYBAR/style.css"
-        # restart waybar so module changes apply
-        if [ "$("$UTIL/bar.sh" current)" = waybar ]; then
+        if [ "$("$UTIL/bars/bar.sh" current)" = waybar ]; then
             pkill -x waybar 2>/dev/null || true
             setsid -f waybar >/dev/null 2>&1 </dev/null
         fi
-        [ -n "${HYPR_SETTINGS_NO_RECORD:-}" ] || python3 "$UTIL/hypr-settings.py" set "waybar.style=\"$name\"" >/dev/null 2>&1 || true
+        [ -n "${HYPR_SETTINGS_NO_RECORD:-}" ] || python3 "$UTIL/settings/hypr-settings.py" set "waybar.style=\"$name\"" >/dev/null 2>&1 || true
         ;;
     *)
         echo "usage: waybar-style.sh apply <name> | list" >&2

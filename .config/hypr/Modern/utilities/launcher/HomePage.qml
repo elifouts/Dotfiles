@@ -16,9 +16,9 @@ Item {
         { id: "reboot", icon: "", label: "Reboot", sub: "Restart the machine", confirm: "reboot", cmd: Power.cmd("reboot") },
         { id: "poweroff", icon: "", label: "Power off", sub: "Shut down", confirm: "power off", cmd: Power.cmd("poweroff") },
         { id: "screenshot", icon: "", label: "Screenshot", sub: "Select a region", after: true, cmd: "hyprshot -m region -o ~/Screenshots/" },
-        { id: "home", icon: "", label: "Home", sub: "Home screen", after: true, cmd: util + "shells.sh home" },
-        { id: "wallpaper", icon: "", label: "Wallpaper", sub: "Pick a wallpaper", after: true, cmd: util + "shells.sh wallpaper" },
-        { id: "settings", icon: "", label: "Settings", sub: "Hyprland settings", after: true, cmd: util + "shells.sh settings" }
+        { id: "home", icon: "", label: "Home", sub: "Home screen", after: true, cmd: util + "session/shells.sh home" },
+        { id: "wallpaper", icon: "", label: "Wallpaper", sub: "Pick a wallpaper", after: true, cmd: util + "session/shells.sh wallpaper" },
+        { id: "settings", icon: "", label: "Settings", sub: "Hyprland settings", after: true, cmd: util + "session/shells.sh settings" }
     ]
     readonly property var pinned: ["home", "settings", "wallpaper"]
     readonly property var entries: pinned.map(id => commands.find(c => c.id === id)).concat(commands
@@ -56,7 +56,6 @@ Item {
         return true
     }
 
-    // esc cancels a pending confirm first
     function cancel() {
         if (armed < 0) return false
         armed = -1

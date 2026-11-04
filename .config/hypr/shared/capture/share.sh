@@ -1,10 +1,6 @@
 #!/bin/bash
 set -uo pipefail
 
-# my screen share picker for xdph, the capture menu does the picking
-# usage: share.sh [--allow-token]          (xdph runs this)
-#        share.sh pick region|window|screen | cancel   (the menu runs this)
-
 RUN="${XDG_RUNTIME_DIR:-/tmp}"
 REQ="$RUN/share-request"
 ANS="$RUN/share-answer"
@@ -12,7 +8,6 @@ HY="$HOME/.config/hypr"
 
 answer() { printf '%s' "$1" > "$ANS.tmp" && mv "$ANS.tmp" "$ANS"; }
 
-# xdph sends windows as id[HC>]class[HT>]title[HE>]address[HA>], i match by address
 handle() {
     local hex="${1#0x}" list entry wa
     list="$(tail -n +2 "$REQ")"
@@ -58,7 +53,6 @@ pick() {
 picker() {
     local flags="" sel i
     [[ " $* " == *" --allow-token "* ]] && flags=r
-    # whichever of my shells is up opens its capture tab, otherwise the stock picker
     local open=""
     if qs ipc -p "$HY/Space/utilities" show 2>/dev/null | grep -q '^target space'; then
         open="qs ipc -p $HY/Space/utilities call space open capture"

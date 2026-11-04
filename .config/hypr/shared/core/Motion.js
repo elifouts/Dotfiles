@@ -1,7 +1,5 @@
 .pragma library
-// animation presets and choices, modern's settings page and space's motion tab both read these
 
-// what the curve is before anyone touches it
 var CURVE = [0.15, 0.85, 0.25, 1]
 
 var PRESETS = {
@@ -20,7 +18,6 @@ var WORKSPACES = [{ v: "slide", l: "Slide" }, { v: "slidevert", l: "Slide vertic
 var KEYS = ["config.animations.enabled", "utilities.animations", "animation.preset", "animation.curve", "animation.speed",
     "animation.window", "animation.workspace", "config.misc.animate_manual_resizes", "config.misc.animate_mouse_windowdragging"]
 
-// libraries can't see singletons, so the Store comes in
 function pick(store, v, curve) {
     if (v === "theme") {
         store.setValues({ "animation.preset": "theme" })

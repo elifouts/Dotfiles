@@ -1,6 +1,4 @@
 #!/bin/bash
-# favorites.txt is symlinked from ~/wallpapers/library. copies whatever is favorited in ~/wallpapers/library into the dotfiles, those are the defaults
-# everything else only lives in the wallpapers repo
 cd "$(git rev-parse --show-toplevel)"
 src="${WALLPAPER_LIBRARY:-$HOME/wallpapers/library}" dst=wallpapers/library
 [[ -f $src/favorites.txt ]] || exit 0

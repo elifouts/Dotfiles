@@ -1,8 +1,6 @@
 import QtQuick
 import QtQuick.Effects
 
-// the blurred dark wallpaper behind home, overview and lock (boot has its own copy, it runs alone).
-// t is how open it is. never fully 0, Qt skips the first blur and that's some bullshit
 Item {
     id: b
 

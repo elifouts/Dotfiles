@@ -7,7 +7,6 @@ import "../common"
 ShellRoot {
     id: root
 
-    // last frame of each monitor to fade from. lock.sh grabs them while qs starts so we don't wait
     property bool captured: false
     property bool released: false
     Process {
@@ -15,7 +14,6 @@ ShellRoot {
         command: ["sh", "-c", 'until [ -e "$0/.done" ]; do sleep 0.005; done', Lock.shots]
         onExited: root.captured = true
     }
-    // don't wait on grim for long
     Timer { running: true; interval: 300; onTriggered: root.captured = true }
 
     WlSessionLock {
@@ -23,7 +21,6 @@ ShellRoot {
         locked: root.captured && !Lock.preview
         onSecureChanged: if (secure) Lock.enter()
 
-        // transparent, opaque surfaces get a low precision format and the blur bands
         WlSessionLockSurface {
             color: "transparent"
             Face {
@@ -33,7 +30,6 @@ ShellRoot {
         }
     }
 
-    // screen copies under the lock so unlocking fades instead of cutting. making them with the lock added like 60ms
     Variants {
         model: !Lock.preview && (Lock.t === 1 || Lock.leaving) ? Quickshell.screens : []
         PanelWindow {

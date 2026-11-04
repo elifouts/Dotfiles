@@ -1,9 +1,7 @@
 import QtQuick
 import "../common"
 
-// the little hud controls every panel is built from, use them as Kit.Slide etc
 Item {
-    // glyph, title and a thin line, optional thing on the right
     component Title: Item {
         id: title
         property string glyph
@@ -17,7 +15,6 @@ Item {
         Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.alpha(Theme.accent, 0.25) }
     }
 
-    // a clickable line: glyph, label, value on the right. lit = selected/connected
     component Line: Item {
         id: line
         property string glyph
@@ -45,7 +42,6 @@ Item {
         MouseArea { id: area; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.LeftButton | Qt.RightButton; onClicked: m => line.clicked(m) }
     }
 
-    // 0..1 bar with tick marks, drag or scroll
     component Slide: Item {
         id: sl
         property real value: 0
@@ -82,7 +78,6 @@ Item {
         Hud { anchors.right: parent.right; height: parent.height; text: sl.off ? "off" : Math.round(sl.value * 100); color: Theme.fg }
     }
 
-    // a pill switch with a sliding knob, optional caption beside it
     component Toggle: Item {
         id: tg
         property bool on

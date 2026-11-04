@@ -2,7 +2,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 
-// osd pill and media card, both themes
 Scope {
     id: root
 
@@ -16,7 +15,6 @@ Scope {
     property string kind: "volume"
     property real shownValue: 0
 
-    // bound to the real state so it never goes stale
     readonly property real value: OsdState.value(kind)
     readonly property bool flag: OsdState.flag(kind)
 
@@ -52,7 +50,6 @@ Scope {
     }
     readonly property bool readoutLit: kind === "caps" ? flag : (kind === "mic" ? !flag : !off)
 
-    // t ends at 0 anyway so no reset needed after it closes
     Morph { id: morph; openMs: 480; closeMs: 340; fadeOut: false }
 
     Connections {
@@ -61,7 +58,6 @@ Scope {
         function onMedia(a) { a === "play" ? media.toggle() : media.skip(a === "next" ? 1 : -1) }
     }
 
-    // pipewire answers late, so wiggle on the change itself
     property string wiggleKind: ""
     onFlagChanged: if (active && !leaving && kind === wiggleKind) wiggleAnim.restart()
     onValueChanged: if (active && !leaving) shownValue = value
@@ -113,7 +109,6 @@ Scope {
         visible: root.active
         screen: Hypr.focusedScreen()
         anchors.bottom: true
-        // sits on the edge so the card can slide fully off
         margins.bottom: 0
         implicitWidth: 340
         implicitHeight: 156
@@ -224,7 +219,6 @@ Scope {
 
     Behavior on shownValue { id: barBehavior; NumberAnimation { duration: Theme.ms(root.fillDuration); easing.type: Easing.OutCubic } }
 
-    // media keys get a little card top right, like windows 10's
     Scope {
         id: media
 
@@ -235,10 +229,8 @@ Scope {
         readonly property real cardW: 340
         readonly property real cardH: 120
         readonly property real dot: 44
-        // 0 left, .5 center, 1 right, wherever the bar's media is
         readonly property real side: Media.side === "left" ? 0 : Media.side === "right" ? 1 : 0.5
 
-        // closeMs drops to 260 when something sends it off, show() puts it back
         Morph { id: mm; openMs: 720; closeMs: 560 }
 
         function toggle() { Media.toggle(player); show() }
@@ -256,7 +248,6 @@ Scope {
         }
         Timer { id: hold; onTriggered: mm.close() }
         Binding { target: Media; property: "card"; value: mm.active && !mm.leaving }
-        // a media screen taking over, or the bar about to open one over it, sends it off quick
         function leave() { hold.stop(); mm.closeMs = 260; mm.close() }
         Connections {
             target: Media
@@ -270,7 +261,6 @@ Scope {
             anchors.top: true
             anchors.left: Media.side === "left"
             anchors.right: Media.side === "right"
-            // Normal keeps it under whatever bar is reserving the top
             exclusionMode: ExclusionMode.Normal
             implicitWidth: media.cardW + 28
             implicitHeight: media.cardH + 28
@@ -282,16 +272,13 @@ Scope {
 
             Item {
                 id: mcard
-                // drops out of the bar: a strip that widens, then opens down
                 width: media.dot + (media.cardW - media.dot) * Math.min(1, mm.mw)
                 height: 10 + (media.cardH - 10) * Math.min(1, mm.mh)
                 x: 14 + (parent.width - 28 - width) * media.side
-                // tucks up under the bar at the end instead of lingering
                 y: 6 - (1 - mm.rise) * 18
                 opacity: Math.min(1, mm.t * 6)
 
                 HoverHandler { onHoveredChanged: media.hovered = hovered }
-                // anywhere but the buttons opens spotify
                 TapHandler { onTapped: { mm.close(); Media.openSpotify() } }
 
                 Rectangle {
@@ -302,7 +289,6 @@ Scope {
                     border.color: Theme.lines ? Theme.edge : Theme.alpha(Theme.fg, 0.08)
                 }
 
-                // laid out at full size and pinned to the same side, so it unrolls from there
                 Item {
                     anchors.fill: parent
                     clip: true
@@ -311,7 +297,6 @@ Scope {
                         x: (parent.width - width) * media.side
                         width: media.cardW
                         height: media.cardH
-                        // fades early so the shrinking card doesnt look like its cutting it off
                         opacity: mm.leaving ? Math.max(0, Math.min(1, (mm.t - 0.6) / 0.35)) : mm.stage(0.5)
 
                         Cover {

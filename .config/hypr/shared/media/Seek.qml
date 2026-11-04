@@ -1,12 +1,10 @@
 import QtQuick
 
-// the music card's progress bar, used everywhere
 Item {
     id: sk
 
     property var player: null
     property real u: 1
-    // owner says when it's on screen, the frame tick only runs then
     property bool active: true
 
     function px(v) { return Math.round(v * u) }
@@ -29,7 +27,6 @@ Item {
 
     height: px(36)
 
-    // mpris only says where it is when asked, every frame is what makes it smooth
     FrameAnimation {
         running: sk.active && sk.visible && sk.playing
         onTriggered: if (sk.player) sk.player.positionChanged()
@@ -53,7 +50,6 @@ Item {
                 radius: parent.radius
                 width: Math.max(height, parent.width * sk.frac)
                 color: Theme.accent2
-                // animating this restarts every frame and it stutters like hell
                 Behavior on width {
                     enabled: !sk.seeking && !sk.playing
                     NumberAnimation { duration: Theme.ms(160); easing.type: Easing.OutCubic }

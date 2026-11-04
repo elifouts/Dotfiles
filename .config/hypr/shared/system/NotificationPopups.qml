@@ -4,17 +4,13 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Services.Notifications
 
-// bottom left, grows out of the edge. both themes
 PanelWindow {
     id: win
 
-    // home screen hides them while it shows the full list
     property bool hidden: false
     readonly property var focusScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
-    // sized off the short side so portrait looks the same
     readonly property real u: focusScreen ? Math.max(0.6, Math.min(1.6, Math.min(focusScreen.width, focusScreen.height) / 900)) : 1
     readonly property int wanted: Notifs.popups.length
-    // keep mapped a bit so the exit animation finishes
     property bool alive: false
 
     onWantedChanged: {
@@ -27,10 +23,8 @@ PanelWindow {
     screen: focusScreen
     visible: !hidden && alive
     anchors { top: true; left: true; bottom: true }
-    // extra room for shadows
     implicitWidth: 440 * u
     color: "transparent"
-    // don't reserve an exclusive zone
     exclusionMode: ExclusionMode.Normal
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "notification-popup"
@@ -59,7 +53,6 @@ PanelWindow {
                 || (modelData.urgency === NotificationUrgency.Critical && modelData.expireTimeout < 0)
             property real remain: 1
 
-            // 0 collapsed, 1 open, can overshoot
             property real reveal: 0
             readonly property real r: Math.max(0, Math.min(1, reveal))
 
@@ -78,7 +71,6 @@ PanelWindow {
             }
             Component.onCompleted: enter.start()
 
-            // hold the delegate synchronously, the animation only starts next frame
             ListView.onRemove: { slot.ListView.delayRemove = true; leave.start() }
             SequentialAnimation {
                 id: leave

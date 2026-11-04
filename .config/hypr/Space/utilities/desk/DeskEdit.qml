@@ -3,7 +3,6 @@ import Quickshell
 import Quickshell.Wayland
 import "../common"
 
-// edit mode, its own overlay that only exists while editing
 PanelWindow {
     id: win
 
@@ -16,7 +15,6 @@ PanelWindow {
     WlrLayershell.namespace: "space-desk"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-    // dims the windows so you're editing the desktop
     Rectangle { anchors.fill: parent; color: Theme.void_; opacity: 0.55 }
 
     Desk { anchors.fill: parent; model: win.model; editing: true }

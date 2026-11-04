@@ -22,17 +22,14 @@ ShellRoot {
     property string indexText: ""
     property var targetScreen: null
     property bool locating: false
-    // keep the preview until awww draws it, i think there's a race
     property bool holding: false
     property var previewed: null
     readonly property string previewSrc: previewed ? "file://" + previewed.path : ""
-    // blur and preview change together
     property bool previewReady: true
 
     readonly property real panelH: 540
     readonly property real fadeH: 320
 
-    // laid out at 1600x900 (1100 portrait) then scaled
     readonly property real u: unitFor(win.screen)
 
     function unitFor(s) {
@@ -42,7 +39,6 @@ ShellRoot {
             : Math.min(s.width / 1600, s.height / 900)
         return Math.max(0.5, v)
     }
-    // recolor after scrolling stops, otherwise it lags. i think
     onCurrentChanged: { previewed = current; previewTimer.restart() }
     Timer {
         id: previewTimer
@@ -50,12 +46,10 @@ ShellRoot {
         onTriggered: if (root.shown && !root.leaving && root.current) root.tint(root.current.colors)
     }
 
-    // waybar only watches style.css so i just rewrite it. there's probably a better way
     FileView { id: colorTheme; path: Hypr.state + "/color-theme"; blockLoading: true; printErrors: false }
     FileView { id: activeBar; path: Hypr.state + "/bar"; blockLoading: true; printErrors: false }
     property bool tinted: false
 
-    // null puts the saved palette back
     function tint(p) {
         if (!["", "pywal"].includes(colorTheme.text().trim()) || (!p && !tinted)) return
         Theme.preview = p
@@ -92,7 +86,6 @@ ShellRoot {
 
     Behavior on pos { id: posBehavior; NumberAnimation { duration: Theme.ms(380); easing.type: Easing.OutCubic } }
 
-    // sync read, async made opening jump. i think
     Watched {
         id: curFile
         path: Hypr.home + "/.cache/wallpaper-picker/current"
@@ -130,7 +123,6 @@ ShellRoot {
         pos = cur
     }
 
-    // favorites get their own tab and still show in their folder
     function setAll(list) {
         all = list
         const seen = {}
@@ -138,8 +130,6 @@ ShellRoot {
         themes = ["all"].concat(list.some(w => w.fav) ? ["favorites"] : [], Object.keys(seen).sort())
         if (!themes.includes(theme)) theme = "all"
     }
-    // favorites slot animates so it doesn't pop in
-    // kept cards can hold old entries so look the heart up by path
     readonly property var favs: {
         const s = {}
         all.forEach(w => { if (w.fav) s[w.path] = true })
@@ -147,11 +137,10 @@ ShellRoot {
     }
     readonly property var chipThemes: themes.includes("favorites") ? themes : [themes[0], "favorites"].concat(themes.slice(1))
 
-    // flip it now, the reindex fixes the rest later (i hope)
     function favorite() {
         if (!current || favProc.running) return
         const path = current.path
-        favProc.command = [Hypr.util + "/wallpaper-fav.sh", path]
+        favProc.command = [Hypr.util + "/wallpaper/wallpaper-fav.sh", path]
         favProc.running = true
         const i = cur
         setAll(all.map(w => w.path === path ? Object.assign({}, w, { fav: !w.fav }) : w))
@@ -170,7 +159,7 @@ ShellRoot {
         if (!current || leaving) return
         holding = current.path !== applied
         holdTimer.restart()
-        Quickshell.execDetached([Hypr.util + "/wallpaper-apply.sh", current.path])
+        Quickshell.execDetached([Hypr.util + "/wallpaper/wallpaper-apply.sh", current.path])
         close()
     }
 
@@ -215,7 +204,6 @@ ShellRoot {
 
     Timer { id: holdTimer; interval: 8000; onTriggered: { root.holding = false; root.tint(null) } }
 
-    // failsafe in case the close gets stuck, no idea why it does sometimes
     Timer { id: watchdog; interval: Theme.ms(1200) + 100; onTriggered: root.finish() }
 
     function animateTo(target) {
@@ -248,7 +236,6 @@ ShellRoot {
         property: "t"
         onFinished: {
             if (root.leaving) root.finish()
-            // index after the animation, it stuttered before
             else if (root.t >= 1) indexer.running = true
         }
     }
@@ -265,7 +252,7 @@ ShellRoot {
         id: indexer
         running: true
         command: ["flock", "-w", "5", (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/wallpaper-index.lock",
-                  "python3", Hypr.util + "/wallpaper-index.py"]
+                  "python3", Hypr.util + "/wallpaper/wallpaper-index.py"]
         onExited: { idx.reload(); if (reindex.again) { reindex.again = false; running = true } }
     }
 
@@ -318,7 +305,6 @@ ShellRoot {
         property bool hold: false
         readonly property bool ready: src === "" || [front, back].some(i => i.status === Image.Ready && i.source.toString() === src)
         property int zTop: 0
-        // with crop qt decodes only what it needs, so i guess originals are cheap
         readonly property size decode: Qt.size(Math.ceil(width), Math.ceil(height))
 
         function promote(img) {
@@ -393,7 +379,6 @@ ShellRoot {
         fragmentShader: Qt.resolvedUrl("blur.frag.qsb")
     }
 
-    // 2x + mipmaps, i think that's what makes the curve smooth
     component Pill: Item {
         property color fill
         property color edge
@@ -453,7 +438,6 @@ ShellRoot {
                     readonly property bool active: root.theme === modelData
                     readonly property bool present: modelData !== "favorites" || root.themes.includes(modelData)
                     readonly property real full: Math.round(label.implicitWidth) + row.pad
-                    // highlight follows the grow directly, idk a cleaner way
                     property real shown: present ? 1 : 0
                     Behavior on shown { NumberAnimation { duration: row.grow; easing.type: Easing.OutCubic } }
                     onPresentChanged: { row.settled = false; settleChips.restart() }
@@ -494,7 +478,6 @@ ShellRoot {
 
             Pill { radius: row.radius; fill: Theme.soft(Theme.accent); edge: "transparent" }
 
-            // names again in dark, clipped to the highlight. it works, don't touch it
             Item {
                 anchors.fill: parent
                 clip: true
@@ -560,7 +543,6 @@ ShellRoot {
         WlrLayershell.namespace: "wallpaper-picker"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-        // 1/3 res blur. never 0 opacity, Qt skips the first render. idk
         Item {
             id: area
             width: parent.width
@@ -653,7 +635,6 @@ ShellRoot {
                 readonly property real reach: width / 2 / step + 1
 
                 Repeater {
-                    // keyed by path so a reindex keeps the cards, i believe
                     model: ScriptModel { values: root.items; objectProp: "path" }
                     delegate: Item {
                         id: card
@@ -685,7 +666,6 @@ ShellRoot {
 
                         Component {
                             id: frame
-                            // 2x texture + mipmaps, same trick as the picker, border stays clean
                             Item {
                                 readonly property real k: 2 * root.u * (win.devicePixelRatio || 1)
                                 readonly property real radius: Theme.rounding / root.u

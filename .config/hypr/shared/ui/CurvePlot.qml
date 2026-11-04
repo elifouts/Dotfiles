@@ -1,7 +1,6 @@
 import QtQuick
 import "../common"
 
-// bezier editor, y can go outside 0..1 for overshoot
 Item {
     id: plot
 
@@ -141,7 +140,6 @@ Item {
         onPressed: mouse => {
             if (mouse.button === Qt.RightButton) { plot.resetRequested(); return }
             active = nearest(mouse.x, mouse.y)
-            // grab near a handle to drag it, anywhere else moves the nearest one
             const hx = plot.px(plot.curve[active * 2])
             const hy = plot.py(plot.curve[active * 2 + 1])
             if (Math.hypot(hx - mouse.x, hy - mouse.y) <= 30) {

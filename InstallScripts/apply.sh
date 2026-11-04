@@ -1,5 +1,4 @@
 #!/bin/bash
-# symlinks the repo into $HOME and opens the cast ports
 
 set -euo pipefail
 

@@ -1,25 +1,20 @@
 import QtQuick
 import Quickshell
 
-// hover the clock. fuller circle = more to do
 Item {
     id: cal
 
     property bool open: false
-    // ask for the keyboard first then focus, the layer can't focus a box it doesn't have keys for
     property bool typing: false
     readonly property bool holdOpen: open && typing
     function type(field) { typing = true; Qt.callLater(() => field.grab()) }
     function letGo() { typing = false; cal.forceActiveFocus() }
 
     implicitHeight: col.implicitHeight + 4
-    // side by side when there's room, stacked if not
     readonly property bool wide: width >= 560
-    // pill follows our height instead of easing on top
     readonly property bool ownHeight: true
 
     function key(d) { return Todos.key(d) }
-    // worked out once here, not 42 times a cell
     readonly property string todayKey: key(today)
     readonly property string pickedKey: key(picked)
     readonly property date today: new Date()
@@ -27,7 +22,6 @@ Item {
     property date picked: today
     property int slide: 1
 
-    // lives in shared/widgets/Todos.qml so space's desk widget shows the same list
     readonly property var todos: Todos.todos
     readonly property int done: Todos.done
     function tasks(d) { return Todos.tasks(d) }
@@ -39,7 +33,6 @@ Item {
         flip.restart()
     }
 
-    // out, swap while nothing shows, then the date lands as the new list slides in
     property date target: today
     property int way: 1
     function pick(d, cell) {
@@ -62,7 +55,6 @@ Item {
             NumberAnimation { target: boxTitle; property: "opacity"; to: 0; duration: Theme.ms(120) }
         }
         ScriptAction { script: { cal.picked = cal.target; list.refill(); content.shift = cal.way * 14; boxTitle.day = cal.target; boxTitle.typed = 0 } }
-        // date's still flying
         PauseAnimation { duration: Theme.ms(150) }
         PropertyAction { target: boxTitle; property: "opacity"; value: 1 }
         ParallelAnimation {
@@ -144,7 +136,6 @@ Item {
                 property real shift: 0
                 transform: Translate { x: grid.shift }
 
-                // slides the way you paged, like skipping a song
                 SequentialAnimation {
                     id: flip
                     PropertyAction { target: grid; property: "opacity"; value: 0 }
@@ -174,7 +165,6 @@ Item {
                             width: 26
                             height: 26
                             radius: 13 * Theme.round
-                            // 15% a task
                             readonly property real load: Math.min(1, 0.15 * cell.count)
                             color: cell.isPicked ? Theme.accent
                                 : cell.count ? Theme.alpha(Theme.accent2, dayArea.containsMouse ? Math.min(1, load + 0.1) : load)
@@ -210,7 +200,6 @@ Item {
             radius: Math.min(Theme.rounding, 12)
             color: Theme.alpha(Theme.fg, 0.05)
 
-            // spacers not spacing, Column drops spacing at height 0 and the add box hopped
             Column {
                 id: boxCol
                 x: 10
@@ -221,7 +210,6 @@ Item {
                     width: parent.width
                     height: 18
 
-                    // starts with the number so the flying date lands on it
                     Label {
                         id: boxTitle
                         property date day: cal.today
@@ -234,7 +222,6 @@ Item {
                         color: Theme.bright
                     }
 
-                    // everything i've ever checked off
                     Row {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
@@ -258,7 +245,6 @@ Item {
 
                 Item { width: 1; height: 6 }
 
-                // height eases here not on the box, easing the box left the add field jumping
                 Item {
                     id: content
                     property real shift: 0
@@ -277,7 +263,6 @@ Item {
                         model: ListModel { id: rows }
                         readonly property real rowH: 28
                         property bool dragging: false
-                        // day swaps come in as one piece, only edits animate per item
                         property bool quiet: false
 
                         function refill() {
@@ -332,7 +317,6 @@ Item {
 
                             Rectangle {
                                 x: 7
-                                // rename box is see through
                                 opacity: row.editing ? 0 : 1
                                 Behavior on opacity { NumberAnimation { duration: Theme.fast } }
                                 anchors.verticalCenter: parent.verticalCenter
@@ -384,7 +368,6 @@ Item {
                                 Behavior on opacity { NumberAnimation { duration: Theme.fast } }
                             }
 
-                            // press and move to drag, a plain click renames
                             MouseArea {
                                 id: grab
                                 anchors.fill: parent
@@ -479,7 +462,6 @@ Item {
         color: Theme.bright
         scale: 1 + 0.35 * Math.sin(Math.PI * p)
     }
-    // 270 = turn's 120 out + 150 hold, lands as the title comes back
     NumberAnimation {
         id: morph
         target: ghost; property: "p"; from: 0; to: 1

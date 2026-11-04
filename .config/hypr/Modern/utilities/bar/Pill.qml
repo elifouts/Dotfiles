@@ -23,7 +23,6 @@ Item {
     readonly property var opens: ({ workspaces: "workspaces", media: "island", date: "island", constdate: "island", timer: "island",
         clock: "calendar", tray: "tray", network: "network", audio: "audio", power: "power" })
     function has(page) {
-        // alarm rings out of whichever pill has the island
         return modules.some(m => opens[m] === (page === "alarm" ? "island" : page))
     }
 
@@ -34,7 +33,6 @@ Item {
         for (let j = i + 1; j < modules.length && modules[j] !== "|"; j++) after = after || showing(j)
         return before && after
     }
-    // network goes two column at 600, center gets 640 so wifi and bluetooth sit side by side
     readonly property bool wideNet: align === "center"
     readonly property var widths: ({ workspaces: 600, island: 600, network: wideNet ? 672 : 350, calendar: 652, audio: 340, power: 330, tray: 290, alarm: 300 })
     readonly property var widest: ({ workspaces: 900, island: 900, network: wideNet ? 640 : 560, calendar: 620, audio: 720, power: 420, tray: 360, alarm: 340 })
@@ -51,7 +49,6 @@ Item {
         closeDelay.stop()
         openDelay.stop()
         if (p === "") { close(); return }
-        // same as the music player: get it out of the way first, open after. the osd card just leaves
         const card = Media.card && p === "island"
         const music = ctx.musicInTheWay(self, p)
         if (!open && self.t === 0 && (music || card)) {
@@ -65,7 +62,6 @@ Item {
         place(p, t ?? null)
     }
 
-    // cursor's on the bar row itself, not down in the page
     readonly property bool onRow: hover.hovered && hover.point.position.y < pillH
     function place(p, t) {
         page = p
@@ -135,7 +131,6 @@ Item {
     }
     Timer { id: tuckWait; interval: Theme.ms(340); onTriggered: self.place(self.pending, self.pendingTray) }
 
-    // slack rounds to even pixels once it settles, rounding every frame made things hop
     readonly property real rawW: row.implicitWidth + 8
     property real slack: 0
     Behavior on slack { Settle { duration: Theme.fast } }
@@ -145,7 +140,6 @@ Item {
     readonly property real rowW: rawW + slack
     readonly property real targetW: Math.max(rowW, Math.min(maxW, widths[shownPage] ?? 340))
     property real bodyW: targetW
-    // ownHeight pages land on whole pixels anyway, rounding mid ease hopped
     readonly property bool ownHeight: !!front.item && !!front.item.ownHeight
     property real bodyH: front.item ? (ownHeight ? front.item.implicitHeight : Math.ceil(front.item.implicitHeight)) + 6 + pad : 0
     Behavior on bodyW { enabled: self.t === 1; Settle { duration: Theme.move } }
@@ -182,7 +176,6 @@ Item {
 
     Item {
         id: card
-        // centered on the bar not the pill, the pill's own rounding fought ours
         readonly property real grow: (self.bodyW - self.rowW) * self.t
         readonly property real w: self.rowW + grow
         x: self.align === "left" ? 0 : self.align === "right" ? self.rowW - w
@@ -193,7 +186,6 @@ Item {
         HoverHandler { id: hover }
         MouseArea { anchors.fill: parent; hoverEnabled: true }
 
-        // 2x + mipmaps, i think that's what makes the curve smooth
         Item {
             x: -self.ctx.flare
             width: parent.width + 2 * self.ctx.flare
@@ -293,16 +285,13 @@ Item {
         property real f: front ? 1 : 0
         Behavior on f { Settle { duration: Theme.move } }
 
-        // whole pixel and even width so the center never moves, fractional shimmered the buttons
         readonly property real cardLeft: self.x + card.x
         x: self.align === "left" ? self.pad : self.align === "right" ? card.width - width - self.pad
             : Math.round(cardLeft + (card.width - width) / 2) - cardLeft
         y: 6
-        // leaving pages keep their width, otherwise bluetooth drops off before wifi
         property real held: 0
         Binding on held {
             when: slot.front
-            // never under the page's own width or network loads in one column
             value: 2 * Math.floor(Math.min(self.widest[slot.page] ?? Infinity,
                 Math.max(self.bodyW, Math.min(self.maxW, self.widths[slot.page] ?? 0)) - self.pad * 2) / 2)
             restoreMode: Binding.RestoreNone

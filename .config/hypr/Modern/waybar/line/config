@@ -25,7 +25,7 @@
         "custom/notification": {
             "tooltip": false,
             "format": "",
-            "on-click": "~/.config/hypr/utilities/shells.sh home",
+            "on-click": "~/.config/hypr/utilities/session/shells.sh home",
             "escape": true
         },
         "clock": {

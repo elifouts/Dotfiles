@@ -1,7 +1,6 @@
 import QtQuick
 import "../common"
 
-// same visualizer as the bar
 Row {
     id: wave
 
@@ -23,7 +22,6 @@ Row {
 
             anchors.verticalCenter: parent.verticalCenter
             width: 2.5 * wave.u
-            // even pixel heights so it doesn't flicker
             height: Math.max(4, Math.round((3 + level * 12) * wave.u / 2) * 2)
             radius: width / 2
             color: Theme.along(Theme.spectrum, index / (wave.bars - 1))

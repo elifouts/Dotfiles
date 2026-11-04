@@ -21,7 +21,7 @@ case "${choice,,}" in
     1) target="fullinstall.sh" ;;
     2) target="waybarinstall.sh" ;;
     3) target="quickshellbarinstall.sh" ;;
-    p) target="../.config/hypr/utilities/package-tui.sh" ;;
+    p) target="../.config/hypr/utilities/packages/package-tui.sh" ;;
     u) target="uninstall.sh" ;;
     q) echo "Goodbye."; exit 0 ;;
     *) echo "Invalid choice: $choice"; exit 1 ;;

@@ -1,7 +1,5 @@
 import QtQuick
 
-// fade + lil popin for stuff loading in, staggered by index. same curve and pace as hyprland's window-in.
-// plays on load, when target shows up (loaders), and whenever replay changes
 SequentialAnimation {
     id: rise
     property Item target

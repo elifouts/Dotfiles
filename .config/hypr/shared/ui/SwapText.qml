@@ -1,6 +1,5 @@
 import QtQuick
 
-// slides out the way you skipped and types back in. set value not text
 Label {
     id: s
 
@@ -9,7 +8,6 @@ Label {
     property real typed: 1
     property real shift: 0
     property int dir: 1
-    // full width of the new text, the typed one grows and pills shouldn't
     readonly property real fullWidth: metrics.advanceWidth
 
     text: shown.slice(0, Math.ceil(shown.length * typed))
@@ -19,7 +17,6 @@ Label {
 
     Component.onCompleted: shown = value
     onValueChanged: {
-        // nothing to swap from, or nobody's looking
         if (shown === "" || value === "" || !visible) {
             swap.stop()
             shown = value

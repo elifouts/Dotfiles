@@ -8,7 +8,6 @@ import "../common"
 import "../media"
 import "../ui"
 
-// alt tab: everything blurs back, corner brackets close in, readouts glide in from the edges. same stats.sh as modern
 Scope {
     id: scan
 
@@ -26,7 +25,6 @@ Scope {
         ScriptAction { script: scan.done() }
     }
     function close() { if (!closing.running) { opening.stop(); closing.start() } }
-    // staggered 0..1 for the i-th thing to arrive
     function stage(i) { return Math.max(0, Math.min(1, (t - i * 0.07) / (1 - i * 0.07))) }
 
     Timer { interval: 1500; running: true; repeat: true; onTriggered: poll.running = true }
@@ -57,7 +55,6 @@ Scope {
         return (d ? d + "d " : "") + h + "h " + m + "m"
     }
 
-    // a plate of readouts that glides in from its side
     component Block: Item {
         id: block
         property int order: 0
@@ -93,12 +90,10 @@ Scope {
             color: Theme.fg
         }
     }
-    // fills in as the plate arrives
     component Meter: Kit.Slide {
         property real target: 0
         value: target
         Behavior on value { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
-        // a readout, not a control
         MouseArea { anchors.fill: parent }
     }
 
@@ -119,7 +114,6 @@ Scope {
             MouseArea { z: -1; anchors.fill: parent; onClicked: scan.close() }
             Item { focus: win.main; Keys.onPressed: scan.close() }
 
-            // corner brackets close in from past the edges
             Repeater {
                 model: win.main ? 4 : 0
                 Item {

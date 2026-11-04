@@ -19,7 +19,6 @@ Rectangle {
     signal rightClicked()
     signal settingsClicked()
 
-    // wiggles while connecting, does a little spin when it works. i like it
     property real triedAt: 0
     function cheer() {
         triedAt = 0
@@ -70,7 +69,6 @@ Rectangle {
         }
     }
 
-    // hardcoded on purpose, Theme.ms can hit 0 and a 0ms infinite loop maxed my cpu
     SequentialAnimation {
         id: wiggle
         loops: Animation.Infinite

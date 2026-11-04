@@ -3,7 +3,6 @@ import Quickshell
 import "../common"
 import "../ui"
 
-// battery, brightness and session, the scary ones want two clicks
 Column {
     id: pw
     spacing: 6
@@ -21,7 +20,6 @@ Column {
     }
     Kit.Slide { visible: Brightness.has; glyph: "󰃟"; value: Brightness.value; onMoved: v => Brightness.set(v) }
     Item { width: 1; height: 4 }
-    // lock and sleep on the left, the ones that end your session on the right past a gap
     Row {
         id: tiles
         width: parent.width
@@ -59,7 +57,6 @@ Column {
                         }
                         Hud { anchors.horizontalCenter: parent.horizontalCenter; font.pixelSize: 9; text: tile.armedNow ? "again" : tile.modelData[0]; color: tile.armedNow ? Theme.warn : Theme.dim }
                     }
-                    // shrinks while it waits for the second click
                     Rectangle {
                         anchors.bottom: parent.bottom
                         height: 2

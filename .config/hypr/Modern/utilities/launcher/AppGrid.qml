@@ -6,8 +6,8 @@ import "../common"
 Flickable {
     id: grid
 
-    property var apps: []           // [{ id, entry, ... }], fixed order
-    property var slots: ({}) // id -> slot index
+    property var apps: []
+    property var slots: ({})
     property int count: 0
     property int selected: 0
     property int cols: 4
@@ -15,7 +15,6 @@ Flickable {
     property real gap: 14
     property real hlPad: 5
     property string emptyText: ""
-    // only hover-select after the mouse actually moves
     property bool mouseMoved: false
     property real intro: 1
     signal launch(var app)
@@ -59,7 +58,6 @@ Flickable {
         onPointChanged: grid.mouseMoved = true
     }
 
-    // one row per notch, touchpads scroll by pixels
     MouseArea {
         width: grid.contentWidth
         height: grid.contentHeight
@@ -129,7 +127,6 @@ Flickable {
                 moveY.enabled = true
             }
 
-            // read slot directly, bindings haven't updated yet here
             function place(instant) {
                 if (slot < 0) return
                 if (instant || present < 0.2) jumpTo(grid.slotX(slot), grid.slotY(slot))
@@ -151,7 +148,6 @@ Flickable {
                 Behavior on scale { NumberAnimation { duration: Theme.ms(220); easing.type: Easing.OutCubic } }
             }
 
-            // fallback: first letter of the app name
             Label {
                 anchors.centerIn: parent
                 visible: !icon.visible

@@ -10,7 +10,6 @@ Item {
     property bool open: false
     property string kind: "shot"
     property int elapsed: 0
-    // the panel should close, a picker is about to take the screen
     signal done()
 
     readonly property string dir: Hypr.dir + "/shared/capture/"
@@ -56,7 +55,6 @@ Item {
     readonly property bool casting: !!castState
     readonly property int castStarted: casting ? castState.started : 0
 
-    // share.sh writes this when an app wants my screen
     Watched {
         id: shareReq
         path: Quickshell.env("XDG_RUNTIME_DIR") + "/share-request"
@@ -102,7 +100,6 @@ Item {
                     required property var modelData
                     primary: page.kind === modelData.id
                     label: modelData.label
-                    // hitting cast again stops looking for tvs
                     onPressed: page.kind = modelData.id === "cast" && page.kind === "cast" ? "shot" : modelData.id
                 }
             }

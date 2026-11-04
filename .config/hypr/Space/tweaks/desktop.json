@@ -1,0 +1,12 @@
+{
+  "colors": {
+    "theme": "dark/space"
+  },
+  "config": {
+    "decoration": {
+      "blur": {
+        "enabled": true
+      }
+    }
+  }
+}

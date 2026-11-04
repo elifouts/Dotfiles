@@ -1,7 +1,6 @@
 import QtQuick
 import "../common"
 
-// entries: [{ n, k, d }]
 Item {
     id: wheel
 
@@ -11,7 +10,6 @@ Item {
     property real pos: 0
     signal activated(int index)
 
-    // 0 top, 1 bottom
     property real centerFrac: 0.36
     readonly property int n: entries.length
     readonly property real pitch: Math.min(64, Math.max(46, height / 6.2))
@@ -54,7 +52,6 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.NoButton
         onWheel: event => {
-            // one step per notch
             wheel.wheelAcc += event.angleDelta.y
             while (Math.abs(wheel.wheelAcc) >= 120) {
                 wheel.step(wheel.wheelAcc > 0 ? -1 : 1)
@@ -79,7 +76,6 @@ Item {
                 readonly property var e: live ? wheel.entries[idx] : null
                 readonly property real d: idx - wheel.pos
                 readonly property real ad: Math.abs(d)
-                // 1 centered, 0 a step away
                 readonly property real lift: Math.max(0, 1 - ad)
                 readonly property real ease: lift * lift * (3 - 2 * lift)
 

@@ -1,7 +1,4 @@
--- reads the profile right out of Modern/, variant files beat base
 local hypr = os.getenv("HOME") .. "/.config/hypr/"
-
--- old dotfiles from before state/ existed. can go once the laptop has pulled
 local old = io.open(hypr .. ".active-profile")
 if old then
     old:close()

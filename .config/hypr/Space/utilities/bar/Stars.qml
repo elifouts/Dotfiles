@@ -3,12 +3,10 @@ import Quickshell.Hyprland
 import "../common"
 import "../ui"
 
-// bright orb = focused, dim orb = on a screen, big dot + moons = windows nobody's looking at
 Item {
     id: stars
 
     readonly property int focused: Hyprland.focusedWorkspace?.id ?? 1
-    // every monitor's, so both bars agree on what's on screen
     readonly property var onScreen: Hyprland.monitors.values.map(m => m.activeWorkspace?.id ?? -1)
     readonly property var existing: Hyprland.workspaces.values.filter(w => w.id > 0)
     readonly property var ids: {
@@ -49,20 +47,17 @@ Item {
             Rectangle {
                 visible: !star.lit && !star.shown
                 anchors.centerIn: parent
-                // even sizes so it centres
                 width: star.windows ? 6 : 4
                 height: width
                 radius: width / 2
                 color: Theme.alpha(Theme.fg, (star.windows ? 0.6 : 0.22) + (area.containsMouse ? 0.3 : 0))
             }
-            // a moon per window past the first, capped at 4 so it stays a dot and not a swarm
             Item {
                 id: orbit
                 readonly property int moons: star.lit || star.shown ? 0 : Math.min(4, star.windows - 1)
                 visible: moons > 0
                 anchors.centerIn: parent
                 width: 14; height: 14
-                // 30 ticks a second is under a pixel of travel per tick. a looping animation redrew the bar (and its blur) at full refresh
                 Timer {
                     interval: 33
                     repeat: true
@@ -91,7 +86,6 @@ Item {
         }
     }
 
-    // head races ahead, tail catches up
     property int last: focused
     property real head: cx(focused)
     property real tail: cx(focused)

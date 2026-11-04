@@ -2,7 +2,6 @@ import QtQuick
 import Quickshell.Io
 
 
-// wttr.in by IP, shared by all monitors, refreshed every 30 min
 Item {
     id: fc
 
@@ -26,7 +25,6 @@ Item {
         if (!proc.running) proc.running = true
     }
 
-    // fold wttr.in codes into a few icons. probably missed some
     function glyph(c, dark) {
         if (c === 113) return dark ? "󰖔" : "󰖙"
         if (c === 116) return "󰖕"
@@ -59,7 +57,6 @@ Item {
                     fc.high = +today.maxtempF
                     fc.low = +today.mintempF
                     fc.night = hour < 6 || hour >= 20
-                    // 3-hour slots through tomorrow, idk what else to show
                     const now = Date.now(), list = []
                     for (let day = 0; day < 2; day++) {
                         const date = d.weather[day].date

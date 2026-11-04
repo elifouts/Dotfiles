@@ -1,6 +1,5 @@
 import QtQuick
 
-// one island tab, fades and rises in when on. keeps the 440 it was laid out for, centred
 Item {
     property bool on: false
     property real maxW: 440

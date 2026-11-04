@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# package screen for uninstall.sh. args are "@Group" headers and package names (name! = you probably want to keep it)
-# writes the picked ones to the file in argv[1], exits 1 if you bail
 import curses
 import sys
 
@@ -10,7 +8,6 @@ def ui(screen, rows):
     curses.use_default_colors()
     for n, fg in ((1, curses.COLOR_CYAN), (2, curses.COLOR_RED), (3, curses.COLOR_YELLOW), (4, curses.COLOR_GREEN)):
         curses.init_pair(n, fg, -1)
-    # submit lives at the very bottom so you have to actually look at the whole list first
     rows = rows + [("", None), ("submit", "submit")]
     picks = [i for i, (_, kind) in enumerate(rows) if kind in ("pkg", "keep")]
     marked, at, top = set(), 0, 0

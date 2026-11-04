@@ -5,7 +5,6 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 
-// hyprland stuff that used to be crammed into Theme
 Singleton {
     id: root
 
@@ -14,7 +13,6 @@ Singleton {
     readonly property string util: dir + "/utilities"
     readonly property string state: dir + "/state"
 
-    // lua dispatch if hyprland.lua is in use
     FileView {
         id: luaFile
         path: root.dir + "/hyprland.lua"
@@ -31,7 +29,6 @@ Singleton {
         Quickshell.execDetached(["sh", "-c", cmd])
     }
 
-    // focusedMonitor can be stale at startup, so ask for the cursor position
     function locate(done) {
         located.push(done)
         cursorQuery.running = true
@@ -42,12 +39,10 @@ Singleton {
     function focusedScreen() {
         return Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
     }
-    // only the widest screen gets the moon, the rest get extra stars
     readonly property var moonScreen: Quickshell.screens.reduce((a, b) => b.width > a.width ? b : a, Quickshell.screens[0])
     function screenNamed(name) {
         return Quickshell.screens.find(s => s.name === name) ?? focusedScreen()
     }
-    // ui scale for the popups, i tuned everything at 1080p
     function scaleFor(s) {
         return s ? Math.max(0.8, Math.min(1.35, Math.min(s.width / 1920, s.height / 1080))) : 1
     }

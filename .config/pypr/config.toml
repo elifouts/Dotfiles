@@ -37,7 +37,7 @@ offset = "200%"
 
 [scratchpads.packages]
 animation = "fromTop"
-command = "kitty --class kitty-packages -e /home/$USER/Dotfiles/.config/hypr/utilities/package-tui.sh"
+command = "kitty --class kitty-packages -e /home/$USER/Dotfiles/.config/hypr/utilities/packages/package-tui.sh"
 class = "kitty-packages"
 position = "8% 5%"
 size = "84% 88%"

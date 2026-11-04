@@ -116,7 +116,6 @@ Item {
                 }
             }
 
-            // centered in the gap between the chip and the progress bar
             Column {
                 y: chip.y + chip.height + (progress.y - chip.y - chip.height - height) / 2
                 width: parent.width

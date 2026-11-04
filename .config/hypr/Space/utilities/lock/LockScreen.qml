@@ -4,7 +4,6 @@ import "../common"
 import "../land"
 import "../ui"
 
-// one monitor's lock, the land dimmed behind a small hud
 Item {
     id: face
 
@@ -13,12 +12,10 @@ Item {
 
     SystemClock { id: clock; precision: SystemClock.Minutes }
 
-    // still land cached, only the twinkle redraws, same as the wallpaper
     Terrain { id: land; anchors.fill: parent; layerMode: 1; layer.enabled: true }
     Twinkle { anchors.fill: parent; under: land }
     Rectangle { anchors.fill: parent; color: Theme.void_; opacity: 0.35 + 0.3 * face.t }
 
-    // focus pull, same as alt tab: everything settles in from slightly too close
     Item {
         anchors.fill: parent
         opacity: face.t
@@ -44,7 +41,6 @@ Item {
             }
             Item { width: 1; height: 26 }
 
-            // a real TextInput, without focus nobody could get in
             Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: 300

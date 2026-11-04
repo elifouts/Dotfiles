@@ -7,7 +7,6 @@ import Quickshell.Widgets
 import "../common"
 import "../bar"
 
-// the workspace data and tiles are shared with the bar's mini overview (../bar/Workspaces.qml)
 ShellRoot {
     id: root
 
@@ -37,13 +36,11 @@ ShellRoot {
         open = false
     }
 
-    // a small card styled like the workspace tiles, label underneath, × on hover
     component Mini: Column {
         id: mini
         property string label
         property real cw: 150
         property real ch: 90
-        // set both to make the card draggable
         property var dragEntry: null
         property Item ghost: null
         default property alias content: box.data
@@ -161,7 +158,6 @@ ShellRoot {
         color: Theme.bright
     }
 
-    // qt drags can't leave their surface, so past the edge the monitor under the pointer takes over. took me a while
     property var guest: null
 
     function viewAt(gx, gy) {
@@ -209,7 +205,6 @@ ShellRoot {
             readonly property real tileW: Math.min(560, (width - 160 - (cols - 1) * gap) / cols,
                 (height - 260 - (rows - 1) * (gap + 30)) / rows * geom.w / geom.h)
             readonly property var magic: { ex.rev; return Hyprland.workspaces.values.find(w => w.name === "special:magic") ?? null }
-            // special workspace: only on its monitor with windows, all when empty. i think
             readonly property bool magicUsed: !!magic && ex.windowsOn(magic.id).length > 0
             readonly property bool showsMagic: {
                 if (!magicUsed) return true
@@ -433,7 +428,6 @@ ShellRoot {
                                     cw: Math.min(130, 70 * o.size[0] / Math.max(1, o.size[1]))
                                     onPicked: { Quickshell.execDetached(["pypr", "toggle", label]); root.open = false }
                                     onRemoved: ex.closeWindow(modelData)
-                                    // under the capture, hidden pads hand back blank frames that still count as content
                                     IconImage {
                                         anchors.centerIn: parent
                                         implicitSize: 32
@@ -461,13 +455,11 @@ ShellRoot {
                             add: Transition { Settle { property: "opacity"; from: 0; to: 1; duration: Theme.move } }
                             move: Transition { Settle { properties: "x,y"; duration: Theme.move } }
                             Repeater {
-                                // keys survive renames so the card slides to its new spot instead of popping in
                                 model: ScriptModel { values: ex.saved.map(e => e.key) }
                                 Mini {
                                     id: entry
                                     required property string modelData
                                     readonly property var ws: ex.byKey[modelData] ?? { name: "", windows: [] }
-                                    // fit the whole layout, i think this handles other monitors
                                     readonly property real sw: Math.max(ws.w || 0, ...ws.windows.map(w => w.x + w.w))
                                     readonly property real sh: Math.max(ws.h || 0, ...ws.windows.map(w => w.y + w.h))
                                     readonly property real k: Math.min(150 / sw, 90 / sh)

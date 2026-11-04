@@ -3,43 +3,34 @@ import Quickshell
 import Quickshell.Io
 import "../common"
 
-// color themes as a lil fake terminal cause it looked cool
 Item {
     id: tp
 
-    // color0-15 then bg, fg, cursor, same order as the scheme files
     readonly property var entries: {
         const p = Store.pywalPalette
         const pywal = p.length >= 16 ? [{ id: "pywal", name: "Pywal", palette: full(p.slice(0, 16)) }] : []
         return pywal.concat(Store.themes)
     }
     readonly property var slotNames: Array.from({ length: 16 }, (_, i) => "color" + i)
-    // what each slot is for. short one under the swatch, long one in the hex box
     readonly property var hints: [["bg", "background, darkest"], ["red", "red, errors"], ["green", "green, strings"],
         ["yellow", "yellow, warnings"], ["blue", "blue, functions"], ["magenta", "magenta, keywords"], ["cyan", "cyan, info"],
         ["text", "text, light gray"], ["dim", "comments, dim gray"], ["accent", "accent, warm red/orange"], ["green+", "bright green"],
         ["yellow+", "bright yellow"], ["blue+", "bright blue"], ["second", "2nd accent, bright magenta"], ["cyan+", "bright cyan"],
         ["white", "brightest text"]]
-    // background follows color0, foreground and cursor follow color15, same as pywal
     function full(p) { return p.concat([p[0], p[15], p[15]]) }
     property int cur: 0
-    // right-click anywhere resets the colors. not while making a theme, that'd be evil
     TapHandler { acceptedButtons: Qt.RightButton; enabled: !tp.draft; onTapped: Theme.setRole() }
     readonly property var entry: entries[cur] ?? { id: "", name: "", palette: [] }
     property var draft: null
     property string draftName: ""
     property int slot: 1
-    // color0-7 by default, 16 felt crammed. the toggle opens the rest
     property bool all16: false
     readonly property var compact: [0, 1, 2, 3, 4, 5, 6, 7]
     readonly property var slots: all16 || draft ? Array.from({ length: 16 }, (_, i) => i) : compact
-    // empty slots preview as gray till you fill them
     readonly property var shown: draft ? full(draft.map(c => c || "#808080")) : entry.palette
     readonly property color picked: draft ? draft[slot] || "#808080" : "black"
-    // follows hyprland's rounding so it matches everything else
     readonly property real r: Math.min(Theme.rounding, 10)
 
-    // colors ease over so the hex digits roll. skipped while editing or the sliders lag
     property var from: []
     property var to: []
     property real k: 1
@@ -62,21 +53,17 @@ Item {
         if (i >= 0 && !draft && !listHover.hovered) cur = i
     }
     onEntriesChanged: sync()
-    // the name and comment scramble into the new ones, 0 is all noise 1 is done
     property real settle: 1
     NumberAnimation { id: jumble; target: tp; property: "settle"; from: 0; to: 1; duration: Theme.ms(650); easing.type: Easing.OutCubic }
     onCurChanged: jumble.restart()
-    // wait a sec before snapping back when the mouse leaves, otherwise it flickers
     Timer { id: back; interval: 140; onTriggered: tp.sync() }
     Connections { target: Store; function onColorThemeChanged() { tp.sync() } }
 
-    // arrows and enter from the settings window end up here
     function step(d) { if (!draft && entries.length) cur = (cur + d + entries.length) % entries.length }
     function pick() { draft ? save() : Store.applyTheme(entry.id) }
     Component.onCompleted: { sync(); Store.picker = tp }
     Component.onDestruction: if (Store.picker === tp) Store.picker = null
 
-    // blank, or a copy of e to edit. your own themes save over themselves unless you hit save as new
     property string editing: ""
     function create(e) {
         instant = true
@@ -92,14 +79,12 @@ Item {
         instant = true
         draft = d
     }
-    // hyprpicker through the same script as the bar, only takes the color if the history file got a new one (esc = nothing)
     Process {
         id: eyedropper
         command: ["sh", "-c", 'm=$(mktemp); f=~/.cache/colorpicker/colors; ~/.config/waybar/scripts/colorpicker.sh >/dev/null 2>&1; [ "$f" -nt "$m" ] && head -n1 "$f"; rm -f "$m"']
         stdout: StdioCollector { onStreamFinished: if (tp.draft && /^#[0-9a-f]{6}$/i.test(text.trim())) tp.setSlot(text.trim().toLowerCase()) }
     }
 
-    // can't save with holes, jumps to the first empty one instead
     function save(asNew) {
         const empty = draft.indexOf("")
         if (empty >= 0) { slot = empty; return }
@@ -130,14 +115,11 @@ Item {
         const n = settle
         return t(n < 1 ? s.replace(/\S/g, ch => Math.random() < n ? ch : "!<>-_/[]{}=+*^?#01"[Math.floor(Math.random() * 18)]) : s)
     }
-    // a chunk of text in color i. span() wants html already, c() escapes it for you
     function c(i, s) { return span(i, t(s)) }
     function span(i, h) { return "<font color='" + lc(i) + "'>" + h + "</font>" }
 
-    // not a binding cause typing would break it. only pushes value in when it actually differs from what you typed
     component Field: Rectangle {
         property string value
-        // shown while it's empty
         property string hint
         readonly property alias text: input.text
         signal done()
@@ -162,7 +144,6 @@ Item {
             color: Theme.bright
             selectionColor: Theme.alpha(Theme.accent, 0.5)
             onTextEdited: parent.edited()
-            // snaps half typed junk back to the real value
             onEditingFinished: { text = parent.value; parent.done() }
             Keys.onEscapePressed: tp.draft = null
         }
@@ -230,7 +211,6 @@ Item {
                     }
                 }
 
-                // the swatches. tap one to edit it while customizing
                 Grid {
                     id: grid
                     width: parent.width
@@ -264,10 +244,8 @@ Item {
                             Label {
                                 width: parent.width
                                 horizontalAlignment: Text.AlignHCenter
-                                // reads the animating color so the digits roll. empty slots say what they're for
                                 text: tp.draft && !tp.draft[cell.s] ? tp.hints[cell.s][0] : tp.lc(cell.s).slice(1)
                                 font.pixelSize: 9
-                                // the theme's own white but faded, keeps it calm
                                 color: tp.lc(15)
                                 opacity: cell.on ? 1 : 0.45
                             }
@@ -289,18 +267,14 @@ Item {
             highlightMoveDuration: Theme.ms(160)
             highlightResizeDuration: 0
             Rise { target: list; index: 1; replay: Store.opened }
-            // one hover for the whole list. per row hover kept dropping when the mouse sat still
-            // and it jumped back to pywal, this fixed it i think
             HoverHandler {
                 id: listHover
                 onPointChanged: {
                     const i = list.indexAt(point.position.x, point.position.y + list.contentY)
                     if (i >= 0) { back.stop(); tp.cur = i }
                 }
-                // leaving goes back to whatever's applied
                 onHoveredChanged: hovered ? back.stop() : back.restart()
             }
-            // hover, same look as the bar menus
             highlight: Rectangle {
                 radius: tp.r
                 color: Theme.alpha(Theme.fg, 0.1)
@@ -314,7 +288,6 @@ Item {
                 width: list.width
                 height: 32
 
-                // applied one, also same as the bar menus
                 Rectangle {
                     anchors.fill: parent
                     radius: tp.r
@@ -369,8 +342,6 @@ Item {
             }
         }
 
-        // which slot each role uses everywhere (quickshell, waybar, the hyprland border). pick a role, then a color.
-        // only changes the applied scheme (or wallpaper on pywal)
         Column {
             id: roleBox
             visible: !tp.draft

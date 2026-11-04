@@ -3,7 +3,6 @@ import Quickshell
 import Quickshell.Io
 import "../common"
 
-// the osd itself is shared/system/Osd.qml
 ShellRoot {
     Osd {}
     IpcHandler {

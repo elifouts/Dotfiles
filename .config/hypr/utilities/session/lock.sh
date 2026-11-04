@@ -1,11 +1,9 @@
 #!/bin/bash
-# usage: lock.sh [--preview]
 set -uo pipefail
 
-. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/paths.sh"
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../paths.sh"
 SHOTS="${XDG_RUNTIME_DIR:-/tmp}/quickshell-lock"
 
-# screenshot every monitor while qs starts up, the lock fades in from these
 shoot() {
     rm -rf "$SHOTS" && mkdir -p "$SHOTS"
     (
@@ -22,7 +20,6 @@ if [ "${1:-}" = --preview ]; then
 fi
 
 exec 9>"${XDG_RUNTIME_DIR:-/tmp}/quickshell-lock.lock"
-# already locked: give up. one still quitting after unlock: wait for it so super+l never gets eaten
 flock -w 1 9 || exit 0
 shoot
 qs -p "$QS/lock.qml" </dev/null >/dev/null 2>&1

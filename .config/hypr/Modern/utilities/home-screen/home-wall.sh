@@ -1,12 +1,10 @@
 #!/bin/bash
-# prints "<output>\t<screen copy>" per monitor, plus "*" for the wal wallpaper
 set -uo pipefail
 
 dir="$HOME/.cache/hypr-home"
 mkdir -p "$dir"
 used=()
 
-# sets $result so $used isn't lost in a subshell
 cache() {
     local src="$1" key
     [ -f "$src" ] || return 1

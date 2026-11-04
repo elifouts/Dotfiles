@@ -28,7 +28,6 @@ def key_for(path: Path) -> str:
     return hashlib.sha1(f"{path}:{stat.st_mtime_ns}:{stat.st_size}".encode()).hexdigest()
 
 
-# 640x360 thumb for cards and blur
 def make_thumb(path: Path, key: str) -> Path:
     thumb = THUMBS / f"{key}.jpg"
     if not thumb.exists():
@@ -60,7 +59,6 @@ def main() -> None:
     files = sorted(
         p for p in LIBRARY.glob("*/*") if p.is_file() and p.suffix.lower() in EXTENSIONS
     )
-    # favorites are just paths in favorites.txt
     favs = set(FAVORITES.read_text().split("\n")) if FAVORITES.exists() else set()
 
     def work(path: Path):

@@ -57,7 +57,6 @@ ShellRoot {
     property real gpuMemTotal: 1
     property real gpuTemp: 0
 
-    // the daemon itself is shared/system/Notifs.qml
     readonly property bool dnd: Notifs.dnd
     readonly property var notifs: Notifs.notifs
     readonly property int notifCount: Notifs.count
@@ -97,12 +96,10 @@ ShellRoot {
         tween.start()
     }
 
-    // wait for the wallpaper or the first blur stutters. pretty sure anyway
     function tryStart() {
         if (shown && !closing && (wallReady || startWaited)) animateTo(1)
     }
 
-    // "*" is the fallback when awww has nothing, i think
     function wallFor(name) {
         return walls[name] ?? walls["*"] ?? ""
     }
@@ -234,7 +231,6 @@ ShellRoot {
     NumberAnimation { id: tween; target: root; property: "t"; onFinished: if (root.closing) root.finish() }
     Timer { id: startTimer; interval: 30; onTriggered: root.tryStart() }
     Timer { id: waitTimer; interval: 450; onTriggered: { root.startWaited = true; root.tryStart() } }
-    // failsafe in case the close gets stuck, no idea why it does sometimes
     Timer { id: watchdog; interval: Theme.ms(1200) + 100; onTriggered: if (root.closing) root.finish() }
 
     SystemClock { id: clock; precision: SystemClock.Minutes; enabled: root.shown }

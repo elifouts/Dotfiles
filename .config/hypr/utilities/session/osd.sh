@@ -1,8 +1,6 @@
 #!/bin/bash
 set -uo pipefail
 
-# usage: osd.sh vol-up|vol-down|vol-mute|mic-mute|bright-up|bright-down|caps|play|next|prev
-
 DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 case "${1:-}" in
@@ -11,7 +9,6 @@ case "${1:-}" in
         pct="$(cut -d, -f4 <<<"$out" | tr -d '%')"
         "$DIR/shells.sh" osd brightness "$(awk -v p="$pct" 'BEGIN { print p / 100 }')"
         ;;
-    # the osd does these itself and watches the real state, doing them out here raced when spammed
     vol-up | vol-down | vol-mute | mic-mute | caps | play | next | prev)
         "$DIR/shells.sh" osd act "$1"
         ;;

@@ -12,7 +12,6 @@ Item {
 
     property bool active: false
     property int rev: 0
-    // stop the capture before closing, it errors out otherwise. don't ask me why
     property var closing: []
     function isClosing(t) { return closing.includes(addr(t)) }
 
@@ -23,7 +22,6 @@ Item {
         path: Quickshell.env("HOME") + "/.cache/wallpaper-picker/current"
     }
 
-    // pypr scratchpads by class, kept off the tiles
     FileView {
         id: pyprFile
         path: Quickshell.env("HOME") + "/.config/pypr/config.toml"
@@ -70,7 +68,6 @@ Item {
     Timer { id: debounce; interval: 80; onTriggered: ex.refresh() }
     Timer { running: ex.active; interval: 1500; repeat: true; onTriggered: ex.refresh() }
 
-    // layout coords: rotation swaps sides, scale shrinks both. took a while
     function geometry(mon) {
         rev
         if (!mon) return { x: 0, y: 0, w: 1920, h: 1080 }
@@ -101,7 +98,6 @@ Item {
     }
 
     function iconFor(cls) {
-        // custom classes like kitty-dropterm match nothing, so try the app before the dash
         const e = DesktopEntries.heuristicLookup(cls || "") || DesktopEntries.heuristicLookup((cls || "").split("-")[0])
         return Quickshell.iconPath(e && e.icon ? e.icon : (cls || "").toLowerCase(), true)
             || Quickshell.iconPath("application-x-executable", true)
@@ -120,7 +116,6 @@ Item {
         Hypr.dispatch("hl.dsp.focus({ window = \"address:" + addr(t) + "\" })", "focuswindow address:" + addr(t))
     }
 
-    // ws is a number or a name like "special:magic"; mon sends a new workspace where it was dropped
     function moveTo(t, ws, mon) {
         const w = typeof ws === "string" ? "\"" + ws + "\"" : ws
         Hypr.dispatch("hl.dsp.window.move({ workspace = " + w + ", window = \"address:" + addr(t) + "\", follow = false })",
@@ -131,7 +126,6 @@ Item {
         debounce.restart()
     }
 
-    // Hyprland warps the cursor on every goddamn move, so put it back
     function keepCursor(lua, classic) {
         const back = Hypr.lua ? "hl.dsp.cursor.move({ x = $x, y = $y })" : "movecursor $x $y"
         Quickshell.execDetached(["sh", "-c", 'p=$(hyprctl cursorpos); x=${p%%,*}; y=${p##* }; hyprctl dispatch "$1" >/dev/null; hyprctl dispatch "' + back + '" >/dev/null',
@@ -149,7 +143,6 @@ Item {
                    "movewindowpixel exact " + Math.round(x) + " " + Math.round(y) + ",address:" + addr(t))
     }
 
-    // terminals get killed so they don't stop to ask
     function closeWindow(t) {
         const kill = /kitty/i.test(t.lastIpcObject ? t.lastIpcObject.class : "")
         closing = closing.concat(addr(t))
@@ -157,7 +150,6 @@ Item {
                        (kill ? "killwindow" : "closewindow") + " address:" + addr(t))
     }
 
-    // can't close the visible workspace so switch off it first. found out when it didn't work
     function clear(id, ids, activeId) {
         windowsOn(id).forEach(w => closeWindow(w))
         const other = ids.find(i => i !== id)
@@ -168,7 +160,6 @@ Item {
         Hypr.dispatch("hl.dsp.focus({ workspace = " + id + " })", "workspace " + id)
     }
 
-    // saved in the repo so git syncs them. keyed by the commands so a rename slides instead of popping in
     function keyOf(windows) { return windows.map(w => w.cmd).sort().join("\n") }
     readonly property var saved: {
         try {
@@ -176,7 +167,6 @@ Item {
                 .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }))
         } catch (e) { return [] }
     }
-    // qt's js engine has no Object.fromEntries, that one cooked everything
     readonly property var byKey: { const m = {}; for (const e of saved) m[e.key] = e; return m }
     Watched {
         id: savedFile
@@ -203,7 +193,6 @@ Item {
 
     function isBrowser(t) { return /firefox|librewolf/i.test(t.lastIpcObject.class || "") }
 
-    // browser tabs come from the session store, it's the only way i found
     Process {
         id: tabs
         property var urls: []
@@ -215,7 +204,6 @@ Item {
         }
     }
 
-    // opens on the visible workspace if it's empty, otherwise a new one
     function savedTarget(activeId, next) {
         return activeId > 0 && windowsOn(activeId).length === 0 ? activeId : next
     }
@@ -227,7 +215,6 @@ Item {
             onStreamFinished: {
                 const lines = text.split("\n")
                 const q = a => "'" + a.replace(/'/g, "'\\''") + "'"
-                // home gets saved as $HOME so it still works on my other machines
                 const home = Quickshell.env("HOME")
                 const qh = a => a === home ? '"$HOME"' : a.startsWith(home + "/") ? '"$HOME"' + q(a.slice(home.length)) : q(a)
                 const g = cmdlines.geom
@@ -235,14 +222,12 @@ Item {
                 const windows = cmdlines.wins.map((w, i) => {
                     const o = w.lastIpcObject
                     const [all, dir, run] = (lines[i] || "").split("\x1e").map(f => (f || "").split("\x1f").filter(a => a))
-                    // restored terminals still have the old sh -c, cut it or it piles up every save
                     const cut = dir.length ? all.findIndex((a, j) => j > 0 && (a === "-e" || (base(a) === "sh" && all[j + 1] === "-c"))) : -1
                     const c = cut > 0 ? all.slice(0, cut) : all
                     let cmd = c.map(qh).join(" "), app = ex.appName(o.class)
                     const urls = tabs.urls[i] || []
                     if (c.length && urls.length)
                         cmd = q(c[0]) + " --new-window " + q(urls[0]) + urls.slice(1).map(u => " --new-tab " + q(u)).join("")
-                    // terminals reopen in the same folder running the same thing. works for me
                     else if (dir.length) {
                         const inner = "cd " + qh(dir[0]) + (run.length ? " && " + run.map(qh).join(" ") : "") + "; exec \"$SHELL\""
                         cmd += (base(c[0]) === "kitty" ? "" : " -e") + " sh -c " + q(inner)
@@ -259,8 +244,6 @@ Item {
         }
     }
 
-    // reopens a workspace. tiled ones open in reading order so the splits come out the same. i hope
-    // layouts from other monitors get shrunk and centred, hopefully nothing gets cut off
     function fit(e, gw, gh) {
         const sw = Math.max(e.w || 0, ...e.windows.map(w => w.x + w.w)), sh = Math.max(e.h || 0, ...e.windows.map(w => w.y + w.h))
         const s = Math.min(1, gw / sw, gh / sh)
@@ -450,7 +433,6 @@ Item {
                             anchors.fill: parent
                             captureSource: tile.expose.active && !tile.expose.isClosing(win.modelData) ? win.modelData.wayland : null
                             live: tile.expose.active
-                            // use the settled size, the animated one gave me tiny captures
                             constraintSize: Qt.size(Math.ceil(win.o.size[0] * tile.k * 2), Math.ceil(win.o.size[1] * tile.k * 2))
                         }
 
@@ -529,7 +511,6 @@ Item {
                 const t = d.source.toplevel, o = t.lastIpcObject
                 if (tile.isNew || !t.workspace || t.workspace.id !== tile.wsId)
                     return tile.expose.moveTo(t, tile.target, tile.isNew && tile.monitor ? tile.monitor.name : "")
-                // floating lands where dropped, tiled swaps with the one under it
                 const px = tile.geom.x + d.x / tile.k, py = tile.geom.y + d.y / tile.k
                 if (o.floating) return tile.expose.place(t, px - o.size[0] / 2, py - o.size[1] / 2)
                 const under = tile.windows.find(w => w !== t && px >= w.lastIpcObject.at[0] && px < w.lastIpcObject.at[0] + w.lastIpcObject.size[0]
@@ -595,7 +576,6 @@ Item {
         Behavior on scale { Settle { duration: Theme.move } }
         z: 10
         Drag.active: dragging
-        // so drops land under the pointer, not the card centre
         Drag.hotSpot.x: 0
         Drag.hotSpot.y: 0
         Drag.keys: entry ? ["saved"] : ["window"]
@@ -673,7 +653,6 @@ Item {
         }
     }
 
-    // a saved workspace's windows as little labelled boxes. f fits the layout, k scales it to the card
     component Layout: Item {
         id: lay
         property var windows: []
@@ -791,7 +770,6 @@ Item {
             Ghost { id: proxy; previewW: page.tileW; previewGeom: page.geom; expose: page.expose }
         }
 
-        // click opens it, pencil renames, trash deletes
         Menus.Group {
             title: "Saved"
             visible: page.expose.saved.length > 0
@@ -800,7 +778,6 @@ Item {
                 spacing: 2
                 move: Transition { Settle { property: "y"; duration: Theme.move } }
             Repeater {
-                // model is just the keys so rows stay put through renames, the entry gets looked up fresh
                 model: ScriptModel { values: page.expose.saved.map(e => e.key) }
                 Menus.Entry {
                     id: savedRow
@@ -810,7 +787,6 @@ Item {
                     label: entry.name
                     sub: entry.windows.length + (entry.windows.length > 1 ? " windows" : " window")
                     Pop { target: savedRow; label: savedRow.label }
-                    // no hover here, i think the row stops lighting up otherwise
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor

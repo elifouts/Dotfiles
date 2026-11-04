@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell.Widgets
 
-// album art that slides the way you skipped, two images so it never blanks
 Item {
     id: c
 
@@ -14,10 +13,8 @@ Item {
 
     property bool useA: true
     property int dir: 1
-    // 0 = old cover showing, 1 = new one landed
     property real p: 1
 
-    // slides right away, waiting on the download was the lag. new cover fades in once it lands
     onUrlChanged: {
         const front = useA ? imgA : imgB
         const back = useA ? imgB : imgA
@@ -25,14 +22,12 @@ Item {
         if (back.source != url) back.source = url
         swapTo(back)
     }
-    // no slide on open, just a fade
     function swapTo(img) {
         if ((img === imgA) === useA) return
         dir = (useA ? imgA : imgB).status === Image.Ready ? Media.skipDir() : 0
         useA = img === imgA
         slide.restart()
     }
-    // changed handlers don't fire for the starting value
     Component.onCompleted: imgA.source = url
 
     NumberAnimation { id: slide; target: c; property: "p"; from: 0; to: 1; duration: Theme.ms(300); easing.type: Easing.OutCubic }

@@ -4,13 +4,11 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// what the osd does, each style draws it its own way
 Singleton {
     id: root
 
     property bool caps: false
     signal shown(string kind)
-    // play / next / prev, each style shows media its own way
     signal media(string action)
 
     function value(kind) { return kind === "volume" ? Audio.volume : kind === "brightness" ? Brightness.value : 0 }
@@ -29,7 +27,6 @@ Singleton {
             return shown("volume")
         case "vol-mute": if (out) out.muted = !out.muted; return shown("volume")
         case "mic-mute": if (mic) mic.muted = !mic.muted; return shown("mic")
-        // no caps event, so flip ours and check the led once the spam stops
         case "caps": caps = !caps; capsGen++; capsCheck.restart(); return shown("caps")
         case "play": case "next": case "prev": return media(a)
         }
@@ -43,7 +40,6 @@ Singleton {
         property int gen
         function check() { gen = root.capsGen; running = true }
         command: ["sh", "-c", "cat /sys/class/leds/*capslock/brightness"]
-        // a press that lands mid-read makes the answer useless, the timer reruns it anyway
         stdout: StdioCollector { onStreamFinished: if (capsLed.gen === root.capsGen) root.caps = text.split("\n").some(l => l.trim() !== "" && l.trim() !== "0") }
     }
     Component.onCompleted: capsLed.check()

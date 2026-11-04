@@ -22,14 +22,13 @@ async def hyprctl_connection(logger):
         raise
     except ConnectionResetError:
         raise
-    except OSError as e:  # broken pipe etc while hyprland is busy
+    except OSError as e:
         raise ConnectionResetError(str(e)) from e
 
 
 ipc.hyprctl_connection = hyprctl_connection
 hypr_adapter.hyprctl_connection = hyprctl_connection
 
-# socket can stall a few seconds on plugin load
 ipc.IPC_MAX_RETRIES = 8
 
 
@@ -37,7 +36,7 @@ def _never_fail(method):
     async def wrapper(self, *args, log, **kwargs):
         try:
             return await method(self, *args, log=log, **kwargs)
-        except Exception as e:  # pylint: disable=W0718
+        except Exception as e:
             log.warning("notification dropped: %s", e)
             return None
 
@@ -47,7 +46,7 @@ def _never_fail(method):
 for _name in ("notify", "notify_info", "notify_error"):
     setattr(notifier.HyprlandNotifier, _name, _never_fail(getattr(notifier.HyprlandNotifier, _name)))
 
-from pyprland.command import main  # noqa: E402
+from pyprland.command import main
 
 if __name__ == "__main__":
     sys.argv[0] = re.sub(r"(-script\.pyw|\.exe)?$", "", sys.argv[0])

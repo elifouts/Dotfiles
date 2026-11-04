@@ -5,7 +5,6 @@ Rectangle {
 
     property string label
     property bool primary: false
-    // so the colors page can show it in the theme you're previewing
     property color tone: Theme.fg
     signal pressed()
 

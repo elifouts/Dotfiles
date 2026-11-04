@@ -1,8 +1,6 @@
 #!/bin/bash
 set -uo pipefail
 
-# usage: capture.sh shot|rec region|window|screen | stop
-
 STATE="${XDG_RUNTIME_DIR:-/tmp}/capture-rec"
 SHOTS="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 VIDEOS="${XDG_VIDEOS_DIR:-$HOME/Videos}/Recordings"

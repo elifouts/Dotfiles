@@ -4,7 +4,6 @@ import Quickshell.Services.SystemTray
 import "../common"
 import "../ui"
 
-// tray apps as lines, click to open, right click lists its menu
 Column {
     id: tray
     spacing: 4

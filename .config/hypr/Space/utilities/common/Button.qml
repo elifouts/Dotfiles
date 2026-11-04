@@ -1,7 +1,6 @@
 import QtQuick
 import "../ui"
 
-// modern's Button, so the shared tabs work, drawn the space way
 Rectangle {
     id: b
 

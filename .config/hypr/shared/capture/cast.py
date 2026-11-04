@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# casts my screen to tvs. chromecast/google tv over mdns, dlna tvs over ssdp
-# usage: cast.py scan | start cast|dlna|miracast <target> <name> region|window|screen | stop
-# just needs wf-recorder and ffmpeg, didn't want pip stuff
 
 import json, os, re, shutil, signal, socket, ssl, struct, subprocess, sys, tempfile, threading, time
 import urllib.parse, urllib.request
@@ -10,7 +7,6 @@ from xml.etree import ElementTree as ET
 from xml.sax.saxutils import escape
 
 RUN = os.environ.get("XDG_RUNTIME_DIR", "/tmp")
-# fixed so the firewall lets the tv back in, the installers open these
 RTSP, SSDP, HTTP = 7236, 7238, 7240
 STATE = os.path.join(RUN, "cast-state")
 
@@ -43,8 +39,6 @@ def chromecasts():
     return list(found.values())
 
 
-# rokus and some tvs do miracast over plain wifi (ms-mice), that's the -RT1 one network displays found.
-# no wifi direct and no xdph, the tv calls me back over rtsp and wf-recorder feeds it
 def miracasts():
     found = {}
     for line in sh(["avahi-browse", "-rtp", "_display._tcp"]).splitlines():
@@ -74,7 +68,7 @@ def renderers():
     try:
         s.bind(("0.0.0.0", SSDP))
     except OSError:
-        pass  # taken, random port is fine without a firewall i think
+        pass
     s.settimeout(0.4)
     msgs = [("M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nMAN: \"ssdp:discover\"\r\nMX: 2\r\n"
              f"ST: {st}\r\n\r\n").encode() for st in ("urn:schemas-upnp-org:device:MediaRenderer:1",
@@ -112,7 +106,6 @@ def scan():
     for j in jobs:
         j.join()
     cast = res.get("cast", [])
-    # android tvs show up twice, the cast one works better
     names = {c["name"] for c in cast}
     tvs = cast + [d for d in res.get("dlna", []) if d["name"] not in names]
     names |= {d["name"] for d in tvs}
@@ -135,7 +128,6 @@ def area(mode):
     return ["-g", g.strip()] if g.strip() else None
 
 
-# h264 yuv420p mpegts, only thing every tv i tried would play
 def capture(args, vf="scale=-2:1080", audio=True, extra=()):
     cmd = ["wf-recorder", "-y", *args, "-c", "libx264", "-x", "yuv420p", "-r", "30", "-F", vf,
            "-p", "preset=ultrafast", "-p", "tune=zerolatency", "-p", "g=15", *extra, "-m", "mpegts", "-f", "pipe:1"]
@@ -193,7 +185,6 @@ class Server(ThreadingHTTPServer):
         self.dir, self.args, self.procs = d, args, []
         self.watching, self.seen, self.idle = 0, False, time.time()
 
-    # dlna tvs pull one live stream, every connection gets its own recorder
     def stream(self, out):
         rec = capture(self.args)
         self.procs.append(rec)
@@ -209,8 +200,6 @@ class Server(ThreadingHTTPServer):
             self.watching -= 1
             self.idle = time.time()
 
-
-# chromecast talks protobuf over tls, small enough to do by hand
 
 def varint(n):
     out = b""
@@ -248,7 +237,7 @@ def unpb(d):
 
 CONN, BEAT = "urn:x-cast:com.google.cast.tp.connection", "urn:x-cast:com.google.cast.tp.heartbeat"
 RECV, MEDIA = "urn:x-cast:com.google.cast.receiver", "urn:x-cast:com.google.cast.media"
-PLAYER = "CC1AD845"  # default media receiver
+PLAYER = "CC1AD845"
 
 
 class Chromecast:
@@ -286,7 +275,6 @@ class Chromecast:
         return next((a for a in msg.get("status", {}).get("applications", []) if a.get("appId") == PLAYER), False)
 
 
-# tv opens its player while the stream warms up, saves a couple seconds
 def chromecast(target, url, ready):
     host, port = target.rsplit(":", 1)
     cc = Chromecast(host, int(port))
@@ -314,7 +302,7 @@ def watch_chromecast(cc, live):
             cc.send(BEAT, {"type": "PING"})
             continue
         if cc.app(msg) is False:
-            return  # someone switched the tv to something else
+            return
         t = msg.get("type")
         if t in ("LOAD_FAILED", "LOAD_CANCELLED"):
             raise RuntimeError("tv couldn't play the stream")
@@ -325,15 +313,12 @@ def watch_chromecast(cc, live):
                 return
 
 
-# ms-mice: tell the tv i'm ready on tcp 7250, it opens rtsp back to me and the wfd handshake runs from there
-
 def mice(cmd, name, sid, port=0):
     tlv = lambda t, v: struct.pack(">BH", t, len(v)) + v
     body = tlv(0, (name + "\0").encode("utf-16-le")) + (tlv(2, struct.pack(">H", port)) if port else b"") + tlv(3, sid)
     return struct.pack(">HBB", len(body) + 4, 1, cmd) + body
 
 
-# cea modes the tv can pick from, bit in wfd_video_formats -> size
 CEA = {7: (1920, 1080), 5: (1280, 720), 0: (640, 480)}
 
 
@@ -386,7 +371,6 @@ class Miracast:
     def ok(self, h, extra=""):
         self.c.sendall(f"RTSP/1.0 200 OK\r\nCSeq: {h.get('cseq', '0')}\r\n{extra}\r\n".encode())
 
-    # picks the biggest mode the tv takes, keeps my aspect and pads the rest
     def formats(self, caps):
         f = caps.get("wfd_video_formats", "").split(", ")[0].split()
         prof, level, cea = int(f[2], 16), f[3], int(f[4], 16)
@@ -401,7 +385,6 @@ class Miracast:
             lines.insert(1, "wfd_audio_codecs: AAC 00000001 00")
         return "\r\n".join(lines) + "\r\n"
 
-    # wfd wants rtp mpegts, 7 ts packets a datagram, video on pid 0x1011 and audio on 0x1100
     def stream(self):
         w, h = self.size
         rec = capture(self.args, f"scale={w}:{h}:force_original_aspect_ratio=decrease:force_divisible_by=2,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
@@ -431,7 +414,7 @@ class Miracast:
             except socket.timeout:
                 if mux and mux.poll() is not None:
                     raise RuntimeError("screen capture stopped")
-                self.ask("GET_PARAMETER")  # keepalive
+                self.ask("GET_PARAMETER")
                 continue
             if first[0].startswith("RTSP/"):
                 if first[1] != "200":
@@ -457,7 +440,7 @@ class Miracast:
                 self.ok(h, "Session: 6B8B4567\r\n")
                 return
             else:
-                self.ok(h)  # keepalives, idr requests, whatever else
+                self.ok(h)
 
     def close(self):
         for f in (lambda: self.ask("SET_PARAMETER", body="wfd_trigger_method: TEARDOWN\r\n"),
@@ -500,10 +483,9 @@ def unspeak():
             sh(["pactl", "unload-module", line.split()[0]])
 
 
-# speaker named after the tv, everything plays there instead of my laptop and my volume keys turn the tv
 class Speaker:
     def __init__(self, name):
-        unspeak()  # a cast that died could've left its speaker as my default
+        unspeak()
         self.old = sh(["pactl", "get-default-sink"]).strip()
         if self.old == "cast":
             self.old = ""
@@ -543,17 +525,14 @@ def stop():
     try:
         if pid == os.getpid():
             return
-        # pid could be dead or reused by now, only kill it if it's still me
         if "cast.py" not in open(f"/proc/{pid}/cmdline").read():
             raise ProcessLookupError
         os.kill(pid, signal.SIGTERM)
-        # let it put my speakers back before a new cast grabs them
         for _ in range(100):
             if not os.path.exists(f"/proc/{pid}"):
                 break
             time.sleep(0.1)
     except OSError:
-        # died without cleaning up, bar would say casting forever
         for d in os.listdir(RUN):
             if d.startswith("cast-") and d != "cast-state" and not d.startswith("cast-state."):
                 shutil.rmtree(os.path.join(RUN, d), ignore_errors=True)
@@ -592,7 +571,6 @@ def start(kind, target, name, mode):
             mc = Miracast(target, args, srv.procs)
             mc.run(live)
         elif kind == "cast":
-            # chromecast only takes live video as hls
             rec = capture(args)
             seg = subprocess.Popen(["ffmpeg", "-loglevel", "error", "-i", "pipe:0", "-c", "copy", "-f", "hls", "-hls_time", "0.5",
                                     "-hls_list_size", "4", "-hls_flags", "delete_segments+omit_endlist", os.path.join(d, "index.m3u8")],
@@ -609,7 +587,6 @@ def start(kind, target, name, mode):
             watch_chromecast(cc, live)
         else:
             dlna(target, base + "/live.ts")
-            # done once the tv hangs up and doesn't come back
             end = time.time() + 20
             while srv.watching or (srv.seen and time.time() - srv.idle < 10) or (not srv.seen and time.time() < end):
                 if srv.watching:

@@ -16,7 +16,6 @@ Item {
         { id: "weather", glyph: ctx.weather.ready ? ctx.weather.glyph(ctx.weather.code, ctx.weather.night) : "󰖕" }
     ]
     readonly property string current: pill.tab !== "" ? pill.tab : "media"
-    // keeps the menu up while an app waits on me to pick a share
     readonly property bool holdOpen: captureTab.sharing && current === "capture"
     onCurrentChanged: if (current === "weather") ctx.weather.refresh(false)
 

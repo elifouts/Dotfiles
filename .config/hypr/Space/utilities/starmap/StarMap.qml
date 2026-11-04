@@ -1,20 +1,19 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Shapes
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import Quickshell.Widgets
 import "../common"
 import "../land"
 import "../ui"
 
-// star map over every monitor. workspaces are named stars, each with its home planet plus one planet per window,
-// scratchpads are moons of the home planet. mouse looks, wasd / arrows / hjkl fly, the crosshair picks
 Scope {
     id: map
 
     signal done()
 
-    // camera, with momentum so flying glides instead of snapping
     property real px: 0
     property real py: 0
     property real pz: 0
@@ -24,15 +23,12 @@ Scope {
     property real aimPitch: 0
     property var vel: [0, 0, 0]
     property var held: ({})
-    // everything projects through this one object, set once a frame, so each star re-evaluates once instead of per write.
-    // f is the lens (it widens while you're moving fast) and v is how fast, for the star streaks
     property var cam: ({ x: 0, y: 0, z: 0, cy: 1, sy: 0, cp: 1, sp: 0, f: focal, v: 0 })
     function setView(x, y, z, yw, pt, v) {
         px = x; py = y; pz = z; yaw = yw; pitch = pt
         v = Math.min(1, v ?? 0)
         cam = { x: x, y: y, z: z, cy: Math.cos(yw), sy: Math.sin(yw), cp: Math.cos(pt), sp: Math.sin(pt), f: focal / (1 + 0.28 * v), v: v }
     }
-    // the selected system opening up: rings and planets grow out of their star. 1 = fully open
     property real bloom: 1
     function openSystem() { bloomAnim.restart() }
     SequentialAnimation {
@@ -41,34 +37,25 @@ Scope {
         PauseAnimation { duration: 160 }
         NumberAnimation { target: map; property: "bloom"; to: 1; duration: 900; easing.type: Easing.OutQuint }
     }
-    // the land on top: ascent 0 = standing on it, 1 = up in orbit. ground is its opacity
     property real ascent: 0
+    readonly property real fall: Math.pow(Math.max(0, Math.min(1, (ascent - 0.05) / 0.65)), 2)
     property real ground: 1
-    // the wallpaper covering your windows. fades in as you leave and out as you arrive, so they dissolve and return
     property real veil: 0
     property var sel: null
     property var landing: null
-    // the bodies the takeoff or landing is drawing full screen. the map's copies sit hidden under it and show the
-    // moment it's fully up, both draw the same so swapping is invisible (crossfading them used to dim it)
     property var transitKeys: []
-    // [planet, its star] for the handoff's lighting, and the moon the wallpaper's moon turns into
     property var transitLight: null
     property var transitMoon: null
 
-    // projection centred on the screen it opened on, under the crosshair
     readonly property var home: Ui.target ?? Quickshell.screens[0]
     readonly property real cx: home.x + home.width / 2
     readonly property real cy: home.y + home.height / 2
     readonly property real focal: Math.max(home.width, home.height) * 0.6
-    // how far you hover in front of a focused star
     readonly property real hover: focal / 35
-    // planets: world radius, how big the home planet is when you're parked in front of it, and how far that is.
-    // the wallpaper's orbit view ends at exactly that size, so landing and takeoff hand over without a jump
     readonly property real planetR: 0.5
     readonly property real planetPx: 70
     readonly property real planetDist: planetR * focal / planetPx
     readonly property real endR: planetPx / home.height
-    // ring radii: the home planet's round the star, each window planet further out, moons round the home planet
     readonly property real homeR: 8
     readonly property real ringGap: 3
     readonly property real worldR: 0.34
@@ -77,32 +64,35 @@ Scope {
     readonly property int current: Hyprland.focusedWorkspace?.id ?? 1
     readonly property var used: Hyprland.workspaces.values.filter(w => w.id > 0).sort((a, b) => a.id - b.id)
         .map(w => ({ kind: "ws", id: w.id, ws: w, pos: World.starOf(w.id) }))
-    readonly property var scratch: Hyprland.workspaces.values.filter(w => w.name.startsWith("special:") && w.toplevels.values.length)
+        .concat(specials.filter(w => !w.name.startsWith("special:S-"))
+        .map(w => ({ kind: "ws", id: w.id, ws: w, special: w.name.slice(8), pos: specialPos(w.name) })))
+    readonly property var specials: Hyprland.workspaces.values.filter(w => w.name.startsWith("special:") && w.toplevels.values.length)
+    readonly property var scratch: specials.filter(w => w.name.startsWith("special:S-"))
+    function specialPos(name) {
+        const h = [...name].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7), a = r3(h, 1, 2) * Math.PI * 2, r = 90 + r3(h, 3, 4) * 80
+        return [Math.cos(a) * r, (r3(h, 5, 6) - 0.5) * 40, Math.sin(a) * r]
+    }
 
     function starSize(s) { return Math.min(30, 5 + 7 * s) }
     function fwd() { return [Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch)] }
     function mix3(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t] }
     function sub3(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]] }
-    // world vector into camera space (x right, y up, z forward), rel does it for a point
     function toCam(vx, vy, vz) {
         const c = cam
         const x1 = vx * c.cy - vz * c.sy, z1 = vx * c.sy + vz * c.cy
         return [x1, vy * c.cp - z1 * c.sp, vy * c.sp + z1 * c.cp]
     }
     function rel(p) { return toCam(p[0] - cam.x, p[1] - cam.y, p[2] - cam.z) }
-    // world point -> desktop pixels, s is the perspective scale, null when it's behind you
     function project(p) {
         const c = cam, q = rel(p)
         if (q[2] < 1.5) return null
         return { x: cx + q[0] / q[2] * c.f, y: cy - q[1] / q[2] * c.f, s: c.f / q[2] / 8, z: q[2] }
     }
-    // which way the star is from a planet, in the shader's space (z toward you), so every planet is lit by its own sun
     function sunDir(from, to) {
         if (!from || !to) return Qt.vector4d(-0.35, 0.6, 0.7, 0)
         const q = toCam(...sub3(to, from)), l = Math.hypot(...q) || 1
         return Qt.vector4d(q[0] / l, q[1] / l, -q[2] / l, 0)
     }
-    // where the transit moon sits on screen next to its planet, for the wallpaper's moon to land on (see Terrain.moonEnd)
     readonly property var moonEnd: {
         const m = transitMoon, b = transitLight
         const q = m && b ? project(shown(m)) : null, h = q ? project(b[0]) : null
@@ -110,7 +100,6 @@ Scope {
         const H = home.height
         return Qt.vector4d((q.x - cx) / H, 0.5 - (q.y - cy) / H, m.r * cam.f / q.z / H, q.z < h.z ? 2 : 1)
     }
-    // a 3d line on screen, cut where it crosses behind you so the constellation never just vanishes
     function segment(a, b) {
         const n = 1.5
         let qa = rel(a), qb = rel(b)
@@ -120,7 +109,6 @@ Scope {
         const sc = q => Qt.point(cx + q[0] / q[2] * cam.f, cy - q[1] / q[2] * cam.f)
         return [sc(qa), sc(qb)]
     }
-    // angles that look at a point, yaw the short way round so it never spins you
     function lookAt(from, to) {
         const d = sub3(to, from)
         let y = Math.atan2(d[0], d[2])
@@ -129,20 +117,17 @@ Scope {
         return [y, Math.atan2(d[1], Math.hypot(d[0], d[2]))]
     }
 
-    // stars near the camera, one per lucky grid cell, rebuilt only when you cross into a new cell. sparse on purpose,
-    // the far sky shader does the rest of the vastness for free
     readonly property int cell: 35
     readonly property real density: 0.3
     readonly property string here: [Math.floor(cam.x / cell), Math.floor(cam.y / cell), Math.floor(cam.z / cell)].join()
     property var wild: []
     ListModel { id: wildModel }
-    // new seed, pool or theme (after landing) re-rolls the undiscovered ones
-    function reroll() { wildModel.clear(); rebuild() }
+    function reroll() { wildModel.clear(); wild = []; rebuild() }
     Connections {
         target: World
         function onSeedChanged() { map.reroll() }
         function onPoolChanged2() { map.reroll() }
-        function onCurThemeChanged() { map.reroll() }
+        function onCurThemeChanged() { if (!map.landing) map.reroll() }
     }
     function hash(a, b, c) { return r3(a + World.seed * 31, b, c) }
     onHereChanged: rebuild()
@@ -154,37 +139,35 @@ Scope {
             out.push({ kind: "wild", id: a + "," + b + "," + c, hue: World.snap(hash(c, a, b), true), temp: hash(b, a, c), size: 0.6 + hash(a, c, b) * 0.9,
                        pos: [(a + hash(b, c, a)) * cell, (b + hash(c, b, a)) * cell * 0.6, (c + hash(a, a, c)) * cell] })
         }
-        const byId = {}, have = new Set()
+        const byId = {}, have = new Set(), next = wild.slice(), free = []
         for (const w of out) byId[w.id] = w
-        for (let i = wildModel.count - 1; i >= 0; i--) {
-            const id = wildModel.get(i).sid
-            if (byId[id]) have.add(id)
-            else wildModel.remove(i)
+        for (let i = 0; i < next.length; i++) {
+            if (byId[next[i].id]) have.add(next[i].id)
+            else free.push(i)
         }
-        for (const w of out) if (!have.has(w.id))
-            wildModel.append({ sid: w.id, shue: w.hue, stemp: w.temp, ssize: w.size, wx: w.pos[0], wy: w.pos[1], wz: w.pos[2] })
-        // same order as the model, so a delegate's index finds its star and its projection
-        const ordered = []
-        for (let i = 0; i < wildModel.count; i++) ordered.push(byId[wildModel.get(i).sid])
-        wild = ordered
+        for (const w of out) {
+            if (have.has(w.id)) continue
+            const row = { sid: w.id, shue: w.hue, stemp: w.temp, ssize: w.size, wx: w.pos[0], wy: w.pos[1], wz: w.pos[2] }
+            const slot = free.pop()
+            if (slot === undefined) { wildModel.append(row); next.push(w) }
+            else { wildModel.set(slot, row); next[slot] = w }
+        }
+        for (let i = free.length - 1; i >= 0; i--) { wildModel.remove(free[i]); next.splice(free[i], 1) }
+        wild = next
     }
-    // every near star projected once a frame and shared, each monitor's window and the crosshair used to redo it
     readonly property var wildP: wild.map(w => project(w.pos))
 
-    // per-system randomness from the star's position, no world seed so a system keeps its look when the world rerolls
     function r3(a, b, c) {
         let h = (a * 374761393 + b * 668265263 + c * 2147483647) | 0
         h = Math.imul(h ^ (h >>> 13), 1274126177)
         return ((h ^ (h >>> 16)) >>> 0) / 4294967295
     }
     function sysRand(s, n) { return r3(Math.round(s.pos[0]) + n * 7919, Math.round(s.pos[1]) + n * 104729, Math.round(s.pos[2])) }
-    // a system's colour scheme starts from its hue. uncharted stars already have one
     function sysHue(s) {
         if (s.kind === "wild") return s.hue
         const placed = World.stars[s.id]
         return placed?.[3] !== undefined && (World.random || World.themeFor(placed[3])) ? placed[3] : World.snap(sysRand(s, 1))
     }
-    // window planets take the other accents of the system's own theme, so they all differ but stay in the palette
     function worldHue(s, i) {
         const h = sysHue(s), f = World.random ? null : World.themeFor(h)
         if (!f) return (h + (i + 1) * 0.618) % 1
@@ -192,17 +175,12 @@ Scope {
     }
     function sysSeed(s, n = 5) { return 1 + Math.round(sysRand(s, n) * 996) }
     function tiltOf(s) { return 0.22 + sysRand(s, 2) * 0.3 }
-    // a point on one of a system's orbits. rings and planets both come from this, so planets sit on their ring
     function orbitC(c, t, r, a) {
         const x = Math.cos(a) * r, z = Math.sin(a) * r
         return [c[0] + x, c[1] - z * Math.sin(t), c[2] + z * Math.cos(t)]
     }
     function orbit(s, r, a) { return orbitC(s.pos, tiltOf(s), r, a) }
     function isTransit(o) { return transitKeys.indexOf(o.key) >= 0 }
-    // takeoff view: looking at the planet with its star off to one side, a bit over a third lit. the star stays in
-    // view so the planet never looks like it's orbiting nothing
-    // and it looks down on the orbits from viewEl above their plane, level with it the rings were just lines.
-    // a is that direction's angle round the orbit, the moon sits a bit round from it
     readonly property real viewEl: 0.85
     function viewOf(sys, h) {
         const t = tiltOf(sys), N = [0, Math.cos(t), Math.sin(t)], d = [0, 1, 2].map(i => sys.pos[i] - h[i]), l = Math.hypot(...d) || 1
@@ -212,27 +190,23 @@ Scope {
                  a: Math.atan2(-ep[1] * Math.sin(t) + ep[2] * Math.cos(t), ep[0]) }
     }
 
-    // every system has its home planet, the land you'd stand on. a new star is a new world
     function homeOf(sys) {
         const a = sysRand(sys, 3) * Math.PI * 2
         return { kind: "home", key: "h" + sys.id, sys: sys, ring: homeR, r: planetR, hue: sysHue(sys), seed: sysSeed(sys), star: sys.pos, a: a, pos: orbit(sys, homeR, a) }
     }
-    // every home planet has its own moon, the one in the wallpaper's sky. it sits off to the side of the takeoff view
-    // so you watch the sky's moon turn into it
     readonly property real natR: 1.7
     function moonOf(h) {
         const a = viewOf(h.sys, h.pos).a + 1.2, t = tiltOf(h.sys)
         return { kind: "moon", key: "n" + h.sys.id, natural: true, sys: h.sys, ring: "n", rr: natR, r: 0.17,
                  a: a, center: h.pos, star: h.sys.pos, hue: h.hue, seed: h.seed, pos: orbitC(h.pos, t, natR, a) }
     }
-    // the open system: home planet, a planet per window further out, scratchpads as moons on the home planet
     readonly property var bodies: {
         if (!sel) return []
         const h = homeOf(sel), t = tiltOf(sel), out = [h, moonOf(h)]
         if (sel.kind === "ws") {
             sel.ws.toplevels.values.forEach((w, i) => {
                 const r = homeR + ringGap * (i + 1), a = sysRand(sel, 20 + i) * Math.PI * 2
-                out.push({ kind: "planet", key: "p" + w.address, window: w, wsid: sel.id, ring: "p" + i, rr: r, r: worldR, center: sel.pos, star: sel.pos,
+                out.push({ kind: "planet", key: "p" + w.address, window: w, wsid: sel.id, special: sel.special, ring: "p" + i, rr: r, r: worldR, center: sel.pos, star: sel.pos,
                            hue: worldHue(sel, i), seed: sysSeed(sel, 10 + i), a: a, pos: orbit(sel, r, a) })
             })
             scratch.forEach((w, i) => {
@@ -243,15 +217,10 @@ Scope {
         }
         return out
     }
-    // a0 is where its body sits, so each ring draws itself out of its planet
     readonly property var rings: bodies.map(b => b.kind === "home" ? { key: homeR, c: sel.pos, r: homeR, moon: false, a0: b.a }
                                                               : { key: b.ring, c: b.center, r: b.rr, moon: b.kind === "moon", a0: b.a })
-    // 0..1 how much of the rings is drawn. rides the takeoff/landing camera, otherwise the system's bloom
     property real ringDraw: 1
-    // ring i drawn so far, inner rings first, each a beat after the last
     function ringFrac(i) { return Math.max(0, Math.min(1, Math.min(ringDraw, bloom) * (1 + 0.15 * rings.length) - 0.15 * i)) }
-    // one orbit ring as polylines in desktop pixels, split wherever it swings behind or too close to the camera.
-    // worked out once a frame here, the windows just shift by their own offset (it was rebuilt per monitor before)
     function ringPath(rg, f) {
         if (!sel || bloom < 0.02 || f <= 0) return []
         const out = []
@@ -267,20 +236,16 @@ Scope {
         return out
     }
     readonly property var ringPts: (1 - ground) > 0 ? rings.map((rg, i) => ringPath(rg, ringFrac(i))) : []
-    // labels, lines, crosshair and markers fade in over the pull back instead of popping in at the handoff
     property real ui: 1
 
-    // where a body is drawn: growing out of its star while the system opens, moons out of their planet
     function shown(o) {
         if (bloom >= 1 || !o.star || !sel) return o.pos
         const c = o.center ?? o.pos, cs = mix3(sel.pos, c, bloom)
         return o.center ? mix3(cs, [cs[0] + o.pos[0] - c[0], cs[1] + o.pos[1] - c[1], cs[2] + o.pos[2] - c[2]], bloom) : cs
     }
     function screenOf(o) { return project(shown(o)) }
-    // how far to park from a body so it fills the wallpaper's orbit view
     function distFor(o) { return (o.r ?? planetR) * focal / planetPx }
 
-    // whatever is closest to the crosshair. anything you can't see can't be aimed at
     readonly property var aimed: {
         let best = null, bestD = 40
         const near = (p, o, far) => {
@@ -299,59 +264,64 @@ Scope {
         return best
     }
 
-    // what the info card is about, the star it's on hides its own label so the two don't stack
     readonly property var carded: busy ? null : (aimed ?? sel)
-    // real star colours: white, a few a touch blue or warm
     function colorOf(t) { return t < 0.2 ? "#d6e4ff" : t > 0.85 ? "#ffe9cf" : "#ffffff" }
     function appOf(w) { return (w?.lastIpcObject?.class || w?.title || "").split(".").pop() }
     function nameOf(w) { return [...new Set(w.toplevels.values.map(appOf).filter(x => x))].slice(0, 2).join(" · ") }
-    function sysName(id) { return "system " + String(id).padStart(2, "0") }
+    function sysName(id) { return used.find(u => u.id === id)?.special ?? "system " + String(id).padStart(2, "0") }
     function currentStar() { return used.find(u => u.id === current) ?? { kind: "ws", id: current, pos: World.starOf(current) } }
 
-    // takeoff and landing are one motion each, driven by go (0 = on the ground, 1 = out in the map). the first
-    // liftA of it is the wallpaper rising into a planet, the rest is the map's camera carrying on at the exact speed
-    // the planet was shrinking, so there's no stop in orbit and no second move toward the star
     property real go: 0
-    // play with these: how long each takes and the curve, a cubic bezier like css (x1, y1, x2, y2).
-    // this is css "ease": quick to get going, long gentle finish
     readonly property int takeoffMs: 3800
     readonly property int landMs: 3100
     readonly property var curve: [0.25, 0.1, 0.25, 1.0]
-    // landing starts from your click so it gets going sooner
     readonly property var landCurve: [0.15, 0.25, 0.25, 1.0]
     readonly property real liftA: 0.5
-    // how far along the launch you can grab the controls
     readonly property real takeOverAt: 0.9
-    // the camera's half: pulls back from planet h along e from d0 to d1 while its aim slides from h to "to"
     property var path: null
     function pathTo(h, e, d0, d1, to) {
         d1 = Math.max(d1, d0 * 1.3)
-        // matches the shader's shrink rate at the handoff (see land.frag, p slope 1/0.72 at rise 1), capped so it can't overshoot
         const mu = Math.max(0.5, Math.min(3, Math.log(3.5 / endR) * 0.35 / 0.55 * (1 - liftA) / liftA / Math.log(d1 / d0)))
         return { h: h, e: e, d0: d0, d1: d1, to: to, mu: mu }
     }
     function pose(s) {
-        // starts at the handoff speed and ends straight (go's own easing does the settling, easing twice felt stuck)
         const P = path, m = P.mu * s + (2 - 2 * P.mu) * s * s + (P.mu - 1) * s * s * s, k = s * s * (2 - s)
         const D = P.d0 * Math.pow(P.d1 / P.d0, m), c = P.h.map((v, i) => v + P.e[i] * D)
         const [y, pt] = lookAt(c, mix3(P.h, P.to, k))
         const w = Math.sin(Math.PI * s)
         setView(c[0], c[1], c[2], y, pt, w * w * 0.5)
         aimYaw = y; aimPitch = pt
+        const now = Date.now()
+        if (!track[1] || now - track[1].t >= 24) track = [track[1], { t: now, x: c[0], y: c[1], z: c[2], yw: y, pt: pt }]
     }
     property bool touched: false
-    onGoChanged: {
+    property bool poseDirty: false
+    property var track: [null, null]
+    property real kick: 0
+    function flyPath() {
+        poseDirty = false
         if (!path) return
         const s = (go - liftA) / (1 - liftA)
-        if (go > liftA) { ascent = 1; ground = 0; ringDraw = Math.min(1, s * 1.8); ui = Math.max(0, Math.min(1, (s - 0.15) * 2)); return pose(s) }
+        ascent = 1; ground = 0; ringDraw = Math.min(1, s * 1.8); ui = Math.max(0.0015, Math.min(1, (s - 0.15) * 2))
+        pose(s)
+    }
+    onGoChanged: {
+        if (!path) return
+        if (go > liftA) {
+            if (ground === 1 || go >= 1) flyPath()
+            else poseDirty = true
+            return
+        }
+        poseDirty = false
         ringDraw = 0
-        ui = 0
+        ui = 0.0015
         if (ascent === 1) pose(0)
         ascent = go / liftA
+        if (descend.running && !touched) {
+            touched = true
+            if (!land()) { descend.stop(); done(); return }
+        }
         ground = 1
-        if (!descend.running) return
-        // coming down: the workspace switch happens at the handoff
-        if (!touched) { touched = true; if (!land()) { descend.stop(); done() } }
     }
 
     Component.onCompleted: {
@@ -361,34 +331,50 @@ Scope {
         transitKeys = [ho.key, "n" + sel.id]
         transitLight = [h, sel.pos]
         transitMoon = moonOf(ho)
-        // straight back off your planet and stay on it, the star just sits behind. no turn, so it's one move
         path = pathTo(h, e, planetDist, hover * 0.6, h)
         pose(0)
         rebuild()
         center()
-        takeoff.start()
     }
+    property var gate: takeoff
+    readonly property bool warm: gate === takeoff
+    property int gateFrames: 0
+    onGateFramesChanged: if (gate && gateFrames >= Quickshell.screens.length * 3) openGate()
+    function openGate() {
+        const a = gate
+        if (!a) return
+        a.start()
+        gate = null
+    }
+    Timer { running: !!map.gate; interval: 250; onTriggered: map.openGate() }
     function arrive() { path = null; ui = 1; ringDraw = 1 }
-    // the launch spends its last stretch on a settle you can barely see, so once it's basically there (takeOverAt) any key
-    // or mouse move stops it where it is and hands you control. earlier than that a twitch would freeze the pull back
     function takeOver() {
         if (!takeoff.running) return true
         if (go < takeOverAt) return false
+        if (poseDirty) flyPath()
+        const a = track[0], dt = a ? (Date.now() - a.t) / 1000 : 0
         takeoff.stop()
         arrive()
+        if (dt > 0.001) {
+            vel = [(px - a.x) / dt, (py - a.y) / dt, (pz - a.z) / dt]
+            aimYaw = yaw + (yaw - a.yw) / dt / 7
+            aimPitch = pitch + (pitch - a.pt) / dt / 7
+        }
+        kick = cam.v
         return true
     }
     SequentialAnimation {
         id: takeoff
         ParallelAnimation {
             NumberAnimation { target: map; property: "veil"; to: 1; duration: 600; easing.type: Easing.OutCubic }
-            NumberAnimation { target: map; property: "go"; from: 0; to: 1; duration: map.takeoffMs; easing.type: Easing.BezierSpline; easing.bezierCurve: map.curve.concat([1, 1]) }
+            SequentialAnimation {
+                PauseAnimation { duration: 130 }
+                NumberAnimation { target: map; property: "go"; from: 0; to: 1; duration: map.takeoffMs; easing.type: Easing.BezierSpline; easing.bezierCurve: map.curve.concat([1, 1]) }
+            }
         }
         ScriptAction { script: map.arrive() }
     }
 
-    // fly over to something and turn to face it together, eased so it doesn't make you dizzy. the lens widens mid-flight
-    // and the near stars streak, that's most of the speed feeling. one animation drives it, so a frame is one view update
     property var flyFrom: [0, 0, 0, 0, 0]
     property var flyTo: [0, 0, 0, 0, 0]
     property real flyKick: 1
@@ -396,6 +382,7 @@ Scope {
     function focus(o) {
         if (!o) return
         if (!o.star && sel?.id !== o.id) { sel = o; openSystem() }
+        kick = 0
         const s = o.pos, d = [s[0] - px, s[1] - py, s[2] - pz], len = Math.max(0.001, Math.hypot(...d))
         const back = o.kind === "home" ? distFor(o) : o.star ? hover * 0.5 : hover
         const to = [s[0] - d[0] / len * back, s[1] - d[1] / len * back, s[2] - d[2] / len * back]
@@ -403,7 +390,6 @@ Scope {
         flyFrom = [px, py, pz, yaw, pitch]
         flyTo = to.concat([ty, tp])
         fly.duration = Math.max(800, Math.min(1400, 560 + len * 4))
-        // short hops barely kick
         flyKick = Math.min(1, len / 140)
         aimYaw = ty; aimPitch = tp
         vel = [0, 0, 0]
@@ -415,7 +401,6 @@ Scope {
         setView(v[0], v[1], v[2], v[3], v[4], w * w * flyKick)
     }
     NumberAnimation { id: fly; target: map; property: "flyT"; from: 0; to: 1; easing.type: Easing.InOutCubic }
-    // the crosshair's click: any planet, moon or the focused star lands, any other star gets flown to
     function act() {
         const o = aimed
         if (!o || busy) return
@@ -423,14 +408,11 @@ Scope {
         else focus(o)
     }
 
-    // landing is the takeoff backwards from wherever you are: straight in toward the planet, it hands over to the
-    // wallpaper at the same speed and you come down onto it. a moon lands you on its home planet (a scratchpad one
-    // pulls the scratchpad up after)
     function warp(o) {
         if (!o || busy) return
         landing = o
+        kick = 0
         const dest = o.kind === "moon" ? homeOf(o.sys) : o.star ? o : homeOf(o)
-        // landing on a system that isn't the selected one (esc from far away): bring its planet out without the bloom
         if (!o.star && sel?.id !== o.id) { bloomAnim.stop(); bloom = 1; sel = o }
         const home = dest.kind === "home"
         transitKeys = home ? [dest.key, "n" + dest.sys.id] : [dest.key]
@@ -438,31 +420,49 @@ Scope {
         transitMoon = home ? moonOf(dest) : null
         landHue = dest.hue
         landSeed = dest.seed
+        recolored = landHue !== World.hue || landSeed !== World.landSeed
+        if (recolored) World.reroll(landHue, landSeed)
+        const l = o.star ? (o.kind === "planet" ? o : o.sys) : o
+        Hyprland.refreshToplevels()
+        Hyprland.refreshMonitors()
+        const spName = o.special ?? l.special
+        landTop = spName ? [...(Hyprland.workspaces.values.find(w => w.name === "special:" + spName)?.toplevels.values ?? [])] : []
+        shotWs = l.special ? current : l.kind === "planet" ? l.wsid : l.kind === "wild" ? -1 : l.id
         const h = dest.pos, v = [px - h[0], py - h[1], pz - h[2]], L = Math.hypot(...v) || 1, f = fwd()
         path = pathTo(h, v.map(x => x / L), distFor(dest), L, [px + f[0] * L, py + f[1] * L, pz + f[2] * L])
         fly.stop()
         vel = [0, 0, 0]
         touched = false
-        // a bit longer from far away
         descend.ms = landMs + Math.min(500, L * 5)
-        descend.start()
+        gateFrames = 0
+        gate = descend
     }
     function close() { if (!busy) warp(currentStar()) }
     SequentialAnimation {
         id: descend
         property int ms: 4200
         NumberAnimation { target: map; property: "go"; from: 1; to: 0; duration: descend.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: map.landCurve.concat([1, 1]) }
-        // only once it's fully down, so this landscape is pixel for pixel the real wallpaper and just your windows fade back.
-        // letting go even a few percent early showed the still wallpaper under the one still settling
-        NumberAnimation { target: map; property: "veil"; to: 0; duration: 320; easing.type: Easing.InOutSine }
+        ScriptAction { script: map.settled = true }
+        PauseAnimation { duration: map.recolored ? 150 : 0 }
+        ScriptAction { script: map.veil = 0.5 }
+        NumberAnimation { target: map; property: "veil"; to: 0; duration: 500; easing.type: Easing.InOutSine }
         ScriptAction { script: map.done() }
     }
     property int landWs: current
+    property var landTop: []
+    property int shotWs: 0
+    property bool recolored: false
+    property bool settled: false
     property real landHue: -1
     property real landSeed: World.landSeed
     function focusWs(id) { Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })") }
+    function openSpecial(sp) {
+        if (Hyprland.focusedMonitor?.lastIpcObject?.specialWorkspace?.name !== "special:" + sp)
+            Hyprland.dispatch("hl.dsp.workspace.toggle_special(\"" + sp + "\")")
+    }
     function land() {
         const l = landing.star ? (landing.kind === "planet" ? landing : landing.sys) : landing
+        Hyprland.refreshToplevels()
         if (l.kind === "wild") {
             let id = 1
             while (used.some(u => u.id === id)) id++
@@ -473,47 +473,58 @@ Scope {
         } else if (l.kind === "planet") {
             const a = String(l.window.address || "")
             if (!a) return false
-            landWs = l.wsid
+            landWs = l.special ? current : l.wsid
+            if (l.special) openSpecial(l.special)
             Hyprland.dispatch("hl.dsp.focus({ window = \"address:" + (a.startsWith("0x") ? a : "0x" + a) + "\" })")
         } else {
-            landWs = l.id
-            if (landHue !== World.hue || landSeed !== World.landSeed) World.reroll(landHue, landSeed)
-            if (l.id !== current) focusWs(l.id)
-            // a moon is a scratchpad, land on its home world then pull it up (unless it's already showing)
-            const sp = landing.special
-            if (sp && Hyprland.focusedMonitor?.lastIpcObject?.specialWorkspace?.name !== "special:" + sp)
-                Hyprland.dispatch("hl.dsp.workspace.toggle_special(\"" + sp + "\")")
+            landWs = l.special ? current : l.id
+            if (l.id !== current && !l.special) focusWs(l.id)
+            const sp = landing.special ?? l.special
+            if (sp?.startsWith("S-")) Quickshell.execDetached(["pypr", "toggle", sp.slice(2)])
+            else if (sp) openSpecial(sp)
             return true
         }
-        World.reroll(l.hue, landSeed)
         return true
     }
 
-    // flying: keys push, momentum carries, it eases to a stop. only ticks while something is moving
-    readonly property bool busy: takeoff.running || fly.running || descend.running
-    // done() sometimes never came and left invisible overlays eating the launcher
-    // fully covered, so the wallpaper can stop twinkling under it
+    Timer {
+        running: descend.running && map.touched && !!map.landing?.special
+        interval: 200
+        repeat: true
+        onTriggered: Hyprland.refreshToplevels()
+    }
+    function shotsOn(m) {
+        if (warm || takeoff.running) return [...(m?.activeWorkspace?.toplevels.values ?? [])]
+        if (!shotWs) return []
+        const all = Hyprland.workspaces.values, t = shotWs > 0 ? all.find(w => w.id === shotWs) : null
+        const ws = t?.monitor === m ? t : !t && m === Hyprland.focusedMonitor ? null : m?.activeWorkspace
+        const sp = landTop.length && m === Hyprland.focusedMonitor ? landTop : []
+        return [...new Set([...(ws?.toplevels.values ?? []), ...sp])]
+    }
+
+    readonly property bool busy: !!gate || takeoff.running || fly.running || descend.running
     Binding { target: Ui; property: "overview"; value: map.veil > 0.99 }
+    Binding { target: Ui; property: "holdTheme"; value: map.veil > 0.99 && !map.settled }
     readonly property bool drawn: busy || veil > 0 || ascent > 0.001
     onDrawnChanged: if (!drawn) done()
-    readonly property bool flying: Object.keys(held).length > 0 || Math.hypot(...vel) > 0.05
+    readonly property bool flying: kick > 0 || Object.keys(held).length > 0 || Math.hypot(...vel) > 0.05
         || Math.abs(aimYaw - yaw) > 0.0005 || Math.abs(aimPitch - pitch) > 0.0005
     FrameAnimation {
         running: map.flying && !map.busy
         onTriggered: {
             const dt = Math.min(0.05, frameTime), k = map.held, top = k.fast ? 260 : 80
+            map.kick = map.kick > 0.002 ? map.kick * Math.exp(-dt * 4) : 0
             const f = map.fwd(), rx = Math.cos(map.yaw), rz = -Math.sin(map.yaw)
             const go = (k.f ? 1 : 0) - (k.b ? 1 : 0), side = (k.r ? 1 : 0) - (k.l ? 1 : 0)
             if (k.tl) map.aimYaw -= 1.2 * dt
             if (k.tr) map.aimYaw += 1.2 * dt
             const want = [(f[0] * go + rx * side) * top, f[1] * go * top, (f[2] * go + rz * side) * top]
-            // speeds up quick, glides out slower
             const e = 1 - Math.exp(-dt * (go || side ? 4 : 2.2))
             const v = map.vel.map((c, i) => c + (want[i] - c) * e)
             map.vel = v
             const t = 1 - Math.exp(-dt * 7)
             map.setView(map.px + v[0] * dt, map.py + v[1] * dt, map.pz + v[2] * dt,
-                        map.yaw + (map.aimYaw - map.yaw) * t, map.pitch + (map.aimPitch - map.pitch) * t, Math.hypot(...v) / 260)
+                        map.yaw + (map.aimYaw - map.yaw) * t, map.pitch + (map.aimPitch - map.pitch) * t, Math.max(map.kick, Math.hypot(...v) / 260))
         }
     }
     readonly property var binds: ({
@@ -538,20 +549,17 @@ Scope {
         held = h
     }
 
-    // mouse look: the pointer is hidden and kept in the middle, only how far it moved matters
     property real lastX: cx
     property real lastY: cy
     function center() {
         lastX = cx; lastY = cy
         Hyprland.dispatch("hl.dsp.cursor.move({ x = " + Math.round(cx) + ", y = " + Math.round(cy) + " })")
     }
-    // the key hint shows for a few seconds after the map opens, then gets out of the way
     property bool idle: false
     Timer { running: true; interval: 6000; onTriggered: map.idle = true }
     function look(gx, gy) {
         const dx = gx - lastX, dy = gy - lastY
         lastX = gx; lastY = gy
-        // the warp back to the middle shows up as one big jump, skip it
         if (!takeOver() || busy || Math.abs(dx) > 120 || Math.abs(dy) > 120) return
         aimYaw += dx * 0.0011
         aimPitch = Math.max(-1.3, Math.min(1.3, aimPitch - dy * 0.0011))
@@ -570,20 +578,29 @@ Scope {
             visible: map.drawn
             anchors { top: true; bottom: true; left: true; right: true }
             exclusionMode: ExclusionMode.Ignore
-            // see-through, so your windows can dissolve into the wallpaper and back instead of cutting to black
             color: "transparent"
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.namespace: "space-overview"
             WlrLayershell.keyboardFocus: main ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-            // hides your windows while you're away. the sky fades in over it only once the wallpaper lets go
-            Rectangle { anchors.fill: parent; color: "black"; opacity: Math.max(0, Math.min(1, (map.veil - 0.5) * 2)) }
+            Connections {
+                target: scene.Window.window
+                function onFrameSwapped() {
+                    if (map.gate) map.gateFrames++
+                    else if (map.poseDirty) map.flyPath()
+                }
+            }
+            Item {
+            id: scene
+            anchors.fill: parent
+
+            Rectangle { anchors.fill: parent; color: "black"; visible: map.veil >= 0.5 }
 
             Item {
             id: sky
             anchors.fill: parent
-            visible: map.ascent > 0.01
-            opacity: Math.min(1, map.ascent * 1.5)
+            visible: map.warm || map.ascent > 0.01
+            opacity: map.warm ? 0.0015 : Math.min(1, map.ascent * 1.5)
 
             ShaderEffect {
                 anchors.fill: parent
@@ -600,7 +617,6 @@ Scope {
                 fragmentShader: Qt.resolvedUrl("starmap.frag.qsb")
             }
 
-            // the near stars: plain dots, way cheaper than a shader each. moving fast stretches them away from the middle
             Repeater {
                 model: wildModel
                 Rectangle {
@@ -621,10 +637,8 @@ Scope {
                     y: (p?.y ?? 0) - win.oy - height / 2
                     rotation: Math.atan2(dy, dx) * 180 / Math.PI
                     antialiasing: true
-                    // tinted with the theme it'd give you, so you can tell they're different worlds
                     color: Theme.mix(map.colorOf(stemp), Qt.hsla(shue, 0.7, 0.7, 1), 0.5)
                     opacity: (1 - far * far) * Math.min(1, ((p?.z ?? 0) - 3) / 10) * (0.65 + ssize * 0.25)
-                    // the same soft halo the known stars get, one shared sprite so they all draw in a single batch
                     Image {
                         anchors.centerIn: parent
                         width: 8 + parent.d * 6; height: width
@@ -635,7 +649,6 @@ Scope {
                 }
             }
 
-            // the open system's orbit rings in its own colours. the one you aim at lights up
             Repeater {
                 model: map.rings
                 Shape {
@@ -644,7 +657,6 @@ Scope {
                     required property int index
                     readonly property real tone: map.sel ? map.sysHue(map.sel) : 0
                     readonly property bool lit: !!map.aimed && map.aimed.ring === modelData.key
-                    // drawn in desktop pixels, shifted to this monitor
                     x: -win.ox
                     y: -win.oy
                     width: win.width + win.ox
@@ -661,7 +673,6 @@ Scope {
                 }
             }
 
-            // the constellation: lines between your systems in order, clipped instead of dropped when one end is behind you
             Repeater {
                 model: map.used.length > 1 ? map.used.length - 1 : 0
                 Rectangle {
@@ -679,7 +690,6 @@ Scope {
                 }
             }
 
-            // your systems: a small glowing star and its name
             Repeater {
                 model: map.used
                 Item {
@@ -693,7 +703,6 @@ Scope {
                         id: sb
                         property real boost: u.picked ? 1.7 : 1
                         Behavior on boost { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
-                        // your systems never fade out with distance, so you can always see where every workspace is
                         visible: !!u.p && u.p.z > 3
                         width: map.starSize(u.p?.s ?? 0) * boost
                         height: width
@@ -716,7 +725,6 @@ Scope {
                 }
             }
 
-            // known systems you can't see get a marker on the edge pointing at them (tab still cycles to them)
             Repeater {
                 model: win.main ? map.used : []
                 Item {
@@ -727,7 +735,6 @@ Scope {
                     readonly property real lx: p ? p.x - win.ox : 0
                     readonly property real ly: p ? p.y - win.oy : 0
                     readonly property bool off: !p || lx < 40 || ly < 40 || lx > win.width - 40 || ly > win.height - 40
-                    // behind you the camera space x/y still point the short way round
                     readonly property real ang: Math.atan2(-mk.q[1], mk.q[0])
                     readonly property real k: Math.min((win.width / 2 - 36) / Math.max(1e-3, Math.abs(Math.cos(ang))),
                                                        (win.height / 2 - 36) / Math.max(1e-3, Math.abs(Math.sin(ang))))
@@ -744,15 +751,13 @@ Scope {
                     Hud {
                         x: -Math.cos(mk.ang) * 20 - width / 2
                         y: -Math.sin(mk.ang) * 14 - height / 2
-                        text: String(mk.modelData.id).padStart(2, "0")
+                        text: mk.modelData.special ?? String(mk.modelData.id).padStart(2, "0")
                         font.pixelSize: 9
                         color: mk.modelData.id === map.current ? Theme.accent : Theme.dim
                     }
                 }
             }
 
-            // the open system's planets and moons, the land shader up in orbit so each is exactly the world you'd land on.
-            // nearer draws on top
             Repeater {
                 model: map.bodies
                 Item {
@@ -775,7 +780,6 @@ Scope {
                         hue: bd.modelData.hue
                         seed: bd.modelData.seed
                         sun: map.sunDir(map.shown(bd.modelData), bd.modelData.star)
-                        // the takeoff/landing's own planet only shows once the wallpaper starts handing over
                         opacity: (bd.p ? Math.min(1, (400 - bd.p.z) / 120) : 0) * (map.isTransit(bd.modelData) && map.ascent < 0.995 ? 0 : 1)
                     }
                     Hud {
@@ -789,7 +793,6 @@ Scope {
                 }
             }
 
-            // bracket on whatever the crosshair sits on
             Item {
                 readonly property var p: map.aimed && !map.busy ? map.screenOf(map.aimed) : null
                 visible: !!p
@@ -799,7 +802,6 @@ Scope {
                 Rectangle { anchors.centerIn: parent; width: 24; height: 24; rotation: 45; color: "transparent"; antialiasing: true; border.width: 1; border.color: Theme.accent }
             }
 
-            // the card next to it
             Item {
                 id: cardBox
                 readonly property var o: map.carded
@@ -861,7 +863,6 @@ Scope {
                 }
             }
 
-            // crosshair on the screen you opened it on
             Item {
                 visible: win.main
                 x: map.cx - win.ox
@@ -885,14 +886,13 @@ Scope {
 
             }
 
-            // the real wallpaper rising into orbit and coming back down. space goes see-through so it hands over to the map
             Terrain {
                 anchors.fill: parent
-                // above every star, label and card so nothing shows through the transition
                 z: 50
-                visible: map.ground * map.veil > 0
-                opacity: map.ground * Math.min(1, map.veil * 2)
+                visible: map.warm || map.ground * map.veil > 0
+                opacity: map.warm ? 0.0015 : map.ground * Math.min(1, map.veil * 2)
                 ws: map.landWs
+                asTheme: true
                 screenX: win.ox
                 hue: map.landHue
                 seed: map.landSeed
@@ -900,10 +900,73 @@ Scope {
                 clear: 1
                 orbit: win.main ? 1 : 0
                 endR: map.endR
-                // same sun the map's copy gets, so the handoff doesn't flip the lighting
                 sun: map.sunDir(map.transitLight?.[0], map.transitLight?.[1])
                 moonless: win.modelData === Hypr.moonScreen ? 0 : 1
                 moonEnd: win.main && !moonless ? map.moonEnd : Qt.vector4d(0, 0, 0, 0)
+            }
+
+            }
+
+            ShaderEffectSource {
+                id: sceneTex
+                anchors.fill: parent
+                visible: false
+                sourceItem: scene
+                textureSize: Qt.size(win.width / 2, win.height / 2)
+                live: shots.visible
+            }
+            MultiEffect {
+                id: frosted
+                anchors.fill: parent
+                visible: shotList.count > 0 && shots.visible
+                source: sceneTex
+                autoPaddingEnabled: false
+                blurEnabled: true
+                blur: 1
+                blurMax: 32
+                saturation: 0.17
+            }
+
+            Item {
+                id: shots
+                z: 51
+                width: win.width
+                height: win.height
+                y: map.fall * height
+                visible: map.fall < 1
+                Repeater {
+                    id: shotList
+                    model: ScriptModel { values: map.shotsOn(Hyprland.monitorFor(win.modelData)) }
+                    ClippingRectangle {
+                        id: shot
+                        required property var modelData
+                        readonly property var o: modelData.lastIpcObject
+                        readonly property bool active: map.landTop.length ? map.landTop.includes(modelData) : Hyprland.activeToplevel === modelData
+                        readonly property real alpha: active ? 0.8 : 0.7
+                        readonly property real cover: Math.min(1, map.veil * 2)
+                        visible: !!o.size && !o.hidden
+                        x: (o.at?.[0] ?? 0) - win.ox
+                        y: (o.at?.[1] ?? 0) - win.oy
+                        z: active ? 2 : o.floating ? 1 : 0
+                        width: o.size?.[0] ?? 0
+                        height: o.size?.[1] ?? 0
+                        radius: 3
+                        color: "transparent"
+                        ShaderEffectSource {
+                            anchors.fill: parent
+                            sourceItem: frosted
+                            hideSource: true
+                            sourceRect: Qt.rect(shot.x, shot.y + shots.y, shot.width, shot.height)
+                            live: shots.visible
+                        }
+                        ScreencopyView {
+                            anchors.fill: parent
+                            opacity: shot.alpha * shot.cover / (1 - shot.alpha + shot.alpha * shot.cover)
+                            captureSource: shot.modelData.wayland
+                            live: map.touched && shot.visible
+                        }
+                    }
+                }
             }
 
             MouseArea {

@@ -29,7 +29,6 @@ Column {
     property var vpns: []
     property string vpnBusy: ""
 
-    // stop scanning while i type or the list jumps around
     Binding {
         target: menu.wifiDev
         property: "scannerEnabled"
@@ -85,7 +84,6 @@ Column {
         else ask(n)
     }
 
-    // null means ethernet
     function edit(n) {
         asking = ""
         hidden = false
@@ -93,7 +91,6 @@ Column {
         editing = editor.name
     }
 
-    // new networks go through nmcli since it actually tells me when the password is wrong
     function join(ssid, user, psk) {
         if (joining || ssid === "" || (!hidden && psk.length === 0) || (askingEap && user === "")) return
         setFailed(ssid, "")
@@ -147,7 +144,6 @@ Column {
                     if (m && (m[2] === "vpn" || m[2] === "wireguard"))
                         out.push({ uuid: m[1], name: m[4].replace(/\\(.)/g, "$1"), active: m[3] === "yes" })
                 }
-                // only swap if it changed or the rows restart their animations
                 if (JSON.stringify(out) !== JSON.stringify(menu.vpns)) menu.vpns = out
                 if (vpnList.clear) { vpnList.clear = false; menu.vpnBusy = "" }
             }
@@ -192,7 +188,6 @@ Column {
         maxHeight: 248
         empty: !menu.wifiDev ? "No adapter" : !Networking.wifiEnabled ? "Off" : "Searching…"
 
-        // rows slide around instead of the whole list rebuilding
         Item {
             id: stack
             readonly property int rowH: 40
@@ -242,7 +237,6 @@ Column {
         }
     }
 
-    // outside the repeater so a rescan can't eat what i'm typing
     Column {
         id: prompt
         visible: (menu.asking !== "" || menu.hidden) && menu.listing

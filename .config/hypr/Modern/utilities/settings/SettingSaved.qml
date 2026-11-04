@@ -28,7 +28,6 @@ Item {
         release()
     }
 
-    // give the keyboard back to the panel
     function release() {
         let p = input.parent
         while (p && p.objectName !== "keyRoot") p = p.parent
@@ -160,7 +159,6 @@ Item {
             color: Theme.alpha(Theme.fg, 0.07)
         }
 
-        // saving with an existing name overwrites it
         Item {
             width: parent.width
             height: 52
@@ -234,7 +232,6 @@ Item {
             }
         }
 
-        // deletes all saved profiles and variant tweaks, style folders stay
         Item {
             width: parent.width
             height: 52

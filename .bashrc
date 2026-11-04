@@ -5,7 +5,7 @@ export NVM_DIR="$HOME/.nvm"
 export PATH="$HOME/.npm-global/bin:$PATH"
 export wallpaper="$HOME/wallpapers/pywallpaper.jpg"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-myfetch -c 8 -C " █" && eval "$(starship init bash)"
+{ [[ $NOFETCH ]] || myfetch -c 8 -C " █"; } && eval "$(starship init bash)"
 alias lsd='eza --icons'
 alias grep='grep --color=auto'
 alias c='clear'

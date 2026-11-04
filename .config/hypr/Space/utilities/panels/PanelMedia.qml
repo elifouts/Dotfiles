@@ -2,7 +2,6 @@ import QtQuick
 import "../common"
 import "../media"
 
-// modern's island tabs under the media chip, Theme draws them space. tabs down the right side
 Item {
     id: pm
     width: parent?.width ?? 456
@@ -13,14 +12,12 @@ Item {
         { id: "weather", glyph: Live.weather.ready ? Live.weather.glyph(Live.weather.code, Live.weather.night) : "󰖕" }
     ]
     readonly property string current: Ui.tab || "media"
-    // an app's waiting on a share pick, don't let the wing close on it
     readonly property bool holdOpen: cap.sharing && current === "capture"
     onCurrentChanged: if (current === "weather") Live.weather.refresh(false)
 
     Item {
         id: pages
         width: parent.width - 44
-        // one height for every tab, switching off media used to grow the wing
         height: Math.max(150, media.implicitHeight)
 
         Fade { on: pm.current === "media"; maxW: Infinity; MediaCtl { id: media; width: parent.width } }
@@ -57,7 +54,6 @@ Item {
                     color: tab.on ? Theme.accent : tabArea.containsMouse ? Theme.fg : Theme.dim
                     Behavior on color { ColorAnimation { duration: Theme.fast } }
                 }
-                // hovering switches like modern's island
                 Hover { id: tabArea; anchors.fill: parent; onContainsMouseChanged: if (containsMouse) Ui.tab = tab.modelData.id }
             }
         }

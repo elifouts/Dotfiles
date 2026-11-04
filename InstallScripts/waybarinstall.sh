@@ -1,5 +1,4 @@
 #!/bin/bash
-# installs just waybar with one of the styles, copied into ~/.config/waybar
 
 set -euo pipefail
 
@@ -11,7 +10,6 @@ PACKAGES=(
     waybar otf-codenewroman-nerd hyprpicker wl-clipboard libnotify pacman-contrib
     kitty networkmanager bluez bluez-utils blueman
 )
-# AUR only, optional
 AUR_PACKAGES=(python-pywal16)
 
 select_style() {
@@ -34,7 +32,6 @@ select_style() {
 install_config() {
     section "Installing Waybar Config"
 
-    # swap the repo symlink for a real folder
     if [[ -L "$DEST" ]]; then
         warn "$DEST was a link to $(readlink -f "$DEST"); replacing it with a standalone copy."
         rm "$DEST"
@@ -50,12 +47,11 @@ install_config() {
     cp -a "$REPO/.config/waybar/scripts/." "$DEST/scripts/"
     chmod +x "$DEST"/scripts/*.sh
     basename "$STYLE_DIR" > "$DEST/.standalone"
-    [[ -x "$HOME/.config/hypr/utilities/shells.sh" ]] || sed -i 's|"custom/notification",\s*||' "$DEST/config"
+    [[ -x "$HOME/.config/hypr/utilities/session/shells.sh" ]] || sed -i 's|"custom/notification",\s*||' "$DEST/config"
 
     success "Installed to $DEST"
 }
 
-# style.css needs colors-waybar.css or waybar won't style anything
 ensure_palette() {
     local css="$HOME/.cache/wal/colors-waybar.css"
     ensure_wal "$css" && return
@@ -124,7 +120,7 @@ Config:   $DEST/config and $DEST/style.css
 Colors:   ~/.cache/wal/colors-waybar.css (run 'wal -i <image>' to recolor from a wallpaper)
 Restyle:  re-run this installer and pick another style.
 EOF
-    [[ ! -e "$HOME/.config/hypr/utilities/bar.sh" ]] ||
+    [[ ! -e "$HOME/.config/hypr/utilities/bars/bar.sh" ]] ||
         { echo; warn "The full dotfiles install is present: it already starts the bar (bar.sh) and binds ALT+A, so skip the lines above."; }
 }
 

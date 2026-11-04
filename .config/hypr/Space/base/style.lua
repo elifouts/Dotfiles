@@ -1,11 +1,10 @@
--- the default config, thin lines and a glow instead of blur and shadows
 local wal = require("wal")
 
 hl.config({
     general = {
         gaps_in = 4,
         gaps_out = 12,
-        border_size = 1,
+        border_size = 0,
         col = {
             active_border = wal.color(wal.accent, "cc"),
             inactive_border = wal.color(8, "44"),
@@ -27,7 +26,6 @@ hl.config({
             color = wal.color(wal.accent, "40"),
             color_inactive = wal.color(wal.accent, "00"),
         },
-        -- only the hud layers get blur
         blur = {
             enabled = true,
             size = 4,
@@ -54,7 +52,6 @@ hl.config({
     },
 })
 
--- default curves, workspaces slide instead of fade
 hl.curve("easeOutQuint", { type = "bezier", points = { { 0.23, 1 }, { 0.32, 1 } } })
 hl.curve("linear", { type = "bezier", points = { { 0, 0 }, { 1, 1 } } })
 hl.curve("almostLinear", { type = "bezier", points = { { 0.5, 0.5 }, { 0.75, 1 } } })
@@ -70,22 +67,17 @@ hl.animation({ leaf = "layers", enabled = true, speed = 3.81, bezier = "easeOutQ
 hl.animation({ leaf = "layersIn", enabled = true, speed = 4, bezier = "easeOutQuint", style = "fade" })
 hl.animation({ leaf = "layersOut", enabled = true, speed = 1.5, bezier = "linear", style = "fade" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "easeOutQuint", style = "slide" })
-
 hl.window_rule({ name = "suppress-maximize-events", match = { class = ".*" }, suppress_event = "maximize" })
 hl.window_rule({
     name = "fix-xwayland-drags",
     match = { class = "^$", title = "^$", xwayland = true, float = true, fullscreen = false, pin = false },
     no_focus = true,
 })
--- spotify-launcher forks so it never floats otherwise
 hl.window_rule({ name = "spotify-float", match = { class = "(?i)^spotify$" }, float = true })
-
--- the shell animates itself, hyprland just blurs the hud
 for _, ns in ipairs({ "space-bar", "space-launcher", "space-settings", "space-toast", "space-panel", "notification-popup" }) do
     hl.layer_rule({ name = ns .. "-blur", match = { namespace = ns }, blur = true, ignore_alpha = 0.2, no_anim = true })
 end
 hl.layer_rule({ name = "osd-blur", match = { namespace = "osd" }, blur = true, ignore_alpha = 0.05, no_anim = true })
--- alt tab fades in so the blur pulls focus instead of popping
 hl.layer_rule({ name = "space-scan-blur", match = { namespace = "space-scan" }, blur = true, ignore_alpha = 0, animation = "fade" })
 for _, ns in ipairs({ "space-wall", "space-desk", "space-overview" }) do
     hl.layer_rule({ name = ns .. "-noanim", match = { namespace = ns }, no_anim = true })

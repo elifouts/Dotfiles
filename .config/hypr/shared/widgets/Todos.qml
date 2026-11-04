@@ -4,13 +4,11 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// the todos both themes show. { "2026-10-30": ["thing"], "_done": 12 }, no file = no todos
 Singleton {
     id: root
 
     property var todos: ({})
     readonly property int done: todos._done ?? 0
-    // true while my own save lands, so lists don't rebuild mid animation
     property bool saving: false
     property string written: ""
 

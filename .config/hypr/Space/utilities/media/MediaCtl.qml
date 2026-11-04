@@ -3,7 +3,6 @@ import Quickshell
 import "../common"
 import "../ui"
 
-// now playing, the bar panel and the desk widget both use this
 Column {
     id: mc
     spacing: 10 * s
@@ -16,13 +15,11 @@ Column {
     readonly property real len: Math.max(1, player?.length ?? 1)
     NowPlaying { id: now; player: mc.player }
 
-    // local clock: position = base + elapsed, advanced every frame
     property real base: 0
     property real baseT: Date.now()
     property real pos: 0
     property bool dragging: false
     property real settleUntil: 0
-    // set from handlers not a binding, reading the mpris length mid-binding looped and spammed the log
     property real frac: 0
     function refrac() { frac = Math.max(0, Math.min(1, pos / len)) }
     onPosChanged: refrac()
@@ -43,14 +40,12 @@ Column {
     Connections { target: now; function onTitleChanged() { mc.sync() } }
 
     readonly property bool ticking: visible && playing && !dragging
-    // 4 times a second is plenty for a seek bar, this was a FrameAnimation and kept the wallpaper redrawing at full refresh
     Timer {
         running: mc.ticking
         interval: 250
         repeat: true
         onTriggered: mc.pos = Math.min(mc.len, mc.base + (Date.now() - mc.baseT) / 1000)
     }
-    // drift check only, small jitter is ignored so the bar never steps
     Timer {
         running: mc.ticking
         interval: 1000
@@ -64,7 +59,6 @@ Column {
         }
     }
 
-    // transport button: hover grow, press squash, springy release
     component Btn: Item {
         id: b
         property string glyph
@@ -111,7 +105,6 @@ Column {
         }
     }
 
-    // art + track info, centred like the transport under it
     Row {
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 12 * mc.s
@@ -122,11 +115,9 @@ Column {
             border.width: 1
             border.color: Theme.alpha(Theme.accent, 0.4)
             Image { anchors.fill: parent; anchors.margins: 1; source: now.art; fillMode: Image.PreserveAspectCrop; sourceSize: Qt.size(width, height); asynchronous: true }
-            // fill + align, centerIn left nerd glyphs sitting off to one side
             Text { anchors.fill: parent; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; visible: !now.art; text: "󰎈"; font.family: Theme.font; font.pixelSize: 20 * mc.s; color: Theme.accent }
         }
         Column {
-            // as wide as the longest line, so short titles stay centred instead of hugging the art
             width: Math.min(mc.width - 64 * mc.s, Math.max(who.implicitWidth, title.implicitWidth, artist.implicitWidth))
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
@@ -153,7 +144,6 @@ Column {
         }
     }
 
-    // transport
     Row {
         spacing: 6 * mc.s
         anchors.horizontalCenter: parent.horizontalCenter
@@ -177,7 +167,6 @@ Column {
         }
     }
 
-    // HUD seek: readouts, tick scale, glowing progress line, blade playhead
     Item {
         id: seekBar
         width: parent.width
@@ -187,7 +176,6 @@ Column {
         readonly property int ticks: Math.max(16, Math.round(width / (6 * mc.s)))
         readonly property real barY: 24 * mc.s
 
-        // readouts
         Hud {
             caps: false
             anchors.left: parent.left
@@ -217,7 +205,6 @@ Column {
             Behavior on color { ColorAnimation { duration: 150 } }
         }
 
-        // tick scale; each tick brightens continuously as the playhead passes
         Repeater {
             model: seekBar.ticks
             Rectangle {
@@ -231,12 +218,10 @@ Column {
             }
         }
 
-        // baseline + end brackets
         Rectangle { x: 0; y: seekBar.barY; width: parent.width; height: 1; color: Theme.faint }
         Rectangle { x: 0; y: seekBar.barY - 4 * mc.s; width: 1; height: 9 * mc.s; color: Theme.alpha(Theme.accent, 0.6) }
         Rectangle { x: parent.width - 1; y: seekBar.barY - 4 * mc.s; width: 1; height: 9 * mc.s; color: Theme.alpha(Theme.accent, 0.6) }
 
-        // progress: glow + core line
         Rectangle {
             x: 0
             y: seekBar.barY - 2 * mc.s
@@ -253,7 +238,6 @@ Column {
             color: Theme.accent
         }
 
-        // playhead: blade
         Item {
             x: parent.width * mc.frac
             y: seekBar.barY
@@ -274,7 +258,7 @@ Column {
             preventStealing: true
             cursorShape: Qt.PointingHandCursor
             function local(mx) {
-                mc.pos = Math.max(0, Math.min(1, mx / width)) * mc.len   // visual only while dragging
+                mc.pos = Math.max(0, Math.min(1, mx / width)) * mc.len
             }
             function commit() {
                 if (mc.player?.canSeek) mc.player.position = mc.pos

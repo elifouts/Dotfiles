@@ -3,7 +3,6 @@ import "../common"
 import "../bar"
 import "../ui"
 
-// snapseed-ish strip, add on the left, the picked one's options on the right
 Rectangle {
     id: strip
 
@@ -16,7 +15,6 @@ Rectangle {
     border.width: 1
     border.color: Theme.alpha(Theme.accent, 0.35)
 
-    // slides up out of the bottom edge
     transform: Translate { id: lift; y: 60 }
     Component.onCompleted: rise.start()
     NumberAnimation { id: rise; target: lift; property: "y"; to: 0; duration: Theme.slow; easing.type: Easing.OutCubic }
@@ -53,7 +51,6 @@ Rectangle {
             Chip { required property var modelData; text: modelData[1]; on: (strip.cur.align ?? "left") === modelData[0]; onHit: strip.model.change(strip.model.picked, { align: modelData[0] }) }
         }
         Sep { visible: !!strip.cur }
-        // same as the corner handle
         Item {
             visible: !!strip.cur
             width: 110

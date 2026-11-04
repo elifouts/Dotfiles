@@ -10,7 +10,6 @@ Item {
     property string placeholder: "Search apps"
     property alias text: input.text
     readonly property alias input: input
-    // return true to eat the key
     property var keyHandler: null
     signal clicked()
 
@@ -64,7 +63,6 @@ Item {
         anchors.rightMargin: pill.height * 0.4
         height: parent.height
         clip: true
-        // invisible items can't hold focus
         opacity: pill.stage(0.35)
 
         TextInput {

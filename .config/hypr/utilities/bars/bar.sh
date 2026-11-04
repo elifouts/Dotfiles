@@ -1,7 +1,7 @@
 #!/bin/bash
 set -uo pipefail
 
-. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/paths.sh"
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../paths.sh"
 FILE="$HYPR/state/bar"
 
 current() {
@@ -9,13 +9,13 @@ current() {
 }
 
 record() {
-    [ -n "${HYPR_SETTINGS_NO_RECORD:-}" ] || python3 "$UTIL/hypr-settings.py" set "$1" >/dev/null 2>&1 || true
+    [ -n "${HYPR_SETTINGS_NO_RECORD:-}" ] || python3 "$UTIL/settings/hypr-settings.py" set "$1" >/dev/null 2>&1 || true
 }
 
 start() {
     pkill -x waybar 2>/dev/null || true
     [ "$(current)" = waybar ] && setsid -f waybar >/dev/null 2>&1 </dev/null
-    "$UTIL/shells.sh" bar refresh
+    "$UTIL/session/shells.sh" bar refresh
 }
 
 case "${1:-}" in
@@ -26,8 +26,7 @@ case "${1:-}" in
         start
         ;;
     boot)
-        # profile decides the bar at login
-        python3 "$UTIL/hypr-settings.py" sync >/dev/null 2>&1 || true
+        python3 "$UTIL/settings/hypr-settings.py" sync >/dev/null 2>&1 || true
         start
         ;;
     apply)
@@ -36,11 +35,10 @@ case "${1:-}" in
             waybar | quickshell) ;;
             *) echo "Unknown bar '$kind'" >&2; exit 1 ;;
         esac
-        # write then rename so it's never half written
         printf '%s\n' "$kind" > "$FILE.tmp" && mv -f "$FILE.tmp" "$FILE"
         start
         record "bar.kind=\"$kind\""
-        if [ "$kind" = quickshell ]; then "$UTIL/waybar-style.sh" apply default; fi
+        if [ "$kind" = quickshell ]; then "$UTIL/bars/waybar-style.sh" apply default; fi
         ;;
     style)
         name="${2:?name}"
@@ -52,7 +50,7 @@ case "${1:-}" in
         if [ "$(current)" = waybar ]; then
             if pgrep -x waybar >/dev/null; then pkill -x waybar; else setsid -f waybar >/dev/null 2>&1 </dev/null; fi
         else
-            "$UTIL/shells.sh" bar toggle
+            "$UTIL/session/shells.sh" bar toggle
         fi
         ;;
     "")
@@ -60,6 +58,6 @@ case "${1:-}" in
         exit 2
         ;;
     *)
-        "$UTIL/shells.sh" bar "$@"
+        "$UTIL/session/shells.sh" bar "$@"
         ;;
 esac

@@ -3,7 +3,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// one cava for every visualizer, each monitor's bar used to spawn its own
 Singleton {
     id: root
 

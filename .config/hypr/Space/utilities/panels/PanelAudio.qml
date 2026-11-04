@@ -4,7 +4,6 @@ import Quickshell.Services.Pipewire
 import "../common"
 import "../ui"
 
-// volume, mic and which device, same Audio singleton as modern
 Column {
     id: au
     spacing: 6

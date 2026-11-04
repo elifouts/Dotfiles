@@ -1,7 +1,6 @@
 import QtQuick
 import "../common"
 
-// entries: [{ icon }]
 Item {
     id: ring
 
@@ -20,7 +19,6 @@ Item {
     function mod(i) { return n > 0 ? ((i % n) + n) % n : 0 }
     function angle(p) { return -Math.PI / 2 + p * 2 * Math.PI / Math.max(1, n) }
 
-    // unwrapped so going past the end keeps moving forward
     property real pos: current
     onCurrentChanged: {
         let d = mod(current - mod(Math.round(pos)))
@@ -37,7 +35,6 @@ Item {
         return 1 - Math.pow(1 - e, 3)
     }
 
-    // only hover-select after the mouse actually moves
     property bool moved: false
     onIntroChanged: if (intro === 0) moved = false
     HoverHandler {

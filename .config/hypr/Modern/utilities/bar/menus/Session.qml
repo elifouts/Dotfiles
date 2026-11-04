@@ -3,7 +3,6 @@ import Quickshell
 import Quickshell.Io
 import "../../common"
 
-// lock and suspend are instant, the rest need a second press
 Column {
     id: menu
 
@@ -213,7 +212,7 @@ Column {
             anchors.rightMargin: 14
             anchors.verticalCenter: parent.verticalCenter
             checked: menu.dnd
-            onToggled: menu.run(Hypr.util + "/shells.sh home toggleDnd")
+            onToggled: menu.run(Hypr.util + "/session/shells.sh home toggleDnd")
         }
     }
 }

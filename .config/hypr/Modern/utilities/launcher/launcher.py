@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# usage: launcher.py apps | commands | init <cache>... | bump <cache> <key>
 import json
 import os
 import re
@@ -45,7 +44,6 @@ def tryexec_ok(v):
     return shutil.which(v) is not None
 
 
-# same rules as g_app_info_should_show plus TryExec
 def hidden(entry, desktops):
     if entry.get("Hidden", "").lower() == "true" or entry.get("NoDisplay", "").lower() == "true":
         return True
@@ -78,7 +76,6 @@ def apps():
     json.dump({"hide": hide, "paths": paths}, sys.stdout)
 
 
-# aliases and functions shadow PATH, like bash
 def commands():
     home = os.path.expanduser("~")
     try:
@@ -151,4 +148,4 @@ if __name__ == "__main__":
     elif args[:1] == ["bump"] and len(args) == 3:
         bump(args[1], args[2])
     else:
-        sys.exit(__doc__)
+        sys.exit("usage: launcher.py apps | commands | init <cache>... | bump <cache> <key>")

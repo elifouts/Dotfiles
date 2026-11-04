@@ -1,7 +1,6 @@
 import QtQuick
 import "../common"
 
-// dropdown for 5+ options, pills otherwise
 Item {
     id: pick
 

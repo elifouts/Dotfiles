@@ -11,7 +11,6 @@ Item {
     readonly property real gap: Math.max(2, Math.round(width / bars * 0.32))
     readonly property real barW: (width - gap * (bars - 1)) / bars
 
-    // ripple until cava sends its first frame
     property bool ready: false
     property real live: 0
     property real phase: 0

@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Shapes
 
-// morphs play <-> pause, m: 0 = play, 1 = pause
 Shape {
     id: g
 
@@ -13,7 +12,6 @@ Shape {
     readonly property real sw: Math.max(1.5, width * 0.14)
     readonly property real w: width - sw
     readonly property real h: height - sw
-    // nudge play right so it looks centered
     readonly property real x0: sw / 2 + (1 - m) * w * 0.07
     readonly property real y0: sw / 2
 
@@ -21,7 +19,6 @@ Shape {
     function px(v) { return x0 + v }
     function py(v) { return y0 + v }
 
-    // left half -> left bar
     ShapePath {
         fillColor: g.color
         strokeColor: g.color
@@ -35,7 +32,6 @@ Shape {
         PathLine { x: g.px(0); y: g.py(0) }
     }
 
-    // right half -> right bar
     ShapePath {
         fillColor: g.color
         strokeColor: g.color

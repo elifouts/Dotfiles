@@ -3,21 +3,16 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 
-// both themes' Theme.qml is this plus a few overrides, shared components only read these names
 Singleton {
     id: root
 
     property string sans: "CodeNewRoman Nerd Font Propo"
     readonly property int pad: 14
 
-    // hyprland's, space pins rounding to 0
     property real hyprRounding: 10
     property real rounding: hyprRounding
-    // 1 = dots and ticks are circles, 0 = squares
     property real round: 1
-    // card outline width, modern has none
     property real lines: 0
-    // small captions, space has them in tracked caps
     property int caps: Font.MixedCase
     property real tracking: 0
     property real gapsOut: 8
@@ -35,7 +30,6 @@ Singleton {
     readonly property int fast: ms(160)
     readonly property int move: ms(280)
 
-    // corner radius scaled to hyprland's rounding
     function r(px) {
         return px * rounding / 10
     }
@@ -88,7 +82,6 @@ Singleton {
                     }
                     root.hyprSettle = curve("windowsIn") ?? root.own
                     root.hyprLeave = curve("windowsOut") ?? root.hyprSettle
-                    // speed is in deciseconds, 3 is what everything was tuned at
                     const w = leaf("windowsIn", l => l.speed > 0)
                     root.hyprPace = w ? Math.max(0.2, Math.min(3, w.speed / 3)) : 1
                 } catch (e) {}
@@ -96,7 +89,6 @@ Singleton {
         }
     }
 
-    // file is written right before hyprland applies it, so retry a few times
     FileView {
         id: settingsFile
         path: Hypr.state + "/settings.lua"
@@ -117,23 +109,22 @@ Singleton {
         function onRawEvent(event) { if (event.name === "configreloaded") root.refresh() }
     }
 
-    // keeps the last good palette, wal rewrites the file in pieces and a half-written read used to flash the defaults
-    function reload() { walFile.reload(); rolesFile.reload() }
+    property bool frozen: false
+    onFrozenChanged: if (!frozen) reload()
+    function reload() { if (!frozen) { walFile.reload(); rolesFile.reload() } }
     Watched {
         id: walFile
+        watchChanges: !root.frozen
         path: Quickshell.env("HOME") + "/.cache/wal/colors.json"
         onLoaded: { try { root.saved = JSON.parse(text()) } catch (e) {} }
     }
 
     property var saved: null
-    // wallpaper picker preview palette, null when not previewing
     property var preview: null
     readonly property var wal: preview ? {
         colors: preview.reduce((o, c, i) => (o["color" + i] = c, o), {}),
         special: { background: preview[0], foreground: preview[15] }
     } : saved
-    // the bright half (9-14) reads best on the dark panels. on the nvim schemes that's real red/green/yellow/blue/magenta/cyan,
-    // on pywal it's just six different wallpaper tones, which is still way better than color9 on everything
     function c(i, fallback) { return wal ? wal.colors["color" + i] : fallback }
     readonly property color red: c(9, "#e06c75")
     readonly property color green: c(10, "#98c379")
@@ -142,15 +133,12 @@ Singleton {
     readonly property color magenta: c(13, "#c3a6ff")
     readonly property color cyan: c(14, "#9fe0d0")
 
-    // what stuff actually uses, so it isn't color9 on everything
-    // settings > colors can point any of these at another slot, saved as { role: slot }
-    Watched { id: rolesFile; path: Hypr.state + "/color-roles.json" }
+    Watched { id: rolesFile; watchChanges: !root.frozen; path: Hypr.state + "/color-roles.json" }
     readonly property var roles: { try { return JSON.parse(rolesFile.text()) } catch (e) { return {} } }
     readonly property var roleSlots: ({ accent: 9, accent2: 13, ok: 10, caution: 11, info: 14, warn: 1 })
     function slotOf(role) { return roles[role] ?? roleSlots[role] }
-    // picks stick to the scheme you're on, call it empty to undo them
     function setRole(role, slot) {
-        Quickshell.execDetached([Hypr.util + "/color-roles.sh"].concat(role ? ["set", role, String(slot)] : ["reset"]))
+        Quickshell.execDetached([Hypr.util + "/colors/color-roles.sh"].concat(role ? ["set", role, String(slot)] : ["reset"]))
     }
     readonly property color accent: c(slotOf("accent"), "#8fd3ff")
     readonly property color accent2: c(slotOf("accent2"), magenta)
@@ -158,17 +146,13 @@ Singleton {
     readonly property color caution: c(slotOf("caution"), yellow)
     readonly property color info: c(slotOf("info"), cyan)
     readonly property color warn: c(slotOf("warn"), "#e06c75")
-    // some schemes have text basically the same color as the bg. why
     property color fg: readable(c(7, "#c7c6c2"))
     readonly property color bright: readable(c(15, "#ffffff"))
-    // based on the text color, color8 is too dark on some schemes
     readonly property color dim: alpha(fg, 0.5)
     property color bg: wal ? wal.special.background : "#101418"
-    // the see-through card everything sits on, change it here not in each shell
     readonly property color panel: alpha(bg, 0.6)
     property color edge: alpha(fg, 0.07)
 
-    // "black" and "white" are the darkest and lightest colors the scheme has, not pure ones
     readonly property var shades: [bg].concat(Array.from({ length: 16 }, (_, i) => Qt.color(c(i, i < 8 ? "#101418" : "#ffffff"))))
     readonly property color darkest: shades.reduce((a, b) => lum(b) < lum(a) ? b : a)
     readonly property color lightest: shades.reduce((a, b) => lum(b) > lum(a) ? b : a)
@@ -183,7 +167,6 @@ Singleton {
     function against(fill) { return contrast(fill, darkest) >= contrast(fill, lightest) ? darkest : lightest }
     function readable(c) { c = Qt.color(c); return contrast(c, bg) >= 3 ? c : against(bg) }
 
-    // used to mix bg in but pills came out muddier than the sliders. same color everywhere now
     function soft(c, hot) { return hot ? Qt.lighter(c, 1.12) : Qt.color(c) }
     function on(fill) { return against(soft(fill)) }
     readonly property color ink: on(accent)

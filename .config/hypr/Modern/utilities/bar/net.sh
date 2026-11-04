@@ -1,15 +1,9 @@
 #!/bin/bash
-# nmcli stuff for the wifi menu, it used to be bash inside qml strings and the escaping was hell
-# usage: net.sh eap SSID USER PASS
-#        net.sh show FIELDS ethernet|wifi NAME
-#        net.sh save up|save UUID NAME SEC ethernet|wifi [nmcli key value...]
-
 cmd="$1"
 shift
 
 case "$cmd" in
     eap)
-        # peap/mschapv2 because that's what UC_Secure wants, deleted again if it fails
         nmcli connection delete id "$1" >/dev/null 2>&1
         nmcli connection add type wifi con-name "$1" ssid "$1" wifi-sec.key-mgmt wpa-eap \
             802-1x.eap peap 802-1x.phase2-auth mschapv2 802-1x.identity "$2" 802-1x.password "$3" >/dev/null || exit 1

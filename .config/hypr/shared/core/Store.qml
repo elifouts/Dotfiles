@@ -6,12 +6,11 @@ import Quickshell.Io
 import "Schema.js" as Schema
 import "../common"
 
-// changes show right away and get batched to hypr-settings.py
 Singleton {
     id: root
 
     readonly property string util: Hypr.util
-    readonly property string py: util + "/hypr-settings.py"
+    readonly property string py: util + "/settings/hypr-settings.py"
 
     property var values: ({})
     property var styles: ({})
@@ -29,9 +28,7 @@ Singleton {
     property var pywalPalette: []
     property var saved: ({ entries: [], active: "default" })
     property var pending: ({})
-    // the colors page, so the window can drive it from the keyboard
     property var picker: null
-    // bumped every time the panel opens so pages replay their Rise
     property int opened: 0
     property string lastSnapshot: ""
     property bool refreshAfter: false
@@ -57,7 +54,6 @@ Singleton {
         values = Object.assign({}, values, entries)
     }
 
-    // null removes the key
     function setMany(entries) {
         const next = Object.assign({}, values)
         for (const key of Object.keys(entries)) {
@@ -84,17 +80,16 @@ Singleton {
 
     function applyProfile(style, variant) {
         active = { style: style, variant: variant }
-        Quickshell.execDetached(["setsid", "-f", util + "/hypr-profile.sh", "apply", style, variant])
+        Quickshell.execDetached(["setsid", "-f", util + "/settings/hypr-profile.sh", "apply", style, variant])
     }
 
-    // one apply at a time, clicking fast used to let an older run finish last and leave the wrong accent up
     signal themeApplied()
     property string queuedTheme: ""
-    function applyTheme(id) {
+    function applyTheme(id, noReload) {
         colorTheme = id
         setMany({ "colors.theme": id })
         if (themeProc.running) return queuedTheme = id
-        themeProc.command = ["setsid", "-w", util + "/color-apply.sh", id]
+        themeProc.command = ["env", "COLOR_NO_RELOAD=" + (noReload ? "1" : ""), "setsid", "-w", util + "/colors/color-apply.sh", id]
         themeProc.running = true
     }
     Process {
@@ -109,26 +104,25 @@ Singleton {
 
     function applyWaybar(id) {
         waybarActive = id
-        Quickshell.execDetached(["env", "HYPR_SETTINGS_NO_RECORD=1", "setsid", "-f", util + "/waybar-style.sh", "apply", id])
+        Quickshell.execDetached(["env", "HYPR_SETTINGS_NO_RECORD=1", "setsid", "-f", util + "/bars/waybar-style.sh", "apply", id])
         setMany({ "waybar.style": id })
     }
 
     function applyQuickshell(id) {
         quickshellActive = id
-        Quickshell.execDetached(["env", "HYPR_SETTINGS_NO_RECORD=1", "setsid", "-f", util + "/bar.sh", "style", id])
+        Quickshell.execDetached(["env", "HYPR_SETTINGS_NO_RECORD=1", "setsid", "-f", util + "/bars/bar.sh", "style", id])
         setMany({ "quickshell.style": id })
     }
 
     function applyBar(id) {
         bar = id
-        Quickshell.execDetached(["env", "HYPR_SETTINGS_NO_RECORD=1", "setsid", "-f", util + "/bar.sh", "apply", id])
+        Quickshell.execDetached(["env", "HYPR_SETTINGS_NO_RECORD=1", "setsid", "-f", util + "/bars/bar.sh", "apply", id])
         if (id === "quickshell") {
             waybarActive = "default"
             setMany({ "bar.kind": id, "waybar.style": "default" })
         } else setMany({ "bar.kind": id })
     }
 
-    // action: save NAME | apply ID | delete ID | wipe
     function savedRun(action, name) {
         if (savedProc.running) return
         savedProc.command = ["python3", py, "saved", action].concat(name ? [name] : [])
@@ -154,7 +148,6 @@ Singleton {
         onExited: { root.lastSnapshot = ""; root.refresh() }
     }
 
-    // profile or wallpaper changed somewhere else. wal writes a bunch of files at once hence the wait
     Watched { path: Hypr.state + "/profile"; onLoaded: staleTimer.restart() }
     Watched { path: Quickshell.env("HOME") + "/.cache/wallpaper-picker/current"; onLoaded: staleTimer.restart() }
     Watched { path: Quickshell.env("HOME") + "/.cache/wal/colors.json"; onLoaded: staleTimer.restart() }
@@ -166,11 +159,9 @@ Singleton {
             onStreamFinished: {
                 let data
                 try { data = JSON.parse(text) } catch (e) { return }
-                // skip identical snapshots
                 const snapshot = text
                 if (snapshot === root.lastSnapshot) return
                 root.lastSnapshot = snapshot
-                // don't overwrite unflushed edits
                 if (Object.keys(root.pending).length === 0 && !setProc.running) root.values = data.values
                 root.styles = data.styles
                 root.active = data.active

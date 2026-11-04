@@ -60,7 +60,7 @@ Item {
             pill: mod.pill
             text: Quickshell.env("USER")
             tint: Theme.accent2
-            onClicked: b => mod.ctx.run(Hypr.util + "/shells.sh " + (b === Qt.RightButton ? "settings" : b === Qt.MiddleButton ? "launcher" : "home"))
+            onClicked: b => mod.ctx.run(Hypr.util + "/session/shells.sh " + (b === Qt.RightButton ? "settings" : b === Qt.MiddleButton ? "launcher" : "home"))
         }
     }
 
@@ -103,7 +103,6 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         font.pixelSize: 12
                         color: Theme.fg
-                        // shrinks first when space runs out
                         property real fit: 170
                         function refit() { if (mod && mod.pill) fit = Math.max(40, Math.min(170, mod.pill.maxW - (mod.pill.rowW - width))) }
                         Connections {
@@ -111,7 +110,6 @@ Item {
                             function onRowWChanged() { Qt.callLater(title.refit) }
                             function onMaxWChanged() { Qt.callLater(title.refit) }
                         }
-                        // sub pixels while it eases, whole once it lands
                         width: Math.ceil(Math.min(fullWidth, fit))
                         Behavior on width { Settle { duration: Theme.move } }
                         value: [mod.ctx.track.title, mod.ctx.track.artist].filter(s => !!s).join("  ·  ")
@@ -310,7 +308,6 @@ Item {
             }
             onWheel: dir => Audio.setVolume(Math.round((volume + dir * 0.02) * 50) / 50)
 
-            // the fill just uncovers the gradient so the colors don't squish
             Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 46
@@ -400,15 +397,12 @@ Item {
         property string icon: ""
         property string text: ""
         property real maxText: 120
-        // widest text, so the pill doesn't change width
         property string widest: ""
         property bool faded: false
         property bool clickOpens: true
         readonly property bool lit: page !== "" && pill.open && pill.shownPage === page && (page !== "tray" || pill.shownTray === tray)
-        // what it lights up as, so the pills aren't all one color
         property color tint: Theme.accent
         property color glyphColor: lit ? tint : Theme.bright
-        // dragging on this sets a value instead of clicking
         property Item scrub: null
         property bool scrubbing: false
         readonly property bool hot: area.containsMouse || scrubbing
@@ -497,7 +491,6 @@ Item {
         }
     }
 
-    // fades and folds its width so the pill shrinks smoothly
     component Fold: Item {
         id: fold
 

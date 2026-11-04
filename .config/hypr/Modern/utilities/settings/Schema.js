@@ -216,7 +216,6 @@ var PAGES = [
 function shown(c, values, caps) {
     if (c.cap && !(caps && caps[c.cap])) return false
     if (!c.when) return true
-    // QML hands this over as a list wrapper, not an Array
     var conds = c.when.key === undefined && c.when.any === undefined ? c.when : [c.when]
     for (var i = 0; i < conds.length; i++)
         if (!holds(conds[i], values)) return false

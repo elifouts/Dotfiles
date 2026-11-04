@@ -91,7 +91,7 @@ if hl.plugin.hyprglass then
         edge_thickness = 0.06,
         edge_thickness_px = 0.0,
         edge_height = 0.0,
-        tint_color = 0x8899aa22, -- RRGGBBAA
+        tint_color = 0x8899aa22,
         lens_distortion = 0.5,
         self_sample = 0.0,
         xray = 0,

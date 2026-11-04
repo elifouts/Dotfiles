@@ -4,7 +4,6 @@ fix_wofi_paths() {
     local dir="${1:-$HOME/.config/wofi}" file replacement
 
     [[ -d "$dir" ]] || return 0
-    # resolve the symlink so find descends into it
     dir="$(readlink -f "$dir")"
 
     replacement="${HOME//\\/\\\\}"

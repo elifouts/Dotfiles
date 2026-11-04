@@ -5,16 +5,12 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 
-// the planet you're on and where each workspace sits on the map
 Singleton {
     id: root
 
     property real hue: 0.58
     property real seed: 17
-    // the land you stand on, apart from the galaxy seed so landing never reshuffles the stars
     property real landSeed: 17
-    // nine real colour themes. c = background, foreground, gray, then six accents: red green yellow blue purple cyan.
-    // every planet picks one of the accents from the themes switched on, unless random is on
     readonly property var themes: [
         { id: "everforest", name: "everforest", c: ["#2d353b", "#d3c6aa", "#475258", "#e67e80", "#a7c080", "#dbbc7f", "#7fbbb3", "#d699b6", "#83c092"] },
         { id: "gruvbox", name: "gruvbox", c: ["#282828", "#ebdbb2", "#665c54", "#fb4934", "#b8bb26", "#fabd2f", "#83a598", "#d3869b", "#8ec07c"] },
@@ -30,16 +26,20 @@ Singleton {
     property var pool: themes.map(t => t.id)
     property bool random: false
     readonly property var active: themes.filter(t => pool.indexOf(t.id) >= 0)
-    // a theme's pinned accent (index into its colours, 3..8). a pinned theme only ever offers that one
     property var pins: ({})
-    // the theme the current colours came from, so two themes sharing a hue never get mixed up
     property string curTheme: ""
     signal poolChanged2()
-    // ws id -> [x, y, z, hue]
     property var stars: ({})
     signal landed()
-    // alt+w: picks the new colours, the wallpapers fade to them during a moonset, then settle() writes them out.
-    // wal (kitty, borders, everything) is heavy and made the fade choppy, so it waits till the moon's back
+    property bool heldReload: false
+    Connections {
+        target: Ui
+        function onHoldThemeChanged() {
+            if (Ui.holdTheme || !root.heldReload) return
+            root.heldReload = false
+            Quickshell.execDetached(["hyprctl", "reload", "config-only"])
+        }
+    }
     signal hopped(real h)
     property real hopHue: -1
     property bool hopping: false
@@ -47,7 +47,6 @@ Singleton {
         hopHue = snap(Math.random())
         hopped(hopHue)
     }
-    // every wallpaper calls this when its moon's back, the first one does it
     function hopLand() {
         if (hopHue < 0) return
         const h = hopHue
@@ -73,14 +72,12 @@ Singleton {
                 root.pins = w.pins ?? ({})
                 if (Array.isArray(w.pool)) { const k = w.pool.filter(x => root.themes.some(t => t.id === x)); if (k.length) root.pool = k }
                 root.random = !!w.random
-                // older saves never wrote it, work it out from the hue
                 root.curTheme = w.curTheme || (root.random ? "" : root.themeFor(root.hue)?.t.id ?? "")
             } catch (e) {}
         }
     }
     function save() { file.setText(JSON.stringify({ hue: hue, seed: seed, landSeed: landSeed, stars: stars, pool: pool, pins: pins, curTheme: curTheme, random: random })) }
 
-    // every accent the pool can hand out, as [theme, colour index]
     function offers() {
         const out = []
         for (const t of active) {
@@ -90,15 +87,12 @@ Singleton {
         }
         return out
     }
-    // a 0..1 roll becomes the hue of one accent from the enabled themes (or stays itself when random)
-    // away skips the theme you're on, the star map's undiscovered systems use it so finding one is always a new look
     function snap(r, away) {
         const all = offers(), other = away ? all.filter(k => k[0].id !== curTheme) : all, a = other.length ? other : all
         if (random || a.length === 0) return r
         const k = a[Math.min(a.length - 1, Math.floor(r * a.length))]
         return accentHue(k[0].c[k[1]])
     }
-    // the offered accent closest to a hue
     function nearest(h) {
         const a = offers()
         if (random || a.length === 0) return h
@@ -109,7 +103,6 @@ Singleton {
         }
         return best
     }
-    // pin one of a theme's accents as its accent, or click it again to let planets use all six
     function pin(id, i) {
         const p = Object.assign({}, pins)
         const was = p[id] === i
@@ -120,7 +113,6 @@ Singleton {
         if (!was && themeOn(id)) use(id, i)
         else save()
     }
-    // the theme and accent a hue came from
     function themeFor(h) {
         const list = (active.length ? active : themes).slice().sort((x, y) => (y.id === curTheme) - (x.id === curTheme))
         let best = null, bi = 3, d = 9
@@ -130,16 +122,13 @@ Singleton {
         }
         return d < 0.002 ? { t: best, i: bi } : null
     }
-    // the theme and accent in use right now, null when random made up its own
     readonly property var applied: random || !curTheme ? null : themeFor(hue)
-    // put one theme's accent on the current system and the whole desktop
     function use(id, i) {
         const t = themes.find(x => x.id === id)
         curTheme = id
         recolor(accentHue(t.c[i]))
     }
     function themeOn(id) { return pool.indexOf(id) >= 0 }
-    // flip a theme in the pool, never emptying it. turning one on lands you on it
     function toggleTheme(id) {
         const on = themeOn(id)
         if (on && pool.length === 1) return
@@ -155,7 +144,6 @@ Singleton {
         if (!v) recolor(nearest(hue))
     }
 
-    // workspaces nobody placed get a spot on a loose spiral round the start
     function starOf(id) {
         const s = stars[id]
         if (s) return s
@@ -167,26 +155,22 @@ Singleton {
         save()
     }
 
-    // remembers which theme a hue came from, so settings can say what's applied and two themes sharing a hue stay apart
     function settle(h) {
         hue = h
         const f = random ? null : themeFor(h)
         curTheme = f ? f.t.id : ""
     }
     readonly property var accentNames: ["", "", "", "red", "green", "yellow", "blue", "purple", "cyan"]
-    // same land, new colors
     function recolor(h) {
         settle(h)
         paint(h)
         scheme.setText(JSON.stringify(palette(hue)))
         save()
     }
-    // the system you're standing in keeps the colour you picked, so the map shows it the same
     function paint(h) {
         const id = Hyprland.focusedWorkspace?.id
         if (id > 0) stars = Object.assign({}, stars, { [id]: starOf(id).slice(0, 3).concat([h]) })
     }
-    // a fresh planet: new terrain, new colors for the whole theme
     function reroll(h, s) {
         settle(h ?? snap(Math.random()))
         if (h === undefined) paint(hue)
@@ -197,7 +181,6 @@ Singleton {
         landed()
     }
 
-    // 16 colors from one hue, laid out like pywal's
     function palette(h) {
         const f = random ? null : themeFor(h)
         if (f) {
@@ -218,12 +201,14 @@ Singleton {
                  special: { background: colors.color0, foreground: colors.color15, cursor: colors.color15 } }
     }
 
-    // color-apply.sh does the rest: wal, kitty, borders, everything that reads pywal
     FileView {
         id: scheme
         path: Hypr.home + "/.config/wal/colorschemes/dark/space.json"
         atomicWrites: true
         printErrors: false
-        onSaved: Store.applyTheme("dark/space")
+        onSaved: {
+            root.heldReload = Ui.holdTheme
+            Store.applyTheme("dark/space", Ui.holdTheme)
+        }
     }
 }

@@ -1,4 +1,3 @@
--- login stuff every style wants
 local defaults = require("machine").defaults
 local saved = require("settings")
 local cursor = saved.cursor or defaults.cursor
@@ -6,18 +5,16 @@ local util = "~/.config/hypr/utilities/"
 
 hl.on("hyprland.start", function()
     hl.exec_cmd("hyprctl setcursor " .. (cursor.theme or defaults.cursor.theme) .. " " .. (cursor.size or defaults.cursor.size))
-    -- portal doesn't survive a relog, restart it
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         .. "; systemctl --user reset-failed xdg-desktop-portal-hyprland xdg-desktop-portal"
         .. "; systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal")
     hl.exec_cmd("systemctl --user start hyprpolkitagent")
-    hl.exec_cmd(util .. "session.sh start")
+    hl.exec_cmd(util .. "session/session.sh start")
     hl.exec_cmd("pactl set-sink-mute @DEFAULT_SINK@ 0")
     hl.exec_cmd("hypridle")
 end)
 
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "wayland")
--- hybrid mode hands the screen to intel, forcing nvidia libs there just breaks stuff
 local probe = io.popen([[sh -c 'for s in /sys/class/drm/card*-*/status; do grep -q "^connected" "$s" && readlink -f "${s%/*}/device/device/driver"; done' 2>/dev/null]])
 local on_nvidia = probe and probe:read("*a"):find("nvidia") ~= nil
 if probe then probe:close() end

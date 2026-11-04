@@ -8,7 +8,6 @@ Item {
 
     property string screenName
     readonly property bool portrait: height > width
-    // same sizing as the home screen
     readonly property real u: portrait
         ? Math.max(0.6, Math.min(width / 760, height / 1350))
         : Math.max(0.6, Math.min(width / 1600, height / 900))
@@ -17,7 +16,6 @@ Item {
     readonly property bool awake: !Lock.idle
     readonly property real margin: 32 * u
 
-    // preview has no handoff, so fade itself
     opacity: Lock.preview ? Lock.fade : 1
 
     Rectangle { anchors.fill: parent; color: "black" }
@@ -32,10 +30,8 @@ Item {
             source: face.screenName ? "file://" + Lock.shots + "/" + face.screenName + ".ppm" : ""
             fillMode: Image.PreserveAspectCrop
             cache: false
-            // load first so it never flashes black
             asynchronous: false
         }
-        // never 0, or Qt skips the first blur render
         MultiEffect {
             anchors.fill: parent
             source: shot
@@ -61,7 +57,6 @@ Item {
         onClicked: { Lock.menuOpen = false; input.forceActiveFocus() }
     }
 
-    // one per monitor so typing works wherever focus is
     TextInput {
         id: input
         width: 0
@@ -297,7 +292,6 @@ Item {
                 anchors.rightMargin: 18 * face.u
                 spacing: 3 * face.u
 
-                // fixed height so the text doesn't move
                 Row {
                     height: 16 * face.u
                     spacing: 8 * face.u
@@ -310,7 +304,6 @@ Item {
                     Wave {
                         anchors.verticalCenter: parent.verticalCenter
                         u: face.u
-                        // only while the card is on screen, cava is the one real background job
                         playing: face.main && face.awake && Lock.cfg.music && !!card.p && card.p.isPlaying && Lock.t > 0 && !Lock.leaving
                     }
                 }
@@ -435,7 +428,6 @@ Item {
         transform: Translate { y: (1 - menu.p) * 10 * face.u }
 
         Card { anchors.fill: parent; u: face.u }
-        // eat clicks so the menu stays open
         MouseArea { anchors.fill: parent; hoverEnabled: true }
 
         Column {

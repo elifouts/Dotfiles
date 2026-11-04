@@ -1,6 +1,5 @@
 import QtQuick
 
-// prev/next that kicks the way it skips, whoever skipped
 Item {
     id: btn
 

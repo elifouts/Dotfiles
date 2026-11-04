@@ -1,8 +1,6 @@
 #!/bin/sh
-# per pid: cmdline, shell cwd, what the shell runs
 for p; do
     c=$(tr '\0' '\037' < "/proc/$p/cmdline")
-    # only a shell on a tty counts as a terminal, pywalfox spawns one without
     s=$(ps --ppid "$p" -o pid=,tty=,comm= | awk '$2 != "?" && $3 ~ /^(bash|zsh|fish|sh|dash)$/ { print $1; exit }')
     d=
     r=

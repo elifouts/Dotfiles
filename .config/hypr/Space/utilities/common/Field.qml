@@ -1,7 +1,6 @@
 import QtQuick
 import "../ui"
 
-// modern's Field, space look
 Rectangle {
     id: field
 

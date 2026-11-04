@@ -1,6 +1,5 @@
 import QtQuick
 
-// clickable icon/text that lights up on hover. hit area is a bit bigger than the glyph cause tiny icons suck to click
 Label {
     id: g
 

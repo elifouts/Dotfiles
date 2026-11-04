@@ -4,7 +4,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// pending pacman/aur updates, recounted every 30 min and after pacman runs. both bars read this
 Singleton {
     id: root
 

@@ -13,7 +13,6 @@ Rectangle {
     color: checked ? Theme.soft(Theme.accent) : Theme.alpha(Theme.fg, hot ? 0.24 : 0.16)
     Behavior on color { ColorAnimation { duration: Theme.ms(240) } }
 
-    // front edge leads and the back one catches up, so it stretches and plants in one motion
     readonly property real lead: Theme.ms(240)
     readonly property real trail: Theme.ms(360)
     property real l: checked ? width - 19 : 3

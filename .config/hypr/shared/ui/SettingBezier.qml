@@ -25,7 +25,6 @@ Item {
         Store.setMany({ "animation.preset": "custom", "animation.curve": c })
     }
 
-    // x stays in 0..1
     function commitText(index, raw) {
         const nums = raw.split(/[\s,;()]+/).map(parseFloat).filter(n => !isNaN(n))
         const c = control.curve.slice()
@@ -51,7 +50,6 @@ Item {
 
     function pickOf(list) { return list[Math.floor(Math.random() * list.length)].v }
 
-    // random curve, speed and styles
     function randomize() {
         const r = (lo, hi) => Number(rand(lo, hi, 0.01).toFixed(2))
         edit([r(0.05, 0.8), r(-0.3, 1.2), r(0.2, 0.95), r(0.6, 1.45)])
@@ -170,7 +168,6 @@ Item {
                     }
                 }
 
-                // eased dot vs linear
                 Item {
                     width: parent.width
                     height: 90
@@ -192,7 +189,6 @@ Item {
             }
         }
 
-        // or paste "x1, y1, x2, y2" into any field
         Row {
             id: fields
             width: parent.width

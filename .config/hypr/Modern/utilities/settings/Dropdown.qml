@@ -1,7 +1,6 @@
 import QtQuick
 import "../common"
 
-// options: [{ v, l, swatch?, image?, preview? }]
 Item {
     id: dd
 

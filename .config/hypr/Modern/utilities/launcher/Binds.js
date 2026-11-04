@@ -1,6 +1,5 @@
 .pragma library
 
-// parses shortcuts.lua. a trailing "-- text" or desc is the description, i think that covers all of them
 
 const CATEGORIES = [
     { id: "apps", label: "Apps", icon: "" },
@@ -62,7 +61,6 @@ function table(expr, loop) {
 
 function chips(combo) {
     const parts = combo.split("+").map(s => s.trim()).filter(s => s !== "")
-    // "SUPER + SUPER_L" is just tapping super, i guess
     if (parts.length === 2 && parts[1].replace(/_[LR]$/, "") === parts[0]) return [KEYS[parts[0]] || cap(parts[0].toLowerCase())]
     return parts.map(p => {
         if (KEYS[p]) return KEYS[p]
@@ -100,7 +98,10 @@ function describe(dsp, args, locals, loop) {
     case "window.float": return { cat: "windows", desc: "Toggle floating" }
     case "window.pseudo": return { cat: "windows", desc: "Toggle pseudotile" }
     case "window.fullscreen": return { cat: "windows", desc: "Fullscreen" }
-    case "layout": return { cat: "windows", desc: "Layout " + evalExpr(args, locals, loop) }
+    case "layout": {
+        const l = evalExpr(args, locals, loop)
+        return { cat: "windows", desc: l === "togglesplit" ? "Toggle split direction" : "Layout " + l }
+    }
     case "window.drag": return { cat: "windows", desc: "Drag window" }
     case "window.resize": return { cat: "windows", desc: "Resize window" }
     case "window.move":
@@ -132,25 +133,20 @@ function parse(text) {
         if (/^for\b/.test(trimmed)) loop = true
         else if (trimmed === "end") loop = false
 
-        const note = raw.match(/\)\s*--\s*(.+)$/)
-        const code = note ? raw.slice(0, note.index + 1) : raw
-
-        const g = code.match(/^\s*hl\.gesture\((.*)\)\s*$/)
+        const g = raw.match(/^\s*hl\.gesture\((.*)\)\s*$/)
         if (g) {
             const t = table(g[1], false)
-            binds.push({ cat: "workspaces", keys: [(t.fingers || "3") + "-finger swipe"], desc: note ? note[1] : (t.action === "workspace" ? "Switch workspace" : cap(t.action || "Gesture")) })
+            binds.push({ cat: "workspaces", keys: [(t.fingers || "3") + "-finger swipe"], desc: t.action === "workspace" ? "Switch workspace" : cap(t.action || "Gesture") })
             continue
         }
 
-        const m = code.match(/^\s*hl\.bind\((.+?),\s*hl\.dsp\.([\w.]+)\((.*)\)\s*(,\s*\{[^}]*\})?\s*\)\s*$/)
+        const m = raw.match(/^\s*hl\.bind\((.+?),\s*hl\.dsp\.([\w.]+)\((.*)\)\s*(,\s*\{[^}]*\})?\s*\)\s*$/)
         if (!m) continue
         const opts = m[4] ? table(m[4], false) : {}
         const keys = chips(evalExpr(m[1], locals, loop))
         const d = describe(m[2], m[3], locals, loop)
-        if (note) d.desc = note[1]
-        else if (opts.desc || opts.description) d.desc = opts.desc || opts.description
+        if (opts.desc || opts.description) d.desc = opts.desc || opts.description
 
-        // merge the 4 arrow binds into one row, looked ugly otherwise
         if (d.dir && ARROWS[d.dir]) {
             const prefix = keys.slice(0, -1)
             const id = d.cat + "|" + d.desc + "|" + prefix.join("+")

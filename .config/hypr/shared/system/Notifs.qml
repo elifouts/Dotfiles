@@ -4,13 +4,11 @@ import QtQuick
 import Quickshell
 import Quickshell.Services.Notifications
 
-// the notification daemon both styles use. styles only draw popups and the list
 Singleton {
     id: root
 
     property bool dnd: false
     onDndChanged: Quickshell.execDetached(["sh", "-c", "echo " + (dnd ? 1 : 0) + " > \"${XDG_RUNTIME_DIR:-/tmp}/home-dnd\""])
-    // a style sets this while it's already showing the full list, popups would just double up
     property bool quiet: false
     property var popups: []
     property var arrived: ({})
@@ -49,7 +47,6 @@ Singleton {
         }
         return n.desktopEntry !== "" ? Quickshell.iconPath(n.desktopEntry, true) : ""
     }
-    // now is passed in so the caller's clock keeps it ticking
     function ago(n, now) {
         const s = Math.max(0, (now.getTime() - (arrived[n.id] ?? Date.now())) / 1000)
         if (s < 60) return "now"

@@ -3,7 +3,6 @@ import Quickshell
 import Quickshell.Io
 import "../common"
 
-// pops out of the bar when the focus timer ends. holdOpen keeps it up till x or esc
 Item {
     id: al
 
@@ -14,7 +13,6 @@ Item {
 
     implicitHeight: 40
 
-    // 5 loops is ~5 min, then it gives up and closes itself
     Process {
         running: al.open
         command: ["ffplay", "-nodisp", "-loop", "5", "-loglevel", "quiet", Quickshell.shellPath("bar/alarm.ogg")]
@@ -32,7 +30,6 @@ Item {
 
         NumberAnimation on scale { from: 0.3; to: 1; duration: Theme.ms(520); easing.type: Easing.OutBack; easing.overshoot: 2.4 }
 
-        // hop and shake are both 950ms so they stay in sync
         ParallelAnimation {
             running: al.open && Theme.animates
             loops: Animation.Infinite

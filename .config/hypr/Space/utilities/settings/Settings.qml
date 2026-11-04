@@ -7,7 +7,6 @@ import "../common"
 import "../ui"
 import "Motion.js" as Motion
 
-// hud sheet from the bottom, opens and resizes like modern's pills
 PanelWindow {
     id: sheet
 
@@ -16,7 +15,6 @@ PanelWindow {
     anchors.bottom: true
     exclusionMode: ExclusionMode.Ignore
     implicitWidth: Math.min(900, (screen?.width ?? 900) - 32)
-    // tallest tab, the frame inside eases between heights
     implicitHeight: 500
     color: "transparent"
     mask: Region { item: frame }
@@ -29,7 +27,6 @@ PanelWindow {
     Component.onCompleted: { Store.refresh(); morph.open() }
     function close() { morph.close() }
     Morph { id: morph; openMs: 560; closeMs: 340; onClosed: sheet.done() }
-    // the curve editor needs the room
     property real h: tab === "motion" ? 500 : 330
     Behavior on h { Settle { duration: Theme.move } }
     function step(d) {
@@ -38,7 +35,6 @@ PanelWindow {
     HyprlandFocusGrab { active: true; windows: [sheet]; onCleared: sheet.close() }
 
     component Caption: Hud { width: 100; height: 24; color: Theme.alpha(Theme.fg, 0.35) }
-    // label left, clickable words right
     component Pick: Row {
         id: pick
         property string label
@@ -55,7 +51,6 @@ PanelWindow {
             model: pick.options
             Hud {
                 required property var modelData
-                // plain strings or modern's { v, l } options
                 readonly property var v: modelData.v ?? modelData
                 text: modelData.l ?? modelData
                 height: 24
@@ -73,12 +68,10 @@ PanelWindow {
         spacing: 12
         Caption { text: tg.label }
         Kit.Toggle {
-            // hyprland reports its bools as 1/0 sometimes, so coerce
             on: !!(Store.values[tg.key] ?? tg.fallback)
             onFlip: Store.set(tg.key, !on)
         }
     }
-    // a Kit slider mapped onto a real range
     component Knob: Row {
         id: knob
         property string key
@@ -98,7 +91,6 @@ PanelWindow {
         }
     }
 
-    // a strip that widens out of the bottom edge, then opens up
     Rectangle {
         id: frame
         anchors.bottom: parent.bottom
@@ -113,7 +105,6 @@ PanelWindow {
         border.color: Theme.alpha(Theme.accent, 0.3)
         Rectangle { width: parent.width; height: 2; color: Theme.accent }
 
-        // laid out at full size and pinned to the top, so it unrolls instead of squishing
         Item {
             x: (parent.width - width) / 2
             width: sheet.width
@@ -187,7 +178,6 @@ PanelWindow {
         }
     }
 
-    // nine themes. the planets draw their colours from whichever are lit, or from anywhere when random is on
     Component {
         id: colors
         Column {
@@ -200,7 +190,6 @@ PanelWindow {
                 Button { label: "new world"; onPressed: World.reroll() }
                 Hud { height: 24; color: Theme.alpha(Theme.fg, 0.3); text: World.random ? "any colour goes" : "swatch pins accent  //  tile adds or drops it" }
             }
-            // what's actually on the desktop right now
             Row {
                 spacing: 12
                 Caption { text: "applied"; height: 14 }
@@ -269,7 +258,6 @@ PanelWindow {
         }
     }
 
-    // modern's animations page, same presets and curve editor
     Component {
         id: motion
         Column {
@@ -302,7 +290,6 @@ PanelWindow {
         }
     }
 
-    // every installed family, each one drawn in itself
     Component {
         id: fonts
         Column {
@@ -346,7 +333,6 @@ PanelWindow {
         }
     }
 
-    // saved profiles, click to jump, right click twice deletes
     Component {
         id: profiles
         Row {

@@ -1,7 +1,6 @@
 import QtQuick
 import "../common"
 
-// 0xRRGGBBAA, swatches keep the current alpha
 Item {
     id: control
 
@@ -116,7 +115,6 @@ Item {
         }
     }
 
-    // right-click resets to the profile value
     MouseArea {
         anchors.fill: parent
         z: -1

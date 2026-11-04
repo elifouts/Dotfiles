@@ -1,6 +1,5 @@
 .pragma library
 .import "Motion.js" as Motion
-// only the keys space's sheet touches
 function keys() {
     return ["config.decoration.glow.enabled", "config.decoration.blur.enabled", "config.decoration.rounding",
         "config.general.gaps_in", "config.general.gaps_out", "config.general.border_size", "config.general.layout",

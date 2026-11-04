@@ -1,6 +1,5 @@
 import QtQuick
 
-// icon tabs with the accent pill sliding under them, settings had it first
 Item {
     id: tabs
 

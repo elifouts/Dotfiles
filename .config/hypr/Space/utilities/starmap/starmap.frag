@@ -1,5 +1,4 @@
 #version 440
-// the star map's far sky, hashed from the view direction
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
 layout(std140, binding = 0) uniform buf {
@@ -30,15 +29,11 @@ float n3(vec3 p) {
 }
 void main() {
     vec3 d = normalize(vec3((offX + qt_TexCoord0.x * sizeW) / focal, -(offY + qt_TexCoord0.y * sizeH) / focal, 1.0));
-    // camera space back to the world, pitch then yaw
     d = vec3(d.x, d.y * cos(pitch) + d.z * sin(pitch), -d.y * sin(pitch) + d.z * cos(pitch));
     d = vec3(d.x * cos(yaw) + d.z * sin(yaw), d.y, -d.x * sin(yaw) + d.z * cos(yaw));
 
-    // minimal: one faint band of the theme's colours and two sparse layers of tiny stars. the old 4 octave nebula x3 and
-    // 4 star layers ran every pixel every frame, this is a fraction of that and reads cleaner
     float band = exp(-abs(d.y + 0.2 * sin(d.x * 2.0 + d.z)) * 4.0);
     float neb = n3(d * 2.4 + 7.0) * 0.65 + n3(d * 5.3) * 0.35;
-    // a little galaxy colour in the theme's accents: a soft glow along the band and clouds in it
     vec3 col = base.rgb + tint1.rgb * band * 0.05
              + mix(tint2.rgb, tint1.rgb, smoothstep(0.3, 0.7, neb)) * (0.3 + band) * neb * neb * 0.28;
 

@@ -34,7 +34,6 @@ hl.config({
         },
     },
     render = {
-        -- stops fullscreen apps flipping the screen into hdr mode
         cm_auto_hdr = 0,
     },
     xwayland = {
@@ -68,12 +67,8 @@ hl.animation({ leaf = "fade", enabled = true, speed = 4, bezier = "snappy" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 1.7, bezier = "snappy", style = "slide" })
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 4, bezier = "fluid", style = "slidefadevert -35%" })
 hl.animation({ leaf = "layers", enabled = true, speed = 2, bezier = "snappy", style = "popin 70%" })
-
--- spotify-launcher forks so pypr can't float it. no idea why it does that
 hl.window_rule({ match = { class = "(?i)^spotify$" }, float = true })
-
 hl.layer_rule({ name = "waybar-blur", match = { namespace = "waybar" }, blur = true, ignore_alpha = 0.5 })
--- half the pill opacity or the blur halos, i think
 hl.layer_rule({ name = "quickshell-bar-blur", match = { namespace = "quickshell-bar" }, blur = true, ignore_alpha = 0.3, no_anim = true })
 hl.layer_rule({ name = "quickshell-overview-noanim", match = { namespace = "quickshell-overview" }, no_anim = true })
 hl.layer_rule({ name = "notification-popup-blur", match = { namespace = "notification-popup" }, blur = true, ignore_alpha = 0.5, no_anim = true })

@@ -8,7 +8,6 @@ Item {
     Column {
         id: now
         anchors.verticalCenter: parent.verticalCenter
-        // tracked caps run wider than 150, the graph moves over for them
         width: Math.max(150, feels.implicitWidth)
         spacing: 4
 
@@ -84,7 +83,6 @@ Item {
             property var points: graph.hours.map((h, i) => [graph.px(i), graph.py(h.temp)])
             onPointsChanged: requestPaint()
             onWidthChanged: requestPaint()
-            // canvas doesn't notice palette changes on its own
             property color tint: Theme.caution
             onTintChanged: requestPaint()
             onPaint: {

@@ -5,7 +5,6 @@ return {
     build = ":TSUpdate",
     config = function()
         local ts = require("nvim-treesitter")
-        -- Missing parsers install only when the CLI and a compiler are available.
         local can_install = vim.fn.executable("tree-sitter") == 1
             and (vim.fn.executable("cc") == 1 or vim.fn.executable("gcc") == 1 or vim.fn.executable("clang") == 1)
         local available

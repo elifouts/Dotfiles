@@ -2,7 +2,6 @@ local ok, S = pcall(require, "settings")
 if not ok or type(S) ~= "table" then S = {} end
 
 if S.config then
-    -- old saves can still carry plugin keys and hl.config rejects those
     local core = {}
     for k, v in pairs(S.config) do
         if k ~= "plugin" then core[k] = v end

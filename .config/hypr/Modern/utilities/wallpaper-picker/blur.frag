@@ -1,5 +1,4 @@
 #version 440
-// one pass of a gaussian whose radius ramps up from start to start + span
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
 layout(std140, binding = 0) uniform buf {
@@ -16,7 +15,6 @@ layout(binding = 1) uniform sampler2D source;
 void main() {
     float d = clamp((qt_TexCoord0.y - start) / span, 0.0, 1.0);
     float sigma = max(radius * d * d * (3.0 - 2.0 * d), 0.001);
-    // up to 2.5 sigma, max 64 texels
     float n = ceil(sigma * 2.5);
     vec4 sum = texture(source, qt_TexCoord0);
     float w = 1.0;

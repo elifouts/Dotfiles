@@ -22,7 +22,6 @@ Column {
         color: Theme.dim
     }
 
-    // rows go edge to edge and get clipped to the corners so a highlight isn't a box in a box
     ClippingRectangle {
         width: parent.width
         height: Math.min(sec.maxHeight, Math.max(sec.empty !== "" && list.implicitHeight < 4 ? 40 : 0, list.implicitHeight))

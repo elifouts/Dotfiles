@@ -10,7 +10,6 @@ DOTFILES_DIR="$HOME/Dotfiles"
 HYPRLAND_STYLE_DIR=""
 INSTALLING=false
 
-# folders get copied into <name>_backup_<time>, .bashrc lands inside its own one
 backup_config() {
     local stamp="$(date +%Y%m%d_%H%M%S)" name src dest
 
@@ -28,7 +27,7 @@ select_hyprland_style() {
     section "Hyprland Style"
 
     local profiles
-    mapfile -t profiles < <("$DOTFILES_DIR/.config/hypr/utilities/hypr-profile.sh" list)
+    mapfile -t profiles < <("$DOTFILES_DIR/.config/hypr/utilities/settings/hypr-profile.sh" list)
     ((${#profiles[@]})) || { error "No Hyprland profiles found."; return 1; }
 
     pick "Choose a style" "${profiles[@]/\// / }"
@@ -63,56 +62,49 @@ apply_dotfiles() {
     link_entry "$DOTFILES_DIR/.bashrc" "$HOME/.bashrc" "$backup"
     shopt -u nullglob dotglob
 
-    # ~/wallpapers used to link into here, now it's a real folder seeded with the favorites
     [[ -L "$HOME/wallpapers" ]] && rm "$HOME/wallpapers"
     mkdir -p "$HOME/wallpapers/library"
     link_entry "$DOTFILES_DIR/wallpapers/library/favorites.txt" "$HOME/wallpapers/library/favorites.txt" "$backup/wallpapers"
     cp -rn "$DOTFILES_DIR/wallpapers/library/." "$HOME/wallpapers/library/"
 
     git -C "$DOTFILES_DIR" config core.hooksPath .githooks
-    link_entry "$HOME/.config/hypr/utilities/pypr.py" "$HOME/.local/bin/pypr" "$backup/.local/bin"
+    link_entry "$HOME/.config/hypr/utilities/pypr/pypr.py" "$HOME/.local/bin/pypr" "$backup/.local/bin"
 
     [[ -z "$HYPRLAND_STYLE_DIR" ]] ||
-        "$src/hypr/utilities/hypr-profile.sh" apply "${HYPRLAND_STYLE_DIR%%/*}" "${HYPRLAND_STYLE_DIR#*/}" --offline
+        "$src/hypr/utilities/settings/hypr-profile.sh" apply "${HYPRLAND_STYLE_DIR%%/*}" "${HYPRLAND_STYLE_DIR#*/}" --offline
 
     success "Dotfiles linked."
     apply_colors
     nohup bash -c 'sleep 1; hyprctl reload' >/dev/null 2>&1 &
 
-    # restart the shells so the new utilities load now
     if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
-        "$src/hypr/utilities/shells.sh" restart
-        "$src/hypr/utilities/bar.sh" boot
+        "$src/hypr/utilities/session/shells.sh" restart
+        "$src/hypr/utilities/bars/bar.sh" boot
     fi
 }
 
-# waybar and the bar won't even open without a wal palette, so don't wait on a wallpaper pick
-# a fresh install always starts on the dotfiles wallpaper, apply.sh only fills in colors if there are none
 apply_colors() {
     $INSTALLING || [[ ! -f "$HOME/.cache/wal/colors.json" ]] || return 0
     section "Applying Colors"
 
-    # nothing starts the daemon till login, thats why no wallpaper till reboot
     local daemon
     daemon="$(command -v awww-daemon || true)"
     if [[ -n "${WAYLAND_DISPLAY:-}" && -n $daemon ]] && ! pgrep -x "${daemon##*/}" >/dev/null; then
         setsid -f "$daemon" >/dev/null 2>&1
         sleep 0.5
     fi
-    if "$HOME/.config/hypr/utilities/wallpaper-apply.sh" "$DOTFILES_DIR/wallpapers/pywallpaper.jpg" >/dev/null; then
+    if "$HOME/.config/hypr/utilities/wallpaper/wallpaper-apply.sh" "$DOTFILES_DIR/wallpapers/pywallpaper.jpg" >/dev/null; then
         success "Colors generated from the dotfiles wallpaper."
     else
         warn "Couldn't generate colors; pick a color theme in settings later."
     fi
 }
 
-# dotfiles only ship the favorites, the full library is its own repo
 pull_wallpapers() {
     ask "Pull the full wallpaper library?" || return 0
-    "$HOME/.config/hypr/utilities/wallpapers.sh" install || warn "Couldn't pull wallpapers, sticking with the defaults."
+    "$HOME/.config/hypr/utilities/wallpaper/wallpapers.sh" install || warn "Couldn't pull wallpapers, sticking with the defaults."
 }
 
-# space's shaders, the repo ships them compiled too so this is just to keep them fresh
 setup_space() {
     section "Space Theme"
     local qsb=/usr/lib/qt6/bin/qsb f
@@ -209,7 +201,6 @@ run_install() {
     ask "Install optional packages?" && { yay -S --needed "${OPTIONAL_PACKAGES[@]}" || warn "Some optional packages failed."; }
 
     success "Installation complete!"
-    # welcome pops up on the next boot, it deletes this
     touch "$HOME/.cache/dotfiles-welcome"
 
     if ask "Reboot now?"; then

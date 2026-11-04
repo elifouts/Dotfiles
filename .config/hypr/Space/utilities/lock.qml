@@ -5,14 +5,12 @@ import Quickshell.Services.Pam
 import "common"
 import "lock"
 
-// own process so it still comes up if the shell is dead
 ShellRoot {
     id: root
 
     readonly property bool preview: Quickshell.env("LOCK_PREVIEW") === "1"
     property string pw: ""
     property bool checking: false
-    // bumps on a wrong password so every screen shakes
     property int wrong: 0
     property real t: 0
     Component.onCompleted: fadeIn.start()
@@ -25,7 +23,6 @@ ShellRoot {
     }
     PamContext {
         id: pam
-        // pam file is in shared/system/
         configDirectory: Hypr.dir + "/shared/system/pam"
         config: "password.conf"
         user: Quickshell.env("USER")

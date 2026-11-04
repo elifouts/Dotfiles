@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 
-// shares waybar's history in ~/.cache/colorpicker/colors
 Item {
     id: page
 

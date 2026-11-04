@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/paths.sh"
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../paths.sh"
 
 list() {
     local style variant
@@ -23,21 +23,19 @@ apply() {
         exit 1
     }
 
-    # old style's shell and daemons go first
-    [ "$offline" = "--offline" ] || "$UTIL/session.sh" stop
+    [ "$offline" = "--offline" ] || "$UTIL/session/session.sh" stop
 
     mkdir -p "$HYPR/state"
     printf '%s/%s\n' "$style" "$variant" > "$HYPR/state/profile"
 
-    python3 "$UTIL/hypr-settings.py" sync
+    python3 "$UTIL/settings/hypr-settings.py" sync
 
     [ "$offline" = "--offline" ] && return 0
 
-    # lua reruns from scratch so the old binds are gone
     hyprctl reload >/dev/null 2>&1 || true
-    python3 "$UTIL/hypr-settings.py" cursor
-    "$UTIL/session.sh" start
-    python3 "$UTIL/hypr-settings.py" appearance
+    python3 "$UTIL/settings/hypr-settings.py" cursor
+    "$UTIL/session/session.sh" start
+    python3 "$UTIL/settings/hypr-settings.py" appearance
     notify-send "Hyprland Profile" "Loaded $style / $variant" 2>/dev/null || true
 }
 

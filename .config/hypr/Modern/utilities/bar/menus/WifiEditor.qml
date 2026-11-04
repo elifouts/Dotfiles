@@ -47,7 +47,6 @@ Column {
         refresh()
     }
 
-    // never reads the password back
     function refresh() {
         const f = ["connection.uuid", "connection.autoconnect", "connection.metered", "connection.permissions",
             "ipv4.method", "ipv4.addresses", "ipv4.gateway", "ipv4.dns", "ipv4.ignore-auto-dns",
@@ -121,7 +120,6 @@ Column {
             }
         }
 
-        // only touch the method if i changed it, otherwise stuff like link-local gets wiped
         if (ip4 !== ip4Was || ip4 === "manual") kv.push("ipv4.method", ip4)
         if (ip4 === "manual") {
             if (v4.addr.text.trim() === "") return fail("Address needed", v4.addr, "ip")
@@ -193,7 +191,6 @@ Column {
                 return
             }
             editor.error = menu.lastLine(saveErr.text) || "Error " + code
-            // the profile might exist even if connecting failed
             if (!saver.forgetting) editor.refresh()
         }
     }

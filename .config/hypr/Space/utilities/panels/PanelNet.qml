@@ -6,7 +6,6 @@ import Quickshell.Bluetooth
 import "../common"
 import "../ui"
 
-// wifi and bluetooth, same services modern's menus use
 Column {
     id: net
     spacing: 6
@@ -19,7 +18,6 @@ Column {
         .sort((a, b) => (b.connected - a.connected) || (b.paired - a.paired)).slice(0, 6) : []
     property string asking: ""
 
-    // only scans while this is open
     Binding { target: net.wifi; property: "scannerEnabled"; value: true; when: !!net.wifi && Networking.wifiEnabled }
 
     function secured(n) { return n.security !== WifiSecurityType.Open && n.security !== WifiSecurityType.Owe }
@@ -28,7 +26,6 @@ Column {
         if (n.known || !secured(n)) return n.connect()
         asking = n.name
     }
-    // new secured networks go through nmcli, it says when the password's wrong
     Process { id: join }
 
     Kit.Title { glyph: "󰤨"; text: "wifi"; Kit.Toggle { on: Networking.wifiEnabled; onFlip: Networking.wifiEnabled = !Networking.wifiEnabled } }

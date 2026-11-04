@@ -11,12 +11,10 @@ Item {
     property real u: 1
     property bool popup: false
     property bool expanded: false
-    // 1 -> 0 countdown, negative hides it
     property real progress: -1
 
     readonly property bool hovered: area.containsMouse || closeArea.containsMouse
     readonly property bool critical: n?.urgency === NotificationUrgency.Critical
-    // n goes null while a dismissed card animates out
     readonly property string iconSrc: n ? Notifs.iconFor(n) : ""
     readonly property real pad: (popup ? 14 : 10) * u
     readonly property real iconSize: (popup ? 40 : 36) * u

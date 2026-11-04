@@ -41,13 +41,10 @@ Singleton {
         tween.stop()
         outro.start()
     }
-    // hyprland does the unlock fade itself and keeps going after we quit, so just quit.
-    // the old client side fade was choppy like half the time
     SequentialAnimation {
         id: outro
         NumberAnimation { target: root; property: "out"; to: 1; duration: Theme.ms(220); easing.type: Easing.InCubic }
         ScriptAction { script: { root.unlock(); if (!root.preview) root.finish() } }
-        // preview has no handoff layer so it fades itself
         NumberAnimation { target: root; property: "fade"; to: 0; duration: Theme.ms(450); easing.type: Easing.InOutCubic }
         ScriptAction { script: root.finish() }
     }
@@ -138,7 +135,6 @@ Singleton {
     MediaView { on: root.t > 0 && root.cfg.music }
     readonly property alias track: nowPlaying
 
-    // full counts as charging here so the icon shows the plug
     readonly property bool charging: Power.charging || Power.full
 
     readonly property string mainScreen: Hyprland.focusedMonitor ? Hyprland.focusedMonitor.name : ""

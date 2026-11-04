@@ -1,7 +1,7 @@
 #!/bin/bash
 set -uo pipefail
 
-. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/paths.sh"
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../paths.sh"
 STATE="$HYPR/state/color-theme"
 SCHEMES="$HOME/.config/wal/colorschemes"
 
@@ -29,7 +29,14 @@ fi
 
 [ -f "$wallpaper" ] && printf '%s' "$wallpaper" > "$HOME/.cache/wal/wal"
 
-"$HYPR/utilities/color-roles.sh"
+for socket in /run/user/1000/nvim.*; do
+  [ -S "$socket" ] || continue
+  printf 'Sending to %s\n' "$socket"
+  nvim --server "$socket" --remote-send '<Space>utp'
+done
+
+
+"$HYPR/utilities/colors/color-roles.sh"
 cat ~/.cache/wal/colors-kitty.conf > ~/.config/kitty/current-theme.conf
 pywalfox update >/dev/null 2>&1 || true
 
@@ -60,7 +67,9 @@ horizontal_gradient_color_5 = '$(walc color13)'
 [smoothing]
 noise_reduction = 72
 CAVA
-# USR1 reloads everything, USR2 colors only (i think)
 pkill -USR1 cava 2>/dev/null || true
 
-hyprctl reload config-only >/dev/null 2>&1 || true
+[ -n "${COLOR_NO_RELOAD:-}" ] || hyprctl reload config-only >/dev/null 2>&1 || true
+
+
+

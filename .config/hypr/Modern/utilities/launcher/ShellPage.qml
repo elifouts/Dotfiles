@@ -2,21 +2,18 @@ import QtQuick
 import Quickshell.Io
 import "../common"
 
-// enter runs in kitty, shift+enter in the background
 Item {
     id: page
 
     property var commands: []
     property var counts: ({})
     property string query: ""
-    // only re-sort when visible
     property bool live: false
     property bool dirty: true
     signal run(string cmd, string key, bool background)
 
     readonly property var current: wheel.n > 0 ? wheel.entries[wheel.cur] : null
 
-    // own aliases/functions first, then letters, then by name
     readonly property var kindRank: ({ alias: 0, "function": 1, bin: 2 })
     readonly property var ordered: {
         const list = commands.map(e => ({ n: e.n, k: e.k, d: e.d, l: e.n.toLowerCase(), dl: (e.d || "").toLowerCase(), sym: /^[a-z0-9]/i.test(e.n) ? 0 : 1 }))
@@ -56,7 +53,6 @@ Item {
                 const s = score(e, word)
                 if (s > 0) hits.push({ e: e, s: s, u: counts[e.n] || 0 })
             }
-            // best match, most used, shortest
             hits.sort((a, b) => b.s - a.s || b.u - a.u || a.e.n.length - b.e.n.length || a.e.order - b.e.order)
             list = hits.map(h => h.e)
         }

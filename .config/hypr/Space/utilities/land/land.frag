@@ -1,5 +1,4 @@
 #version 440
-// minimal landscape: sky, a big faint moon, sparkles, far peaks, hills in mist and pines. every edge is antialiased
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
 layout(std140, binding = 0) uniform buf {
@@ -24,17 +23,12 @@ layout(std140, binding = 0) uniform buf {
     vec4 shade;
     vec4 moonEnd;
     float starClock;
-    // alt+w: the moon sets behind the hills (lift < 0) and drops back in from the top (lift > 0), glow is the sunset
     float lift;
     float glow;
-    // 0 everything, twinkle included. 1 the still land with every star at its dimmest, drawn once and cached.
-    // 2 only the twinkle, added over a 1 (see Twinkle.qml), so the full scene never redraws per frame
     float layerMode;
-    // 1 drops the sky moon and fills its spot with stars (side monitors)
     float moonless;
 };
 
-// no sin() hashes, they lost precision far out
 float h1(float n) {
     n = fract(n * 0.1031 + seed * 0.0137);
     n *= n + 33.33;
@@ -61,19 +55,15 @@ vec3 h3(vec3 p) {
     p += dot(p, p.yxz + 33.33);
     return fract((p.xxy + p.yxx) * p.zyx);
 }
-// 3d value noise on the sphere, so continents wrap round instead of smearing like the old 2d bands
 float n3(vec3 p) {
     vec3 i = floor(p), f = fract(p);
     f = f * f * (3.0 - 2.0 * f);
     return mix(mix(mix(h3(i).x, h3(i + vec3(1, 0, 0)).x, f.x), mix(h3(i + vec3(0, 1, 0)).x, h3(i + vec3(1, 1, 0)).x, f.x), f.y),
                mix(mix(h3(i + vec3(0, 0, 1)).x, h3(i + vec3(1, 0, 1)).x, f.x), mix(h3(i + vec3(0, 1, 1)).x, h3(i + vec3(1, 1, 1)).x, f.x), f.y), f.z);
 }
-// fades a detail out once it'd be smaller than a couple of pixels, so tiny far planets don't shimmer. f its frequency
 float keep(float f, float px) {
     return smoothstep(0.5, 0.2, f * px);
 }
-// planet surface: warped coasts, deep and shallow sea, lowland, ridged highland, ice caps and a cloud layer.
-// px is a pixel's size on the ball. w is how glossy (open sea), for the sun's glint
 vec4 planetSurf(vec3 n, float px) {
     vec3 q = n * 1.6 + seed * 0.37;
     vec3 w = vec3(n3(q * 1.3 + 5.0), n3(q * 1.3 + 9.0), n3(q * 1.3 + 13.0)) - 0.5;
@@ -87,19 +77,16 @@ vec4 planetSurf(vec3 n, float px) {
     vec3 ground = far.rgb * mix(0.82, 1.06, n3(qw * 9.0) * keep(9.0, px) + 0.5 * (1.0 - keep(9.0, px)));
     ground = mix(ground, mix(far.rgb, moon.rgb, 0.3), high * 0.75);
     vec3 s = mix(sea, ground, coast);
-    // ragged ice at the poles
     float pole = abs(n.y) + (n3(q * 5.0) - 0.5) * 0.14;
     float ice = smoothstep(0.84, 0.87, pole);
     vec3 white = mix(moon.rgb, vec3(1.0), 0.25);
     s = mix(s, white * 0.92, ice);
-    // clouds stretched into bands along the latitudes, wisps where the noise is high
     vec3 cq = vec3(n.x * 2.2, n.y * 6.0, n.z * 2.2) + w * 2.2 + seed * 0.53;
     float cl = n3(cq) * 0.6 + n3(cq * 2.7) * 0.3 + (n3(cq * 6.0) - 0.5) * 0.2 * keep(14.0, px);
     float cloud = smoothstep(0.52, 0.72, cl) * 0.75;
     s = mix(s, white * 0.95, cloud);
     return vec4(s, (1.0 - coast) * (1.0 - ice) * (1.0 - cloud));
 }
-// one layer of craters on the sphere, x albedo (dark floor, bright rim), y light and shadow on the walls
 vec2 craters(vec3 n, vec3 L, float sc, float dens, float s) {
     vec3 p = n * sc, i = floor(p);
     vec3 Lt = L - n * dot(n, L);
@@ -119,40 +106,30 @@ vec2 craters(vec3 n, vec3 L, float sc, float dens, float s) {
     }
     return o;
 }
-// 0..1 brightness of the moon's face: soft maria, grain, craters big to small, lit from L. px a pixel's size on the ball.
-// crisp 0 is the resting sky moon, matte and faded, 1 the sharp one up in space. launch and landing slide between them
 float moonTone(vec3 n, vec3 L, float px, float crisp) {
     vec3 q = n + seed * 0.21;
     float maria = smoothstep(0.48, 0.62, n3(q * 1.7 + 11.0) * 0.65 + n3(q * 4.1 + 3.0) * 0.35);
     float t = 0.72 - 0.26 * maria + (n3(q * 13.0) - 0.5) * 0.08 * keep(13.0, px) + (n3(q * 31.0) - 0.5) * 0.05 * keep(31.0, px);
-    // a crater layer goes once its rims would be thinner than a pixel, skipped outright when it's gone
     vec2 c = craters(n, L, 4.0, 0.45, 1.0) * smoothstep(0.12, 0.05, 4.0 * px);
     float k9 = smoothstep(0.12, 0.05, 9.0 * px), k18 = smoothstep(0.12, 0.05, 18.0 * px);
     if (k9 > 0.0) c += craters(n, L, 9.0, 0.55, 5.0) * 0.8 * k9;
     if (k18 > 0.0) c += craters(n, L, 18.0, 0.6, 9.0) * 0.55 * k18;
-    // craters sitting in a mare are flooded, softer
     t += c.x * mix(1.0, 0.5, maria) * mix(0.55, 1.0, crisp) + c.y * 0.22 * mix(0.25, 1.0, crisp);
     return clamp(mix(0.62, t, mix(0.6, 1.0, crisp)), 0.0, 1.0);
 }
-// the moon's colour, detailed
 vec3 moonSurf(vec3 n, vec3 L, float px, float crisp) {
     return moon.rgb * mix(0.3, 0.9, moonTone(n, L, px, crisp));
 }
-// the sky moon's own fixed light, never the star map's sun, so the wallpaper's moon looks the same however you got here
 const vec3 skyL = vec3(-0.371, 0.636, 0.742);
-// how strongly the faint sky moon shows over the sky, the space one starts from exactly this so the handoff can't jump
 float skyFace(vec3 n, vec3 L, float px, float crisp) {
     return 0.05 + 0.17 * moonTone(n, L, px, crisp) * (0.5 + 0.5 * smoothstep(-0.25, 0.7, dot(n, L)));
 }
-// soft terminator, a night side you can still make out, and air round the rim if it has any
 vec3 light(vec3 surf, vec3 n, vec3 L, float air) {
     float ndl = dot(n, L), lit = smoothstep(-0.12, 0.7, ndl);
-    // airless moons get more fill so they read against black space
     surf = mix(shade.rgb + surf * mix(0.34, 0.16, air), surf * (0.6 + 0.6 * lit), lit);
     vec3 a = mix(horizon.rgb, warm.rgb, 0.4) * air + moon.rgb * 0.25 * (1.0 - air);
     return surf + a * pow(1.0 - n.z, 2.6) * (0.25 + 0.75 * smoothstep(-0.3, 0.6, ndl)) * mix(0.35, 0.8, air);
 }
-// smooth rolling line, a few sines with random phases
 float roll(float x, float s) {
     return sin(x * 1.3 + h1(s) * 6.3) * 0.5 + sin(x * 2.9 + h1(s + 1.0) * 6.3) * 0.25 + sin(x * 6.1 + h1(s + 2.0) * 6.3) * 0.08;
 }
@@ -160,25 +137,19 @@ float hillHeight(float x) {
     float peak = x - floor(x / 5.0 + 0.5) * 5.0;
     return 0.17 + roll(x * 0.8, 11.0) * 0.03 + 0.12 * (1.0 - smoothstep(0.0, 1.4, abs(peak)));
 }
-// how much of this pixel is under a line at height h
 float under(float y, float h) {
     float aa = fwidth(y) * 0.9;
     return smoothstep(h + aa, h - aa, y);
 }
-// pines standing on a slope, coverage. no early return, derivatives go undefined in a branch and drew streaks everywhere
 float pines(float x, float y, float ground, float dens, float s) {
-    // wider cells than the trees so each one can wander off centre, then scaled back so the trees keep their size
     float tx = x * 30.0, ti = floor(tx), tf = (fract(tx) - 0.5 - (h1(ti + 7.0 + s) - 0.5) * 0.2) * (46.0 / 30.0);
     float ax = fwidth(x) * 46.0 * 1.2, ay = fwidth(y) * 0.9;
-    // tall and narrow, branch tiers stepping in, a thin trunk at the bottom. squat cones looked like dwarfs
     float th = 0.04 + 0.06 * h1(ti + 4.0 + s), lift = y - ground, u = lift / th;
     float tiers = 0.3 + 0.15 * (1.0 - fract(u * 3.2 + 0.2));
     float halfw = u < 0.07 ? 0.035 : (1.0 - u) * tiers;
     float cov = smoothstep(halfw + ax, halfw - ax, abs(tf)) * smoothstep(-ay, ay, lift) * smoothstep(th + ay, th - ay, lift);
-    // whole trees or nothing, deciding per pixel sliced them down the middle
     return cov * step(h1(ti + s), dens * (0.3 + 1.4 * n1((ti + 0.5) / 30.0 * 2.3 + s)));
 }
-// grass in small batches, a few short straight blades where a slow noise says so. dens is roughly how much ground gets a batch
 float grass(float x, float y, float ground, float dens, float s) {
     float gx = x * 160.0, gi = floor(gx), ax = fwidth(gx) * 1.2, ay = fwidth(y) * 0.9, lift = y - ground;
     float batch = smoothstep(1.0 - dens, 1.0 - dens + 0.1, n1(x * 6.0 + s));
@@ -196,53 +167,40 @@ float smin(float a, float b, float k) {
     float h = max(k - abs(a - b), 0.0) / k;
     return min(a, b) - h * h * k * 0.25;
 }
-// flat ship silhouette, nose toward +x. blended joins so there are no creases
 float shipShape(vec2 q, float s, float aa) {
     vec2 p = q / s;
     aa = max(aa / s, 1e-4);
     float py = abs(p.y);
     float hull = sdTaper(vec2(p.x, py), vec2(-0.1, 0.0), vec2(0.12, 0.0), 0.075, 0.075);
     hull = smin(hull, sdTaper(vec2(p.x, py), vec2(0.1, 0.0), vec2(0.52, 0.0), 0.075, 0.014), 0.05);
-    hull = -smin(-hull, p.y + 0.03, 0.05); // flat belly
-    float d = smin(hull, sdTaper(p, vec2(0.02, 0.05), vec2(-0.04, 0.16), 0.055, 0.02), 0.04); // top fin
-    d = smin(d, sdTaper(p, vec2(0.07, -0.02), vec2(-0.07, -0.12), 0.045, 0.012), 0.08); // swept bottom wing
+    hull = -smin(-hull, p.y + 0.03, 0.05);
+    float d = smin(hull, sdTaper(p, vec2(0.02, 0.05), vec2(-0.04, 0.16), 0.055, 0.02), 0.04);
+    d = smin(d, sdTaper(p, vec2(0.07, -0.02), vec2(-0.07, -0.12), 0.045, 0.012), 0.08);
     return smoothstep(aa, -aa, d);
 }
 
 void main() {
-    // landing zooms in toward the peak
     vec2 c = vec2(0.5, 0.65);
     vec2 uv = c + (qt_TexCoord0 - c) / zoom;
     float y0 = 1.0 - uv.y;
     float x = (uv.x - 0.5) * aspect;
-    // rise lifts the camera off the ground: near layers fall away faster than far ones
-    // you cruise up first: the land sinks right out of view before space comes in, so you never see hills and the planet together
     float r2 = rise * 2.4;
     float y = y0 + r2 * 0.15;
     vec3 col = vec3(0.0);
-    // how much of the pixel is land (or the sky ship), the rising moon stays behind it
     float cover = 0.0;
-    // up in orbit none of the landscape shows, so the star map's planets skip all of it. uniform branch, fwidth is fine
     if (rise < 0.5) {
-    // twinkle pass: nothing twinkles below the sky band (stars fade out by 0.38), skip it. the mask is 0 there so the quads never see it
     if (layerMode > 1.5 && y < 0.37) { fragColor = vec4(0.0); return; }
 
-    // sky with the warm glow sitting behind the hills
     col = mix(horizon.rgb, zenith.rgb, smoothstep(0.16, 0.9, y));
     col += warm.rgb * 0.55 * exp(-length(vec2(x * 0.55, (y - 0.27) * 2.4)) * 3.0);
-    // sunset: the low sky warms up and blooms where the moon went down
     col = mix(col, mix(warm.rgb, horizon.rgb, 0.3), glow * 0.55 * smoothstep(0.75, 0.15, y));
     col += warm.rgb * glow * 0.6 * exp(-length(vec2((x - pan * 0.02 - 0.25) * 0.8, (y - 0.27) * 2.2)) * 2.5);
 
-    // moon, barely lighter than the sky behind it, a real ball with maria and craters
     vec2 md = vec2(x - pan * 0.02 + lift * 0.35, y - 0.56 - lift);
     float mr = length(md);
     float disc = smoothstep(0.31 + fwidth(mr), 0.31 - fwidth(mr), mr) * (1.0 - moonless);
-    // when it's about to fly up and become a real moon (star map) the one below takes over straight away
-    // it's the same moon drawn the same way, so the swap is instant and invisible
-    float handed = step(0.5, moonEnd.w) * step(1e-5, rise);
+    float handed = rise > 0.0 ? step(0.5, moonEnd.w) : 0.0;
     float face = 0.0, mpx = fwidth(mr) / 0.31;
-    // no derivatives in here, so skipping the craters off the disc is safe
     if (mr < 0.32 && moonless < 0.5) face = skyFace(vec3(md / 0.31, sqrt(max(0.0, 1.0 - dot(md, md) / 0.0961))), skyL, mpx, 0.0);
     col = mix(col, mix(col, mix(moon.rgb, warm.rgb * 1.1, glow * 0.75), face + max(smoothstep(0.0, 0.3, abs(lift)), glow) * 0.5), disc * (1.0 - handed));
 
@@ -258,18 +216,15 @@ void main() {
     float rate = mix(0.6, 1.8, h2(cell + 4.9));
     float phase = h2(cell + 8.3) * 6.2831853;
     float blink = sin(starClock * rate + phase);
-    // still + twinkle pass add up to exactly 0.88 + 0.12 * blink
     float twinkle = layerMode < 0.5 ? 0.88 + 0.12 * blink : layerMode < 1.5 ? 0.76 : 0.12 + 0.12 * blink;
     if (layerMode > 1.5) col = vec3(0.0);
     col += starDot * twinkle * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 1.2 * (1.0 - glow * 0.6);
     if (layerMode > 1.5) {
-        // the sky ship is the only thing drawn over the stars, same maths as below
         float sxw = x + pan * 0.3;
         float sc = floor(sxw / 7.0 + 0.5);
         vec2 sp0 = vec2(sxw - (sc * 7.0 + (h1(sc + 7.0) - 0.5) * 2.4), y - (0.5 + 0.25 * h1(sc + 13.0)));
         float sa = (h1(sc + 19.0) - 0.5) * 0.4, scs = cos(sa), sns = sin(sa);
         vec2 sq = vec2(scs * sp0.x + sns * sp0.y, -sns * sp0.x + scs * sp0.y);
-        // alpha 0 so it adds onto the cached land under it
         fragColor = vec4(col * (1.0 - shipShape(sq, 0.09, fwidth(y))), 0.0) * qt_Opacity;
         return;
     }
@@ -278,7 +233,6 @@ void main() {
     float along = dot(sp, dir), off = abs(dot(sp, vec2(-dir.y, dir.x)));
     col += (1.0 - smoothstep(0.0, 0.0015, off)) * smoothstep(0.0, 0.08, along) * (1.0 - smoothstep(0.06, 0.1, along))
          * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 0.7;
-    // sky ship with trail
     float sxw = x + pan * 0.3;
     float sc = floor(sxw / 7.0 + 0.5);
     vec2 sp0 = vec2(sxw - (sc * 7.0 + (h1(sc + 7.0) - 0.5) * 2.4), y - (0.5 + 0.25 * h1(sc + 13.0)));
@@ -291,7 +245,6 @@ void main() {
     col += warm.rgb * trail * 0.8;
     col = mix(col, mix(near.rgb, horizon.rgb, 0.18), skyShip);
     cover = skyShip;
-    // far peaks, sharp and barely there
     y = y0 + r2 * 0.35;
     float xp = x * 1.6 + pan * 0.06;
     float peaks = 0.29 + (n1(xp * 2.0) * 0.6 + n1(xp * 5.0) * 0.25 + abs(n1(xp * 11.0) - 0.5) * 0.1) * 0.08;
@@ -299,7 +252,6 @@ void main() {
     col = mix(col, mix(far.rgb, horizon.rgb, 0.7), pk);
     cover = max(cover, pk);
 
-    // rolling ranges, far to near, each with mist pooled on top
     for (int i = 0; i < 3; i++) {
         float k = float(i) / 2.0;
         y = y0 + r2 * (0.45 + k * 0.2);
@@ -317,14 +269,12 @@ void main() {
         }
     }
 
-    // main hill with a peak every 5 units, rim lit where it faces the glow
     y = y0 + r2 * 0.95;
     float xm = x + pan * 0.6;
     float hill = hillHeight(xm);
     float xc = (floor(xm * 30.0) + 0.5) / 30.0, pc = xc - floor(xc / 5.0 + 0.5) * 5.0;
     float grove = smoothstep(0.5, 0.75, n1(xc * 0.5 + 9.0)) * step(0.35, abs(pc));
     vec3 hillCol = near.rgb + warm.rgb * (0.07 + glow * 0.2) * exp(-abs(y - hill) * 90.0) * smoothstep(1.2, 0.0, abs(x));
-    // landed ship
     float gcell = floor(xm / 3.6 + 0.5);
     float gcx = gcell * 3.6 + (h1(gcell + 31.0) - 0.5) * 1.2;
     float gslope = (hillHeight(gcx + 0.01) - hillHeight(gcx - 0.01)) / 0.02;
@@ -337,7 +287,6 @@ void main() {
     col = mix(col, hillCol, hc);
     cover = max(cover, max(hc, groundShip));
 
-    // foreground slope, darkest, a little lighter at its edge
     y = y0 + r2 * 1.5;
     float fg = 0.09 + roll(x * 0.7 + pan * 1.1, 21.0) * 0.04 - x * 0.02;
     float fc = max(under(y, fg), max(pines(x * 0.8 + pan * 1.1, y, fg, 0.12, 70.0), grass(x * 0.8 + pan * 1.1, y, fg, 0.14, 75.0)));
@@ -345,19 +294,13 @@ void main() {
     cover = max(cover, fc);
     }
 
-    // up into space: the sky goes black, the land curves away into the planet it is and the sky's moon
-    // clears up and settles beside it, right where the star map has that moon
     if (rise > 0.0) {
         vec3 space = mix(vec3(0.015, 0.02, 0.05), zenith.rgb * 0.4, 0.3);
         float sp2 = smoothstep(0.22, 0.5, rise);
         col = mix(col, space + vec3(step(0.997, h2(floor(vec2(x, y0) * 260.0)))) * 0.7, sp2);
-        // see-through mode drops the takeoff's dot stars, the real map is under it
         col *= 1.0 - sp2 * clear;
-        // eases in but still shrinking at rise 1, the star map's camera picks up that exact speed and keeps pulling back
-        // starts once space is in and is only shrinking gently by the end (slope 0.35 / 0.55 at rise 1, StarMap's pathTo matches it)
         float t = clamp((rise - 0.45) / 0.55, 0.0, 1.0), p = t * t * (2.65 - 1.65 * t);
         float R = exp(mix(log(3.5), log(endR), p));
-        // rises over the horizon top first, then centres so the last of the shrink is round its middle like a real pull back
         vec2 pc = vec2(0.0, mix(mix(0.06, 0.5 + endR, p) - R, 0.5, smoothstep(0.45, 0.9, p)));
         vec2 d = vec2(x, y0) - pc;
         float rr = length(d) / R;
@@ -366,8 +309,6 @@ void main() {
 
         float aa = fwidth(rr) * 1.2;
 
-        // the moon, moonEnd = where it ends up (x, y, radius) and w 1 behind the planet, 2 in front, 0 none
-        // clears up while you cruise, then heads for its spot along with the planet. 0.36 = the sky layer's sink (0.15 * 2.4)
         float mq = smoothstep(0.3, 1.0, rise);
         vec2 mc = mix(vec2(pan * 0.02, 0.56 - rise * 0.36), moonEnd.xy, mq);
         float mR = exp(mix(log(0.31), log(max(moonEnd.z, 0.001)), mq));
@@ -375,8 +316,6 @@ void main() {
         float mr = length(md) / mR, maa = fwidth(mr) * 1.2;
         vec3 mn = vec3(md / mR, sqrt(max(0.0, 1.0 - mr * mr)));
         float mpx = fwidth(mr);
-        // starts as exactly the sky moon (its light, its faintness) and turns into the real one as it heads up,
-        // so its craters never jump at either end of a takeoff or landing
         vec3 mL = normalize(mix(skyL, L, mq));
         float mfull = smoothstep(0.04, 0.55, rise), mo = 1.0;
         vec3 mcol = vec3(0.0);
@@ -385,11 +324,9 @@ void main() {
             mo = mix(k, 1.0, mfull);
             mcol = mix(moon.rgb * k, light(moonSurf(mn, mL, mpx, mfull), mn, mL, 0.0), mfull) / mo;
         }
-        // always behind the land, never showing through it while it fades
         float ma = smoothstep(1.0 + maa, 1.0 - maa, mr) * step(0.5, moonEnd.w) * orbit * mo * (1.0 - cover);
         float front = step(1.5, moonEnd.w);
 
-        // derivatives are all taken above this, everything past here is per pixel
         if (rr > 1.6) {
             float a0 = mix(1.0, ma, sp2 * clear);
             fragColor = vec4(mix(col, mcol, ma) * a0, a0) * qt_Opacity;
@@ -402,18 +339,15 @@ void main() {
         if (kind > 0.5) surf = light(moonSurf(n, L, px, 1.0), n, L, 0.0);
         else {
             vec4 ps = planetSurf(n, px);
-            // the sun's glint off open sea
             float spec = pow(max(dot(reflect(-L, n), vec3(0.0, 0.0, 1.0)), 0.0), 24.0) * ps.a * step(rr, 1.0);
             surf = light(ps.rgb, n, L, 1.0) + mix(warm.rgb, vec3(1.0), 0.5) * spec * 0.35;
         }
         vec3 body = mix(col, mcol, ma * (1.0 - front));
         body = mix(body, surf, ball);
         body = mix(body, mcol, ma * front);
-        // thin halo just outside, lit side only, planets only
         vec2 dn = d / max(length(d), 1e-4);
         float halo = 0.5 * (1.0 - kind) * exp(-max(rr - 1.0, 0.0) * 22.0) * step(1.0, rr) * show * smoothstep(-0.4, 0.5, dot(dn, L.xy));
         body += mix(horizon.rgb, warm.rgb, 0.4) * halo;
-        // clear: the space part goes see-through so the real star map shows, only the bodies stay
         float a = mix(1.0, clamp(ball + halo + ma, 0.0, 1.0), sp2 * clear);
         fragColor = vec4(body * a, a) * qt_Opacity;
         return;

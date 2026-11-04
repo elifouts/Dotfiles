@@ -3,7 +3,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// one focus timer and one forecast for every monitor's bar, same shared code modern's island uses
 Singleton {
     readonly property alias timer: countdown
     readonly property alias weather: forecast

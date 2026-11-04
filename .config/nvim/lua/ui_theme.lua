@@ -58,7 +58,6 @@ local function set_colorscheme(theme)
     return true
 end
 
--- Fallback themes should not replace the saved choice.
 function M.apply_theme(theme, persist)
     if not set_colorscheme(theme) then
         return

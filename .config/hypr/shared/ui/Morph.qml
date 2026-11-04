@@ -1,6 +1,5 @@
 import QtQuick
 
-// the grow out of a dot every panel does, everything keys off t
 Item {
     id: m
 
@@ -11,9 +10,7 @@ Item {
     property int closeMs: 320
     property var openCurve: Theme.settle
     property var closeCurve: Theme.leave
-    // profiles grows tall first since it comes out of the side
     property bool sideways: false
-    // osd keeps its content up while it shrinks
     property bool fadeOut: true
     signal opened()
     signal closed()

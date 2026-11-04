@@ -17,7 +17,6 @@ Column {
     readonly property var nearby: all.filter(d => !d.paired && !d.connected && d.name && d.name !== d.address.replace(/:/g, "-"))
         .sort((a, b) => label(a).localeCompare(label(b)))
     property var pending: ({})
-    // rows get rebuilt when a device moves lists, this lets the new one still do the spin
     property var trying: ({})
     function mark(d) { trying[d.address] = Date.now() }
     function fresh(d) {

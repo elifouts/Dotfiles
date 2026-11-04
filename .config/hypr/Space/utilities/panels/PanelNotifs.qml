@@ -3,7 +3,6 @@ import Quickshell
 import "../common"
 import "../ui"
 
-// notification history, dnd and clear, the shared Notifs daemon
 Column {
     spacing: 6
     SystemClock { id: clock; precision: SystemClock.Minutes }

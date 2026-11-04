@@ -1,5 +1,4 @@
 #version 440
-// a ball of light: lit sphere with a hot center and a soft halo. core is the sphere's radius, 0..1 of the item
 layout(location = 0) in vec2 qt_TexCoord0;
 layout(location = 0) out vec4 fragColor;
 layout(std140, binding = 0) uniform buf {
@@ -17,7 +16,6 @@ void main() {
     float aa = fwidth(r);
     float ball = smoothstep(core + aa, core - aa, r);
     vec3 n = vec3(p / core, sqrt(max(0.0, 1.0 - r * r / (core * core))));
-    // shade 1 is a lit ball (bar dots), 0 glows from inside like a star
     float lit = mix(1.0, 0.6 + 0.4 * dot(n, normalize(vec3(-0.45, 0.5, 0.75))), shade);
     vec3 c = mix(tint.rgb * lit, vec3(1.0), pow(n.z, mix(1.5, 4.0, shade)) * mix(0.9, 0.65, shade));
     float halo = glow * exp(-r * r * 5.0) * (1.0 - ball) * smoothstep(1.0, 0.7, r);

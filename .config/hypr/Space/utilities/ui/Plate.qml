@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Shapes
 import "../common"
 
-// glass with the top left corner cut, the hud shape the osd, popups and scan use
 Shape {
     id: plate
     property real cut: 10

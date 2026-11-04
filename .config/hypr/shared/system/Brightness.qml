@@ -3,8 +3,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-
-// osd.sh pushes this in, the power menu asks brightnessctl itself
 Singleton {
     id: root
 

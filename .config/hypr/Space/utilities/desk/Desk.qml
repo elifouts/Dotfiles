@@ -2,7 +2,6 @@ import QtQuick
 import "../common"
 import "../ui"
 
-// the widgets, inside the wallpaper window or DeskEdit's
 Item {
     id: desk
 
@@ -11,10 +10,8 @@ Item {
     readonly property int grid: 24
     opacity: model.shown
 
-    // where the guide lines sit while something's lined up, -1 = hidden
     property real guideX: -1
     property real guideY: -1
-    // snap an edge or centre to something close, else the grid
     function align(pos, size, lines) {
         let best = null
         for (const at of [0, size / 2, size])
@@ -36,7 +33,6 @@ Item {
         return [Math.max(0, Math.min(width - w, x)), Math.max(0, Math.min(height - h, y))]
     }
 
-    // faint grid while editing
     Repeater {
         model: desk.editing ? Math.ceil(desk.width / desk.grid) : 0
         Rectangle { required property int index; x: index * desk.grid; width: 1; height: desk.height; color: Theme.alpha(Theme.fg, 0.05) }
@@ -45,7 +41,6 @@ Item {
         model: desk.editing ? Math.ceil(desk.height / desk.grid) : 0
         Rectangle { required property int index; y: index * desk.grid; height: 1; width: desk.width; color: Theme.alpha(Theme.fg, 0.05) }
     }
-    // MouseArea not TapHandler, the handler ate clicks meant for del
     MouseArea { anchors.fill: parent; enabled: desk.editing; onClicked: desk.model.picked = -1 }
 
     Repeater {
@@ -71,7 +66,6 @@ Item {
                 border.color: wdg.on ? Theme.accent : Theme.faint
             }
             MouseArea { anchors.fill: parent; enabled: desk.editing; onPressed: m => { desk.model.picked = wdg.index; m.accepted = false } }
-            // × on every widget while editing
             Hud {
                 visible: desk.editing
                 x: parent.width + 2
@@ -81,7 +75,6 @@ Item {
                 color: rm.containsMouse ? Theme.warn : Theme.dim
                 MouseArea { id: rm; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true; onClicked: desk.model.remove(wdg.index) }
             }
-            // moved by hand so it snaps live, saved once on release
             DragHandler {
                 enabled: desk.editing
                 target: null
@@ -98,7 +91,6 @@ Item {
                     wdg.y = p[1]
                 }
             }
-            // bottom right corner scales it
             Rectangle {
                 visible: wdg.on
                 x: parent.width
@@ -106,7 +98,6 @@ Item {
                 width: 10
                 height: 10
                 color: Theme.accent
-                // saves on release, saving every move rebuilt the repeater mid drag
                 DragHandler {
                     target: null
                     property real from: 1

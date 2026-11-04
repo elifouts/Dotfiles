@@ -114,7 +114,6 @@ ShellRoot {
         if (key) Quickshell.execDetached(["python3", helper, "bump", cache, key])
     }
 
-    // only replace on change, it rebuilds every icon and that was slow
     property string appsKey: ""
     function buildApps() {
         const hide = new Set(drun.hide || [])
@@ -184,7 +183,6 @@ ShellRoot {
 
     function launch(a) {
         if (!a) return
-        // entries are recreated when .desktop files change; resolve a live one
         const e = DesktopEntries.byId(a.id) || a.entry
         if (e.runInTerminal) Quickshell.execDetached([terminal, "-e"].concat(e.command))
         else e.execute()
@@ -245,7 +243,7 @@ ShellRoot {
         bump(shellCache, key)
         close()
         if (background) Quickshell.execDetached(["bash", "-ic", cmd])
-        else Quickshell.execDetached([terminal, "--hold", "bash", "-ic", cmd])
+        else Quickshell.execDetached([terminal, "--hold", "env", "NOFETCH=1", "bash", "-ic", cmd])
     }
 
 
@@ -421,7 +419,6 @@ ShellRoot {
                         onPressed: root.close()
                     }
 
-                    // never hide this, the icon textures drop and it stutters like hell
                     Item {
                         id: card
                         width: root.dot + (root.cardW - root.dot) * morph.mw

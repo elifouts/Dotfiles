@@ -9,7 +9,7 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string py: Hypr.util + "/hypr-settings.py"
+    readonly property string py: Hypr.util + "/settings/hypr-settings.py"
     property var entries: []
     property string live: ""
     readonly property int n: entries.length
@@ -187,7 +187,6 @@ ShellRoot {
                     }
                 }
 
-                // centered profile's palette, darkest to lightest
                 ClippingRectangle {
                     id: strip
                     readonly property var ramp: (root.picked ? root.picked.colors : []).slice().sort((x, y) => {

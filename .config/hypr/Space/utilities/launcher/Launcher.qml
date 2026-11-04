@@ -1,19 +1,18 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../common"
 import "../ui"
 import "../ui/decode.js" as Decode
 
-// tap super, a little terminal drops out of the bar
 PanelWindow {
     id: win
 
     signal done()
     screen: Ui.target
     anchors.top: true
-    // from the very top edge so it slides over the bar instead of out from under it
     exclusionMode: ExclusionMode.Ignore
     implicitWidth: Math.min(620, (screen?.width ?? 800) - 40)
     implicitHeight: 300 + rest
@@ -24,7 +23,20 @@ PanelWindow {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
     property int sel: 0
-    // where it settles, just under the bar
+    property int mode: 0
+    readonly property bool cmd: mode === 1
+    readonly property bool kitty: mode === 2
+    property var cmds: []
+    onCmdChanged: if (cmd && !cmds.length) scan.running = true
+    Process {
+        id: scan
+        command: ["python3", Hypr.dir + "/Modern/utilities/launcher/launcher.py", "commands"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try { win.cmds = JSON.parse(text).map(e => ({ name: e.n, genericName: e.k === "bin" ? "" : e.d })) } catch (e) {}
+            }
+        }
+    }
     readonly property real rest: 42
     property real t: 0
     Component.onCompleted: grow.start()
@@ -38,7 +50,6 @@ PanelWindow {
 
     HyprlandFocusGrab { active: true; windows: [win]; onCleared: win.close() }
 
-    // subsequence match, runs and word starts score more
     function score(q, s) {
         s = (s || "").toLowerCase()
         let i = 0, pts = 0, run = 0
@@ -48,24 +59,29 @@ PanelWindow {
             pts += run * 2 + (j === 0 || " -_.".includes(s[j - 1]) ? 6 : 0)
             i++
         }
-        return i === q.length ? pts - s.length * 0.05 : -1
+        return i === q.length ? pts - s.length * 0.05 + (s === q ? 100 : s.startsWith(q) ? 20 : 0) : -1
     }
     readonly property var apps: DesktopEntries.applications.values.filter(a => !a.noDisplay)
     readonly property var hits: {
-        const q = field.text.trim().toLowerCase()
-        if (!q) return []
-        return apps.map(a => [a, Math.max(score(q, a.name) * 1.5, score(q, a.genericName), score(q, (a.keywords || []).join(" ")))])
-            .filter(x => x[1] >= 0).sort((a, b) => b[1] - a[1]).slice(0, 7).map(x => x[0])
+        const line = field.text.trim(), q = line.toLowerCase()
+        if (!q || kitty) return []
+        const key = cmd ? q.split(/\s+/)[0] : q
+        const found = (cmd ? cmds : apps).map(a => [a, Math.max(score(key, a.name) * 1.5, score(key, a.genericName), score(key, (a.keywords || []).join(" ")))])
+            .filter(x => x[1] >= 0).sort((a, b) => b[1] - a[1]).map(x => x[0])
+        if (!cmd) return found.slice(0, 7)
+        const typed = { name: line, genericName: "run as typed" }
+        if (/\s/.test(q)) return [typed, ...found.slice(0, 6)]
+        return found[0]?.name.toLowerCase() === q ? found.slice(0, 7) : [...found.slice(0, 6), typed]
     }
     onHitsChanged: sel = 0
 
-    function launch() {
-        const a = hits[sel]
-        if (a) a.execute()
+    function launch(background) {
+        const a = hits[sel], line = kitty ? field.text.trim() : a?.name
+        if (a?.execute) a.execute()
+        else if (line) Quickshell.execDetached((background ? [] : ["kitty", "--hold", "env", "NOFETCH=1"]).concat(["bash", "-ic", line]))
         close()
     }
 
-    // falls in from off the top of the screen and goes back up there
     Item {
         id: drop
         width: parent.width
@@ -90,13 +106,13 @@ PanelWindow {
 
                 Row {
                     spacing: 8
-                    Hud { text: "~/run"; color: Theme.accent; font.capitalization: Font.MixedCase; height: 22 }
+                    Hud { text: ["~/run", "~/cmd", "~/kitty"][win.mode]; color: Theme.accent; font.capitalization: Font.MixedCase; height: 22 }
                     Hud { text: "$"; color: Theme.dim; height: 22 }
                     TextInput {
                         id: field
-                        // the block below is the cursor, this hides the thin one qt draws too
                         cursorDelegate: Item {}
-                        width: col.width - 70
+                        clip: true
+                        width: col.width - 90
                         height: 22
                         verticalAlignment: TextInput.AlignVCenter
                         focus: true
@@ -106,12 +122,11 @@ PanelWindow {
                         cursorVisible: false
                         selectionColor: Theme.alpha(Theme.accent, 0.4)
                         Keys.onEscapePressed: win.close()
-                        Keys.onReturnPressed: win.launch()
-                        Keys.onEnterPressed: win.launch()
+                        Keys.onReturnPressed: event => win.launch(event.modifiers & Qt.ShiftModifier)
+                        Keys.onEnterPressed: event => win.launch(event.modifiers & Qt.ShiftModifier)
                         Keys.onDownPressed: win.sel = Math.min(win.hits.length - 1, win.sel + 1)
                         Keys.onUpPressed: win.sel = Math.max(0, win.sel - 1)
-                        Keys.onTabPressed: win.sel = (win.sel + 1) % Math.max(1, win.hits.length)
-                        // a block cursor that blinks, only while this is open
+                        Keys.onTabPressed: win.mode = (win.mode + 1) % 3
                         Rectangle {
                             x: field.cursorRectangle.x
                             anchors.verticalCenter: parent.verticalCenter
@@ -122,7 +137,6 @@ PanelWindow {
                     }
                 }
 
-                // fixed rows that decode from what they said into what they say now, so typing ripples instead of restarting
                 Repeater {
                     model: 7
                     Item {
@@ -149,6 +163,8 @@ PanelWindow {
                             Hud { text: line.on ? "›" : String(line.index + 1); color: line.on ? Theme.accent : Theme.alpha(Theme.fg, 0.3); height: parent.height; visible: !!line.app }
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
+                                width: col.width - 34
+                                elide: Text.ElideRight
                                 textFormat: Text.StyledText
                                 text: {
                                     const cut = line.app ? line.app.name.length : line.shown.length
@@ -163,7 +179,7 @@ PanelWindow {
                         MouseArea { anchors.fill: parent; hoverEnabled: true; onEntered: if (line.app) win.sel = line.index; onClicked: if (line.app) win.launch() }
                     }
                 }
-                Hud { visible: field.text !== "" && !win.hits.length; text: "command not found"; color: Theme.alpha(Theme.fg, 0.35); height: 22 }
+                Hud { visible: field.text !== "" && !win.hits.length && !win.kitty; text: "command not found"; color: Theme.alpha(Theme.fg, 0.35); height: 22 }
             }
         }
     }

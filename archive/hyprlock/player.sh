@@ -39,11 +39,10 @@ esac
 
 exec 9>"$DIR/lock"; flock -n 9 || exit 0
 trap 'rm -f "$DIR"/ready "$DIR"/title "$DIR"/artist "$DIR"/prev "$DIR"/toggle "$DIR"/next "$DIR"/.*.tmp; set_card clear; exit' EXIT TERM INT
-exec {sfd}<> <(:) # lets read -t work as a sleep
+exec {sfd}<> <(:)
 
 declare -A CUR PRV TCH LAST
 
-# card.png is the pywal background, clear.png is transparent
 make_cards() {
   python3 - "$COLORS_FILE" "$CARD_VAR" "$CARD_DIR" <<'PY'
 import re, struct, sys, zlib
@@ -81,7 +80,7 @@ set_card() {
   cp -f "$CARD_DIR/$1.png" "$CARD_DIR/.card.tmp" && mv -f "$CARD_DIR/.card.tmp" "$CARD_DIR/card.png"
 }
 
-smooth() { local t=$1; SM=$(( (3*t*t - 2*t*t*t/1000) / 1000 )); } # smoothstep
+smooth() { local t=$1; SM=$(( (3*t*t - 2*t*t*t/1000) / 1000 )); }
 esc()    { REPLY=${1//&/&amp;}; REPLY=${REPLY//</&lt;}; REPLY=${REPLY//>/&gt;}; }
 put()    { [[ ${LAST[$1]-} == "$2" ]] && return; LAST[$1]=$2
            printf '%s' "$2" > "$DIR/.$1.tmp" && mv -f "$DIR/.$1.tmp" "$DIR/$1"; }
@@ -97,7 +96,7 @@ fade_render() {
   REPLY=$out
 }
 
-anim_text() {  # <kind> <raw> <max>
+anim_text() {
   local k=$1 raw=$2 max=$3 half=$(( FADE_MS / 2 )) e g text
   if [[ -z ${TCH[$k]+x} ]]; then CUR[$k]=$raw; PRV[$k]=""; TCH[$k]=0
   elif [[ ${CUR[$k]} != "$raw" ]]; then PRV[$k]=${CUR[$k]}; CUR[$k]=$raw; TCH[$k]=$NOW; fi
@@ -109,7 +108,7 @@ anim_text() {  # <kind> <raw> <max>
   fade_render "$text" "$max" "$g"
 }
 
-anim_btn() {  # <name> <glyph> <base font size>
+anim_btn() {
   local ts=0 e d t
   [[ -r $DIR/press-$1 ]] && read -r ts < "$DIR/press-$1"
   e=$(( NOW - ts ))
@@ -122,7 +121,7 @@ anim_btn() {  # <name> <glyph> <base font size>
 n=0; stat=""; title=""; artist=""
 while :; do
   now_ms
-  if (( n % 4 == 0 )); then # poll every 4 frames
+  if (( n % 4 == 0 )); then
     (( n % 25 == 0 && n >= 100 )) && ! pgrep -x hyprlock >/dev/null && exit 0
     if raw=$(playerctl metadata --format $'{{status}}\x1f{{xesam:title}}\x1f{{xesam:artist}}' 2>/dev/null) && [[ -n $raw ]]; then
       IFS=$'\x1f' read -r stat title artist <<< "$raw"

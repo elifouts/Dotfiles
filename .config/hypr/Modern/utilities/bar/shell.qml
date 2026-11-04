@@ -85,7 +85,6 @@ ShellRoot {
 
             Countdown {
                 id: countdown
-                // notification only if there's no pill to ring out of
                 onFinished: {
                     const p = root.pillFor("alarm")
                     if (p) p.show("alarm")
@@ -107,7 +106,6 @@ ShellRoot {
             NowPlaying { id: nowPlaying; player: root.player }
             readonly property alias track: nowPlaying
             readonly property bool playing: Media.playing(player)
-            // hold media a few seconds or track changes flicker
             property bool hasMedia: false
             onPlayingChanged: {
                 if (playing) { stopped.stop(); hasMedia = true }
@@ -117,7 +115,6 @@ ShellRoot {
             Component.onCompleted: hasMedia = playing
             Timer { id: stopped; interval: 3000; onTriggered: root.hasMedia = root.playing }
             Binding { target: Media; property: "side"; value: (root.look.left || []).includes("media") ? "left" : (root.look.right || []).includes("media") ? "right" : "center" }
-            // the osd card already showed it's paused, don't bring the chip back for the hold
             Connections {
                 target: Media
                 function onCardChanged() { if (!Media.card && !root.playing) { stopped.stop(); root.hasMedia = false } }
@@ -141,7 +138,6 @@ ShellRoot {
             function mediaAway(pill) {
                 return musicOut && !pill.tucked
             }
-            // tucks away while the island is open unless i'm on the row, folding under the cursor made it ping pong
             function showMedia(pill) {
                 return hasMedia && !mediaAway(pill) && !(pill.page === "island" && !pill.onRow)
                     && !(Media.card && !pill.open)
@@ -157,7 +153,7 @@ ShellRoot {
                 return m.x < x + w && m.x + side > x && my < p.y + pillH + 460 && my + side > p.y
             }
 
-            function musicCall(call) { if (!standalone) run(Hypr.util + "/shells.sh music " + call) }
+            function musicCall(call) { if (!standalone) run(Hypr.util + "/session/shells.sh music " + call) }
 
             function toggleOverview() {
                 Quickshell.execDetached(["qs", "-p", Quickshell.shellDir, "ipc", "call", "overview", "toggle"])
@@ -183,7 +179,6 @@ ShellRoot {
                         left: true
                         right: true
                     }
-                    // fixed size, resizing this surface caused glitches, fuck it
                     implicitHeight: Math.min(modelData.height, root.reserve + 960)
                     exclusiveZone: root.reserve
                     color: "transparent"

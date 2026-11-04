@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Shapes
 import "../common"
 
-// framed glass wing: chamfered, corner brackets, lit bottom edge, expands for panels
 Item {
     id: wing
     property int lean: 1
@@ -10,13 +9,12 @@ Item {
     property real padR: 14
     property real introDelay: 0
     property real intro: 0
-    property var scr: null          // the screen this wing is on
-    property bool active: true      // bar visible
+    property var scr: null
+    property bool active: true
     property int openCount: 0
     readonly property bool dropped: openCount > 0
     default property alias content: inner.data
 
-    // the dropdown lives inside the wing: it grows to hold the panel, no second window
     readonly property real natW: inner.implicitWidth + padL + padR
     readonly property real panelW: Math.max(natW, kind === "media" ? 480 : 360)
     readonly property string live: dropped ? Ui.panel : ""
@@ -64,10 +62,8 @@ Item {
 
     Rectangle { x: 8; y: wing.height - 1; width: wing.width - 16; height: 1; color: Theme.alpha(Theme.accent, 0.28) }
 
-    // the right wing grows leftward, so its chips stay put at the right edge
     Row { id: inner; x: wing.padL + (wing.lean < 0 ? wing.extraW : 0); height: 28 }
 
-    // pointer leaving the wing, panel included, closes it after a beat
     HoverHandler { id: hh }
     Timer { interval: 260; running: wing.dropped && !hh.hovered && !body.item?.holdOpen; onTriggered: Ui.panel = "" }
 
@@ -80,7 +76,6 @@ Item {
         Loader {
             id: body
             x: 12
-            // rides the bottom edge down like the launcher instead of being uncovered in place
             y: 11 + Math.min(0, parent.height - height - 22)
             width: wing.panelW - 24
             opacity: wing.dropped ? 1 : 0

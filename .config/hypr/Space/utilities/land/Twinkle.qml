@@ -1,7 +1,5 @@
 import QtQuick
 
-// just the stars' twinkle, added on top of a still Terrain (layerMode 1 + layer.enabled) a gentle 30 times a second.
-// a looping animation on the whole land shader repainted every pixel at the monitor's full refresh and kept the gpu at full clocks
 Terrain {
     id: tw
 
@@ -17,7 +15,6 @@ Terrain {
     rise: under.rise
     moonless: under.moonless
 
-    // the stars drift ~1% brightness a tick, smooth to the eye. the clock wraps every 12s like the old animation
     Timer {
         interval: 33
         repeat: true
