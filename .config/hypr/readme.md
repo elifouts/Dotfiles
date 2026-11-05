@@ -226,6 +226,16 @@ Launch and landing stay smooth because the heavy work happens while nothing is m
 - stars get reused when the camera crosses cells instead of being rebuilt
 - the camera updates once per finished frame, so it works at any refresh rate
 
+**How the shaders work**
+
+The scenery has no images and there's no 3D engine. QML keeps the state and hands numbers and colors to the shaders, and a QML property reaches the shader when it has the same name as a uniform. Colors get mixed from the theme in `Terrain.qml`, so a new theme doesn't need a recompile. Editing a `.frag` does, see "I edited a shader and nothing happened".
+
+- `land.frag` draws the sky, moon, planets, hills and trees in one pass. Switching workspaces only animates `pan`.
+- Drawing all of that every frame is expensive, so `Land.qml` draws it once with `layerMode: 1` and keeps the result. `Twinkle.qml` runs the same shader with `layerMode: 2` on top, which only draws the stars, about 30 times a second.
+- Only `Hypr.moonScreen` gets the moon, the other monitors are `moonless`.
+- `starmap.frag` is only the backdrop, nebula and far stars worked out from where the camera is looking. Everything you can fly to is a normal QML item, and `project()` in `StarMap.qml` does the 3D math by hand to get its screen position and size.
+- `ui/orb.frag` is the small orb used by `Orb.qml`.
+
 </details>
 
 <details>
