@@ -326,7 +326,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-space-v3.svg" alt="Wallpaper" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-1.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-2.png" width = "50%">
 
-- **`Alt+W`** to hop to a new world. New land and new colors for everything.
+- **`Alt+W`** to change colors.
 - It's a shader, not an image, so it moves when you switch workspaces.
   </details>
 
