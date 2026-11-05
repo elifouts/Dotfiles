@@ -2,7 +2,7 @@
 
 The technical docs for my setup. The [main readme](../../readme.md) covers installing and what everything looks like. This one covers how it works.
 
-There are no comments in the code on purpose, so anything that needs explaining lives here.
+There are no comments in the code on purpose, I dont like writing comments. I had claude put together documentation for me
 
 **Jump to:** [Big picture](#big-picture) · [Startup](#what-happens-at-login) · [How it works](#how-it-works) · [Where do I change...](#where-do-i-change) · [Confusing stuff](#confusing-stuff) · [Quirks](#quirks) · [Every file](#every-file)
 
