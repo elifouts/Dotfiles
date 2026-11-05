@@ -7,7 +7,6 @@ import Quickshell.Hyprland
 import Quickshell.Widgets
 import "../common"
 import "../land"
-import "../ui"
 
 Scope {
     id: map

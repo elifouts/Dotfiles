@@ -70,7 +70,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/modern-v2.svg" alt="Modern" align="absmiddle"></picture></summary>
 
   <details>
-<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-v2.svg" alt="Launcher" align="absmiddle"></picture></summary>
+<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-modern-v3.svg" alt="Launcher" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/launcher-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/launcher-glass.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/launcher-zen.png" width = "33%">
 
 ![launcher](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/launcher.gif)
@@ -80,7 +80,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/home-screen-v2.svg" alt="Home Screen" align="absmiddle"></picture></summary>
+<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/home-screen-modern-v3.svg" alt="Home Screen" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/home-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/home-glass.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/home-zen.png" width = "33%">
 
 - **`Alt+Tab`** to open it.
@@ -88,7 +88,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/settings-panel-v2.svg" alt="Settings Panel" align="absmiddle"></picture></summary>
+<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/settings-panel-modern-v3.svg" alt="Settings Panel" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/settings-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/settings-glass.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/settings-zen.png" width = "33%">
 
 ![settings](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/settings.gif)
@@ -99,7 +99,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/music-player-v2.svg" alt="Music Player" align="absmiddle"></picture></summary>
+<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/music-player-modern-v3.svg" alt="Music Player" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/music-default.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/music-glass.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/music-zen.jpg" width = "33%">
 
 ![music](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/music.gif)
@@ -109,7 +109,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-picker-v2.svg" alt="Wallpaper Picker" align="absmiddle"></picture></summary>
+<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-picker-modern-v3.svg" alt="Wallpaper Picker" align="absmiddle"></picture></summary>
 
 ![wallpaper-picker](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/wallpaper-picker.gif)
 
@@ -120,7 +120,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/osd-v2.svg" alt="OSD" align="absmiddle"></picture></summary>
+<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/osd-modern-v3.svg" alt="OSD" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/osd-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/osd-glass.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/osd-zen.png" width = "33%">
 
 ![osd](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/osd.gif)
@@ -129,7 +129,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/notifications-v2.svg" alt="Notifications" align="absmiddle"></picture></summary>
+<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/notifications-modern-v3.svg" alt="Notifications" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/notify-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/notify-glass.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/notify-zen.png" width = "33%">
 
 ![notify](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/notify.gif)
@@ -138,7 +138,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/boot-animation-v2.svg" alt="Boot Animation" align="absmiddle"></picture></summary>
+<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/boot-animation-modern-v3.svg" alt="Boot Animation" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/boot-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/boot-glass.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/boot-zen.png" width = "33%">
 
 ![boot](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/boot.gif)
@@ -147,7 +147,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/waybar-v2.svg" alt="Waybar" align="absmiddle"></picture></summary>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/waybar-modern-v3.svg" alt="Waybar" align="absmiddle"></picture></summary>
 
   ![waybar-default](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/waybar-default.png)
   ![waybar-glass](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/waybar-glass.png)
@@ -180,7 +180,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/quickshell-bar-v2.svg" alt="Quickshell Bar" align="absmiddle"></picture></summary>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/quickshell-bar-modern-v3.svg" alt="Quickshell Bar" align="absmiddle"></picture></summary>
 
   ![quickshellbar-default](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/quickshellbar-default.png)
   ![quickshellbar-attached](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/quickshellbar-attached.png)
@@ -200,7 +200,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/lock-screen-v2.svg" alt="Lock Screen" align="absmiddle"></picture></summary>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/lock-screen-modern-v3.svg" alt="Lock Screen" align="absmiddle"></picture></summary>
 
   ## Overview
   - `Mod+L` to lock, or it locks on its own when you're idle with `hypridle`.
@@ -283,7 +283,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/space-v2.svg" alt="Space" align="absmiddle"></picture></summary>
 
   <details>
-    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-v2.svg" alt="Launcher" align="absmiddle"></picture></summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-space-v3.svg" alt="Launcher" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/launcher.png" width = "50%">
 
 ![launcher](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/launcher.gif)
@@ -293,7 +293,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   </details>
 
   <details>
-    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/home-screen-v2.svg" alt="Home Screen" align="absmiddle"></picture></summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/home-screen-space-v3.svg" alt="Home Screen" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/home.png" width = "50%">
 
 - **`Alt+Tab`** to open it.
@@ -301,7 +301,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   </details>
 
   <details>
-    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/settings-panel-v2.svg" alt="Settings Panel" align="absmiddle"></picture></summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/settings-panel-space-v3.svg" alt="Settings Panel" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/settings.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/settings-colors.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/settings-motion.png" width = "33%">
 
 - **`Alt+S`** to open it.
@@ -309,21 +309,21 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   </details>
 
   <details>
-    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/osd-v2.svg" alt="OSD" align="absmiddle"></picture></summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/osd-space-v3.svg" alt="OSD" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/osd.png">
 
 - Pops up at the bottom when you change volume, brightness, caps lock or use the media keys.
   </details>
 
   <details>
-    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/notifications-v2.svg" alt="Notifications" align="absmiddle"></picture></summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/notifications-space-v3.svg" alt="Notifications" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/notify.png">
 
 - Notifications show up in the bottom left. The bell in the bar has the old ones.
   </details>
 
   <details>
-    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-v2.svg" alt="Wallpaper" align="absmiddle"></picture></summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-space-v3.svg" alt="Wallpaper" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-1.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-2.png" width = "50%">
 
 - **`Alt+W`** to hop to a new world. New land and new colors for everything.
@@ -331,14 +331,14 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   </details>
 
   <details>
-    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/lock-screen-v2.svg" alt="Lock Screen" align="absmiddle"></picture></summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/lock-screen-space-v3.svg" alt="Lock Screen" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/lock.png" width = "50%">
 
 - `Mod+L` to lock. Just the land dimmed behind a small hud.
   </details>
 
   <details>
-    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/quickshell-bar-v2.svg" alt="Quickshell Bar" align="absmiddle"></picture></summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/quickshell-bar-space-v3.svg" alt="Quickshell Bar" align="absmiddle"></picture></summary>
 
 ![bar](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/bar.png)
 
@@ -352,7 +352,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   </details>
 
   <details>
-    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/space-map-v2.svg" alt="Space Map" align="absmiddle"></picture></summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/space-map-space-v3.svg" alt="Space Map" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/map.png" width = "50%">
 
 - **`Mod+Tab`** to open it.
@@ -361,7 +361,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   </details>
 
   <details>
-    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/desktop-widgets-v2.svg" alt="Desktop Widgets" align="absmiddle"></picture></summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/desktop-widgets-space-v3.svg" alt="Desktop Widgets" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets-edit.png" width = "50%">
 
 - **`Alt+D`** to edit them. Drag them around, add more or change their style.

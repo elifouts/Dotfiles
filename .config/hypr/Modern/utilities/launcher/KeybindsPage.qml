@@ -15,8 +15,12 @@ Item {
         id: source
         path: Quickshell.shellPath("../base/shortcuts.lua")
     }
+    Watched {
+        id: common
+        path: Hypr.dir + "/binds.lua"
+    }
 
-    readonly property var parsed: Binds.parse(source.text())
+    readonly property var parsed: Binds.parse(common.text() + "\n" + source.text())
     readonly property var cats: parsed
         .map((c, i) => ({ c: c, i: i, n: counts[c.id] || 0 }))
         .sort((a, b) => b.n - a.n || a.i - b.i)

@@ -279,12 +279,8 @@ Item {
         id: dots
 
         readonly property int activeId: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : -1
-        readonly property var existing: Hyprland.workspaces.values.filter(w => w.id > 0)
-        readonly property var ids: {
-            const s = new Set([1, 2, 3, 4, 5])
-            for (const w of existing) s.add(w.id)
-            return [...s].sort((a, b) => a - b)
-        }
+        readonly property var existing: Hypr.workspaces
+        readonly property var ids: Hypr.workspaceIds
 
         function occupied(id) {
             const w = existing.find(w => w.id === id)

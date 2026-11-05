@@ -1,6 +1,5 @@
 import QtQuick
 import "../common"
-import "../ui"
 
 Item {
     id: chip

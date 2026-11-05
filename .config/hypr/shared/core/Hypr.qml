@@ -12,6 +12,12 @@ Singleton {
     readonly property string dir: home + "/.config/hypr"
     readonly property string util: dir + "/utilities"
     readonly property string state: dir + "/state"
+    readonly property var workspaces: Hyprland.workspaces.values.filter(w => w.id > 0)
+    readonly property var workspaceIds: {
+        const s = new Set([1, 2, 3, 4, 5])
+        for (const w of workspaces) s.add(w.id)
+        return [...s].sort((a, b) => a - b)
+    }
 
     FileView {
         id: luaFile
@@ -40,9 +46,6 @@ Singleton {
         return Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
     }
     readonly property var moonScreen: Quickshell.screens.reduce((a, b) => b.width > a.width ? b : a, Quickshell.screens[0])
-    function screenNamed(name) {
-        return Quickshell.screens.find(s => s.name === name) ?? focusedScreen()
-    }
     function scaleFor(s) {
         return s ? Math.max(0.8, Math.min(1.35, Math.min(s.width / 1920, s.height / 1080))) : 1
     }

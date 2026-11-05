@@ -1,8 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
-import "../common"
-import "../ui"
+import "../../common"
 
 Column {
     id: tray

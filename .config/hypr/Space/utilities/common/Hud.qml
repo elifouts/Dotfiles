@@ -1,5 +1,4 @@
 import QtQuick
-import "../common"
 import "decode.js" as Decode
 
 Item {

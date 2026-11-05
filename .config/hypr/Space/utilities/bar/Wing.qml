@@ -4,6 +4,14 @@ import "../common"
 
 Item {
     id: wing
+
+    component Bracket: Item {
+        property bool atRight: false
+        property bool atBottom: false
+        width: 7; height: 7
+        Rectangle { width: 7; height: 1; y: parent.atBottom ? 6 : 0; color: Theme.accent; opacity: 0.9 }
+        Rectangle { width: 1; height: 7; x: parent.atRight ? 6 : 0; color: Theme.accent; opacity: 0.9 }
+    }
     property int lean: 1
     property real padL: 14
     property real padR: 14
@@ -80,19 +88,7 @@ Item {
             width: wing.panelW - 24
             opacity: wing.dropped ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: Theme.open; easing.type: Easing.OutCubic } }
-            source: {
-                switch (wing.kind) {
-                case "net": return "../panels/PanelNet.qml"
-                case "audio": return "../panels/PanelAudio.qml"
-                case "power": return "../panels/PanelPower.qml"
-                case "media": return "../panels/PanelMedia.qml"
-                case "time": return "../panels/PanelTime.qml"
-                case "tray": return "../panels/PanelTray.qml"
-                case "updates": return "../panels/PanelUpdates.qml"
-                case "notifs": return "../panels/PanelNotifs.qml"
-                }
-                return ""
-            }
+            source: wing.kind ? "panels/Panel" + wing.kind[0].toUpperCase() + wing.kind.slice(1) + ".qml" : ""
         }
     }
 }

@@ -1,5 +1,4 @@
 import QtQuick
-import "../ui"
 
 Rectangle {
     id: field

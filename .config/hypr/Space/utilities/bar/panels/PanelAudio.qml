@@ -1,8 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
-import "../common"
-import "../ui"
+import "../../common"
 
 Column {
     id: au

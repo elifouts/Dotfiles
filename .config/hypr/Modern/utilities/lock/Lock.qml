@@ -86,7 +86,7 @@ Singleton {
 
     PamContext {
         id: pam
-        configDirectory: Quickshell.shellPath("lock/pam")
+        configDirectory: Hypr.dir + "/shared/system/pam"
         config: "password.conf"
         user: root.user
         onPamMessage: if (responseRequired) respond(root.password)

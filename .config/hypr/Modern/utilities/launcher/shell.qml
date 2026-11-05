@@ -7,7 +7,7 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string helper: Quickshell.shellPath("launcher/launcher.py")
+    readonly property string helper: Hypr.util + "/launcher.py"
     readonly property string terminal: "kitty"
     readonly property string cacheDir: Hypr.home + "/.cache/launcher"
     readonly property string appCache: cacheDir + "/apps"

@@ -4,7 +4,6 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../common"
-import "../ui"
 import "Motion.js" as Motion
 
 PanelWindow {

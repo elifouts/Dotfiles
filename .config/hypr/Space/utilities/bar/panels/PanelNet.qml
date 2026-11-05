@@ -3,8 +3,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Networking
 import Quickshell.Bluetooth
-import "../common"
-import "../ui"
+import "../../common"
 
 Column {
     id: net

@@ -1,7 +1,5 @@
 import QtQuick
 import Quickshell
-import "../common"
-import "../ui"
 
 Column {
     id: mc

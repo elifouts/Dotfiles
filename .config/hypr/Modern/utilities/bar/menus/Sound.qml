@@ -5,6 +5,91 @@ import "../../common"
 Grid {
     id: menu
 
+    component Level: Column {
+        id: lv
+        property var node
+        property string title
+        property string glyph
+        property string mutedGlyph
+        property string device
+        readonly property bool ok: !!node && !!node.audio
+        readonly property real vol: ok ? node.audio.volume : 0
+        readonly property bool muted: ok && node.audio.muted
+        width: parent.width
+        spacing: 6
+
+        Item {
+            width: parent.width
+            height: 16
+            Label {
+                x: 4
+                anchors.verticalCenter: parent.verticalCenter
+                text: lv.title.toUpperCase()
+                font.pixelSize: 10
+                font.letterSpacing: 1.6
+                color: Theme.dim
+            }
+            Label {
+                anchors.right: parent.right
+                anchors.rightMargin: 4
+                anchors.left: parent.horizontalCenter
+                horizontalAlignment: Text.AlignRight
+                anchors.verticalCenter: parent.verticalCenter
+                text: lv.ok ? lv.device : "None"
+                elide: Text.ElideRight
+                font.pixelSize: 10
+                color: Theme.dim
+            }
+        }
+
+        Tile {
+            width: parent.width
+            height: 44
+            opacity: lv.ok ? 1 : 0.45
+
+            Label {
+                id: muteBtn
+                anchors.left: parent.left
+                anchors.leftMargin: 14
+                anchors.verticalCenter: parent.verticalCenter
+                width: 18
+                text: lv.muted ? lv.mutedGlyph : lv.glyph
+                font.pixelSize: 16
+                color: lv.muted ? Theme.dim : muteArea.containsMouse ? Theme.accent : Theme.bright
+                Hover {
+                    id: muteArea
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    onClicked: if (lv.ok) lv.node.audio.muted = !lv.node.audio.muted
+                }
+            }
+
+            Slider {
+                anchors.left: muteBtn.right
+                anchors.leftMargin: 12
+                anchors.right: pct.left
+                anchors.rightMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+                value: lv.vol
+                dimmed: lv.muted
+                step: 0.02
+                onMoved: v => { if (lv.ok) { lv.node.audio.volume = v; if (v > 0) lv.node.audio.muted = false } }
+            }
+
+            Label {
+                id: pct
+                anchors.right: parent.right
+                anchors.rightMargin: 14
+                anchors.verticalCenter: parent.verticalCenter
+                width: 32
+                horizontalAlignment: Text.AlignRight
+                text: Math.round(lv.vol * 100) + "%"
+                font.pixelSize: 12
+                color: Theme.fg
+            }
+        }
+    }
+
     property bool open: false
     signal run(string cmd)
     signal done()

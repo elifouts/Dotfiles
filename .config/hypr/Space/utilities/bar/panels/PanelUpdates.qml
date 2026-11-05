@@ -1,6 +1,5 @@
 import QtQuick
-import "../common"
-import "../ui"
+import "../../common"
 
 Column {
     spacing: 8

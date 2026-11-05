@@ -6,6 +6,158 @@ import "../common"
 Item {
     id: face
 
+    component Card: Rectangle {
+        property real u: 1
+        radius: Theme.rounding * u
+        color: Lock.card
+        border.width: 1
+        border.color: Lock.edge
+    }
+
+    component Wave: Row {
+        id: wave
+
+        property bool playing: false
+        property real u: 1
+        readonly property int bars: 10
+        readonly property var levels: feed.levels
+
+        spacing: 2 * u
+
+        CavaFeed { id: feed; running: wave.playing; bars: wave.bars; framerate: 60 }
+
+        Repeater {
+            model: wave.bars
+
+            Rectangle {
+                required property int index
+                readonly property real level: wave.playing ? (wave.levels[index] || 0) : 0
+
+                anchors.verticalCenter: parent.verticalCenter
+                width: 2.5 * wave.u
+                height: Math.max(4, Math.round((3 + level * 12) * wave.u / 2) * 2)
+                radius: width / 2
+                color: Theme.along(Theme.spectrum, index / (wave.bars - 1))
+                opacity: wave.playing ? 0.35 + 0.65 * level : 0.45
+
+                Behavior on height { NumberAnimation { duration: 100; easing.type: Easing.OutQuad } }
+                Behavior on opacity { NumberAnimation { duration: 100 } }
+            }
+        }
+    }
+
+    component RoundButton: Item {
+        id: b
+
+        property string glyph
+        property real u: 1
+        property real size: 44 * u
+        property color tint: "#ffffff"
+        property bool filled: false
+        property bool armed: false
+        signal clicked()
+
+        width: size
+        height: size
+        scale: area.pressed ? 0.9 : area.containsMouse ? 1.06 : 1
+        Behavior on scale { Settle { duration: Theme.ms(220) } }
+
+        Card {
+            anchors.fill: parent
+            radius: Lock.corner(b.size, b.u)
+            opacity: b.filled || b.armed ? 0 : 1
+        }
+        Rectangle {
+            anchors.fill: parent
+            radius: Lock.corner(b.size, b.u)
+            color: Theme.soft(b.armed ? Theme.warn : Theme.accent, area.containsMouse)
+            opacity: b.filled || b.armed ? 1 : area.containsMouse ? 0.12 : 0
+            Behavior on opacity { NumberAnimation { duration: Theme.ms(160) } }
+            Behavior on color { ColorAnimation { duration: Theme.ms(160) } }
+        }
+
+        Label {
+            anchors.centerIn: parent
+            text: b.glyph
+            font.pixelSize: b.size * 0.4
+            color: b.filled || b.armed ? Theme.on(b.armed ? Theme.warn : Theme.accent) : b.tint
+            Behavior on color { ColorAnimation { duration: Theme.ms(160) } }
+        }
+
+        Hover {
+            id: area
+            anchors.fill: parent
+            onClicked: b.clicked()
+        }
+    }
+
+    component Reveal: Item {
+        id: r
+
+        property real delay: 0
+        property bool on: true
+        property real u: 1
+        default property alias content: body.data
+
+        readonly property real p: Lock.seg(delay)
+        property real shown: on ? 1 : 0
+        Behavior on shown { Settle { duration: Theme.ms(420) } }
+
+        implicitWidth: body.childrenRect.width
+        implicitHeight: body.childrenRect.height * shown
+        opacity: p * shown * (1 - Lock.out)
+        visible: opacity > 0.001
+        scale: (0.96 + 0.04 * p) * (1 - 0.03 * Lock.out)
+        transform: Translate { y: (1 - r.p) * 26 * r.u + (1 - r.shown) * -8 * r.u + Lock.out * 14 * r.u }
+
+        Item {
+            id: body
+            width: childrenRect.width
+            height: childrenRect.height
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+    }
+
+    component Digit: Item {
+        id: d
+
+        property string value
+        property real size: 100
+        property color color: "#ffffff"
+        property int weight: Font.Light
+        property string cur: value
+
+        width: cell.advanceWidth * Math.max(1, value.length)
+        height: label.implicitHeight
+
+        TextMetrics { id: cell; font: label.font; text: "0" }
+
+        Label {
+            id: label
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: 0
+            text: d.cur
+            font.pixelSize: d.size
+            font.weight: d.weight
+            color: d.color
+        }
+
+        onValueChanged: if (value !== cur) flip.restart()
+
+        SequentialAnimation {
+            id: flip
+            ParallelAnimation {
+                NumberAnimation { target: label; property: "y"; to: -d.size * 0.22; duration: Theme.ms(180); easing.type: Easing.InCubic }
+                NumberAnimation { target: label; property: "opacity"; to: 0; duration: Theme.ms(180) }
+            }
+            ScriptAction { script: { d.cur = d.value; label.y = d.size * 0.22 } }
+            ParallelAnimation {
+                Settle { target: label; property: "y"; to: 0; duration: Theme.ms(420) }
+                NumberAnimation { target: label; property: "opacity"; to: 1; duration: Theme.ms(300) }
+            }
+        }
+    }
+
     property string screenName
     readonly property bool portrait: height > width
     readonly property real u: portrait

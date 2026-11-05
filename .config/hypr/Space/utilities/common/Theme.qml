@@ -16,7 +16,6 @@ ThemeBase {
     edge: alpha(accent, 0.35)
 
     readonly property int bar: 24
-    readonly property int starLeft: 22
     readonly property int starGap: 16
     readonly property int quick: ms(180)
     readonly property int slow: ms(560)

@@ -13,7 +13,7 @@ ShellRoot {
         "hypr/shortcuts.lua",
         "hypr/style.lua",
         "waybar/config",
-        "boot/shell.qml"
+        "boot/BootShell.qml"
     ]
     readonly property var sourceTexts: [
         configFile.text(),
@@ -85,7 +85,7 @@ ShellRoot {
     Watched { id: modernConfigFile; path: Quickshell.shellPath("../base/shortcuts.lua") }
     Watched { id: styleFile; path: Quickshell.shellPath("../base/style.lua") }
     Watched { id: waybarFile; path: Hypr.home + "/.config/waybar/config" }
-    Watched { id: bootFile; path: Quickshell.shellPath("boot/shell.qml") }
+    Watched { id: bootFile; path: Quickshell.shellPath("boot/BootShell.qml") }
 
     readonly property string wallPath: wallFile.text().trim()
     function phase(start, length) {

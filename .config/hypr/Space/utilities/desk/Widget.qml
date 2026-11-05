@@ -2,8 +2,6 @@ import QtQuick
 import QtQuick.Effects
 import Quickshell
 import "../common"
-import "../ui"
-import "../media"
 
 Item {
     id: w

@@ -1,9 +1,0 @@
-singleton Lock 1.0 Lock.qml
-Face 1.0 Face.qml
-Card 1.0 Card.qml
-Reveal 1.0 Reveal.qml
-Digit 1.0 Digit.qml
-Toggle 1.0 Toggle.qml
-RoundButton 1.0 RoundButton.qml
-Wave 1.0 Wave.qml
-LockShell 1.0 shell.qml

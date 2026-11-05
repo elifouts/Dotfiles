@@ -9,5 +9,3 @@ hl.on("hyprland.start", function()
 end)
 
 hl.device({ name = "epic-mouse-v1", sensitivity = 0 })
-
-return { defaults = defaults }

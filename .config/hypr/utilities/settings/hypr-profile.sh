@@ -18,7 +18,7 @@ list() {
 apply() {
     local style="${1:?style}" variant="${2:?variant}" offline="${3:-}"
 
-    [ -f "$HYPR/$style/$variant/machine.lua" ] && [ -f "$HYPR/$style/base/hyprland.lua" ] && [ -d "$HYPR/$style/utilities" ] || {
+    [ -f "$HYPR/$style/$variant/machine.lua" ] && [ -f "$HYPR/$style/base/style.lua" ] && [ -d "$HYPR/$style/utilities" ] || {
         echo "Profile not found: $style/$variant" >&2
         exit 1
     }

@@ -6,6 +6,53 @@ import "../../common"
 Item {
     id: page
 
+    component Notice: Column {
+        id: n
+        property string glyph
+        property string text
+        property string action
+        signal pressed()
+        anchors.centerIn: parent
+        spacing: 10
+
+        Label {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: n.glyph
+            font.pixelSize: 38
+            color: Theme.alpha(Theme.fg, 0.35)
+        }
+        Label {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: n.text
+            font.pixelSize: 14
+            color: Theme.dim
+        }
+        Button {
+            anchors.horizontalCenter: parent.horizontalCenter
+            primary: true
+            label: n.action
+            onPressed: n.pressed()
+        }
+    }
+
+    component MediaButton: Text {
+        id: b
+        property bool ok: true
+        property bool on: false
+        signal pressed()
+        anchors.verticalCenter: parent.verticalCenter
+        font.family: Theme.sans
+        font.pixelSize: 15
+        color: !ok ? Theme.alpha(Theme.fg, 0.2) : on ? Theme.accent : bArea.containsMouse ? Theme.bright : Theme.fg
+        Behavior on color { ColorAnimation { duration: Theme.fast } }
+        Hover {
+            id: bArea
+            anchors.fill: parent
+            anchors.margins: -8
+            onClicked: if (b.ok) b.pressed()
+        }
+    }
+
     property var player: null
     property var track: null
     property int playerCount: 0

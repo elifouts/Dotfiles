@@ -1,19 +1,14 @@
 import QtQuick
 import Quickshell.Hyprland
 import "../common"
-import "../ui"
 
 Item {
     id: stars
 
     readonly property int focused: Hyprland.focusedWorkspace?.id ?? 1
     readonly property var onScreen: Hyprland.monitors.values.map(m => m.activeWorkspace?.id ?? -1)
-    readonly property var existing: Hyprland.workspaces.values.filter(w => w.id > 0)
-    readonly property var ids: {
-        const s = new Set([1, 2, 3, 4, 5])
-        for (const w of existing) s.add(w.id)
-        return [...s].sort((a, b) => a - b)
-    }
+    readonly property var existing: Hypr.workspaces
+    readonly property var ids: Hypr.workspaceIds
     function count(id) { return existing.find(w => w.id === id)?.toplevels.values.length ?? 0 }
     function go(id) { if (id !== focused) Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })") }
     function cx(id) { return Math.max(0, ids.indexOf(id)) * Theme.starGap + Theme.starGap / 2 }

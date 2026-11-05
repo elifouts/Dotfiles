@@ -1,5 +1,4 @@
 import QtQuick
-import "../common"
 
 Item {
     component Title: Item {

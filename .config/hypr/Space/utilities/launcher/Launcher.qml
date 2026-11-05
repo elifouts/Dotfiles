@@ -4,8 +4,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../common"
-import "../ui"
-import "../ui/decode.js" as Decode
+import "../common/decode.js" as Decode
 
 PanelWindow {
     id: win
@@ -30,7 +29,7 @@ PanelWindow {
     onCmdChanged: if (cmd && !cmds.length) scan.running = true
     Process {
         id: scan
-        command: ["python3", Hypr.dir + "/Modern/utilities/launcher/launcher.py", "commands"]
+        command: ["python3", Hypr.util + "/launcher.py", "commands"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try { win.cmds = JSON.parse(text).map(e => ({ name: e.n, genericName: e.k === "bin" ? "" : e.d })) } catch (e) {}

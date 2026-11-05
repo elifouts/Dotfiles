@@ -1,1 +1,1 @@
-return { defaults = require("session").defaults }
+require("session")

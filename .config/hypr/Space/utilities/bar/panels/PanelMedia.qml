@@ -1,6 +1,5 @@
 import QtQuick
-import "../common"
-import "../media"
+import "../../common"
 
 Item {
     id: pm

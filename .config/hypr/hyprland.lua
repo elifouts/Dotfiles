@@ -16,4 +16,4 @@ local f = io.open(hypr .. "state/profile")
 local profile = f and f:read("l") or "Modern/desktop"
 if f then f:close() end
 package.path = hypr .. profile .. "/?.lua;" .. hypr .. profile:match("[^/]+") .. "/base/?.lua;" .. hypr .. "state/?.lua;" .. package.path
-require("hyprland")
+for _, name in ipairs({ "machine", "startup", "style", "shortcuts", "overrides" }) do require(name) end

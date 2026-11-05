@@ -1,18 +1,23 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "bar"
+import "bar/island"
+import "bar/menus"
+import "common"
+import "launcher"
+import "music"
+import "settings"
 
 ShellRoot {
     id: root
-
-    readonly property var standalone: ["boot", "lock"]
 
     Process {
         running: true
         command: ["sh", "-c", "for f in */shell.qml; do [ -f \"$f\" ] && echo \"${f%/shell.qml}\"; done"]
         workingDirectory: Quickshell.shellDir
         stdout: StdioCollector {
-            onStreamFinished: root.load(text.split("\n").filter(s => s !== "" && !root.standalone.includes(s)))
+            onStreamFinished: root.load(text.split("\n").filter(s => s !== ""))
         }
     }
 

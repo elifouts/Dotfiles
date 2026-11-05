@@ -1,5 +1,0 @@
-require("machine")
-require("startup")
-require("style")
-require("shortcuts")
-require("overrides")

@@ -182,7 +182,7 @@ def reapply(reload=False):
 
 
 def startup_defaults():
-    code = ('local d=require("startup").defaults '
+    code = ('local d=require("machine").defaults '
             'return string.format("%s %d %s %d", tostring(d.boot.enabled), d.boot.black_ms, d.cursor.theme, d.cursor.size)')
     parts = run("hyprctl", "repl", code).split()
     if len(parts) == 4:

@@ -1,7 +1,6 @@
 import QtQuick
 import "../common"
 import "../bar"
-import "../ui"
 
 Rectangle {
     id: strip
