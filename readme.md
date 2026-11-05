@@ -310,14 +310,14 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/osd-v2.svg" alt="OSD" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/osd.png" width = "50%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/osd.png">
 
 - Pops up at the bottom when you change volume, brightness, caps lock or use the media keys.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/notifications-v2.svg" alt="Notifications" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/notify.png" width = "50%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/notify.png">
 
 - Notifications show up in the bottom left. The bell in the bar has the old ones.
   </details>
@@ -325,10 +325,6 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-v2.svg" alt="Wallpaper" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-1.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-2.png" width = "50%">
-
-![wallpaper](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper.gif)
-
-![wallpaper-pan](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-pan.gif)
 
 - **`Alt+W`** to hop to a new world. New land and new colors for everything.
 - It's a shader, not an image, so it moves when you switch workspaces.
@@ -346,10 +342,6 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
 ![bar](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/bar.png)
 
-![bar-menus](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/bar-menus.gif)
-
-![stars](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/stars.gif)
-
 - **`Alt+A`** turns it on and off.
 - Hover an icon to open its menu. Music also has tabs for a timer, color picker, screenshots and weather.
 - The stars are your workspaces. A workspace with windows gets a bigger star, and extra windows orbit it as moons.
@@ -358,8 +350,6 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/space-map-v2.svg" alt="Space Map" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/map.png" width = "50%">
-
-![map](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/map.gif)
 
 - **`Mod+Tab`** to open it.
 - Workspaces are stars, windows are planets and scratchpads are moons.
