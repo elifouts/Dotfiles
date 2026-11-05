@@ -56,7 +56,11 @@ record() {
     fi
     mkdir -p "$VIDEOS"
     date +%s > "$STATE"
-    wf-recorder "${args[@]}" --audio="$(pactl get-default-sink).monitor" -f "$out" >/dev/null 2>&1
+    args+=(--audio="$(pactl get-default-sink).monitor" -r 60 -x yuv420p
+        -F "scale=out_color_matrix=bt709:out_range=tv,format=yuv420p"
+        -p colorspace=bt709 -p color_primaries=bt709 -p color_trc=bt709 -p color_range=tv -f "$out")
+    wf-recorder "${args[@]}" -c h264_nvenc -p preset=p5 -p tune=hq -p rc=vbr -p cq=19 -p b=0 >/dev/null 2>&1
+    [ -s "$out" ] || wf-recorder "${args[@]}" -c libx264 -p preset=veryfast -p crf=18 >/dev/null 2>&1
     rm -f "$STATE"
     [ -s "$out" ] && note "Recording saved" "$out" "$(thumb "$out")"
 }

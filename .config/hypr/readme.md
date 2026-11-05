@@ -423,6 +423,8 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - `pypr.sh` closes fd 9 for pypr, a slow dying one used to block the next supervisor
 - `color-roles.sh` rewrites `style.css` onto itself because waybar only reloads when that file changes
 - `MediaCtl` and `NowPlaying` handle Spotify's music videos, which play through its own chromium as `title • artist`
+- `capture.sh` recordings are capped at 60fps because wf-recorder's default spreads the bits over 200+ frames a second on the 240Hz monitor. The bt709 tags are set by hand or colors shift in players
+- `capture.sh` falls back to x264 when NVENC won't start. NVENC rejects tiny regions and doesn't exist without an NVIDIA card
 
 </details>
 
