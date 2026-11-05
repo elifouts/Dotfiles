@@ -67,7 +67,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-  <summary>Modern</summary>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/modern-v2.svg" alt="Modern" align="absmiddle"></picture></summary>
 
   <details>
 <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-v2.svg" alt="Launcher" align="absmiddle"></picture></summary>
@@ -280,7 +280,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
-  <summary>Space</summary>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/space-v2.svg" alt="Space" align="absmiddle"></picture></summary>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-v2.svg" alt="Launcher" align="absmiddle"></picture></summary>
@@ -591,6 +591,38 @@ Uninstall:
 <p align="center">
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/quickshellbar-attached.gif" width="100%">
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/quickshellbar.gif" width="100%">
+</p>
+
+### Space
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/launcher.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/home.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/map.png" width="32%">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-1.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-2.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/lock.png" width="32%">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/settings.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/settings-colors.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/settings-motion.png" width="32%">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets.png" width="48%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets-edit.png" width="48%">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/bar.png" width="100%">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/osd.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/notify.png" width="32%">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/launcher.gif" width="75%">
 </p>
 
 ### Other Applications
