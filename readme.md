@@ -342,6 +342,10 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
 ![bar](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/bar.png)
 
+![bar-stars](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/bar-stars.png)
+
+![bar-media](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/bar-media.png)
+
 - **`Alt+A`** turns it on and off.
 - Hover an icon to open its menu. Music also has tabs for a timer, color picker, screenshots and weather.
 - The stars are your workspaces. A workspace with windows gets a bigger star, and extra windows orbit it as moons.
