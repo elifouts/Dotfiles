@@ -2,18 +2,18 @@
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/rice-default.png" width="32%">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/rice-glass.png" width="32%">
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/rice-zen.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/SpaceRice1.png" width="32%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/rice7.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/ModernRice1.png" width="32%">
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/rice1.png" width="32%">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/rice4.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/SpaceRice4.png" width="32%">
 </p>
 <p align="center">
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/rice5.png" width="32%">
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/rice6.png" width="32%">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/rice3.png" width="32%">
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/SpaceRice5.png" width="32%">
 </p>
 
 > [!TIP]
@@ -30,8 +30,8 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 -Eli F.
 
 <details>
-  <Summary>AI Policy</Summary>
-  
+  <summary>AI Policy</summary>
+
 ## My AI Policy
 
 - No code in this repository was AI generated without intense review. I use Claude to create a lot of the Quickshell skeletons that you see. After creating a skeleton and some pseudocode, I go in and make changes to the configs until I like what I see. My text editor of choice is Nvim with some Lua plugins. This is where I do most of my work. If you want my config, you can install it [here](https://github.com/elifouts/MyNvim).
@@ -49,85 +49,27 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 >
 > </details>
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/profiles.gif" width="70%">
-</p>
-
-# Install / Updating
-
-Install
-
-  - With this script you should be able to install everything together, or just one of my bars on its own.
-  - Dont worry it doesn't delete anything. It asks to back up your `~/.config` first and moves anything it replaces to `~/.dotfiles_replaced_<date>`.
-
-  ```
-  cd && git clone --depth 1 https://github.com/elifouts/Dotfiles.git
-  cd ~/Dotfiles/InstallScripts
-  chmod +x install.sh
-  ./install.sh
-  ```
-
-  - `1. Full install` - everything
-  - `2. Waybar` - just my waybar
-  - `3. Quickshell bar` - just my quickshell bar
-  - `p. Package manager TUI` - see below
-
-Update:
-
-```
-git -C ~/Dotfiles pull && ~/Dotfiles/InstallScripts/apply.sh
-```
-
-Or if you have the bash alias `dotpull` that works too
-
-Uninstall:
-
-<details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/package-manager-tui-v2.svg" alt="Package Manager TUI" align="absmiddle"></picture></summary>
-
-  A little tool I made to see what's installed, where it came from, and how big it is.
-
-  ```bash
-  ~/Dotfiles/.config/hypr/utilities/packages/package-tui.sh
-  ```
-
-  `j`/`k` to scroll, `d` to uninstall, `r` to reinstall, `q` to quit.
-</details>
-
-```
-~/Dotfiles/InstallScripts/uninstall.sh
-```
-
-## Styles, Variants & Profiles
+## Styles
 
 <details>
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/how-it-all-fits-together-v2.svg" alt="How It All Fits Together" align="absmiddle"></picture></summary>
 
-  - **Style**: the whole look. Right now I only have one, `Modern`.
+  - **Style**: the whole look. Right now I only have `Modern` and `Space`.
   - **Variant**: `desktop` or `laptop`. Just the stuff that changes per machine like monitors and mouse. Hyprland loads both straight out of `.config/hypr/Modern/`, so that is the config you edit.
   - **Profile**: your tweaks on top, picked in the settings panel. **Glass** and **Zen** are mine. Saving a profile also saves your colors, bar and wallpaper.
 
-  ![profiles](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/profiles.gif)
+  Detailed Documentation is in [`.config/hypr/readme.md`](.config/hypr/readme.md).
 
-  How the folders and scripts fit together is in [`.config/hypr/readme.md`](.config/hypr/readme.md).
-</details>
+  <p align="center">
+    <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/profiles.gif" width="70%">
+  </p>
 
-## My Applications
-
-Every screenshot below is shown three times, once for each of my saved profiles: **Default** | **Glass** | **Zen**. Same configs, just a different profile picked in the settings panel.
-
-<details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/quickshell-v2.svg" alt="Quickshell" align="absmiddle"></picture></summary>
-
-  All of my widgets are made with [Quickshell](https://quickshell.org). They use your `Pywal` colors and open on whatever monitor you're on.
-
-  ### *How To Install*
-  1. **Install [Quickshell](https://quickshell.org)** (`yay -S quickshell`)
-  2. Copy `Dotfiles/.config/hypr` into `~/.config` (or just use the install script)
-  3. Run `~/.config/hypr/utilities/session/shells.sh start`. `Modern/base/startup.lua` already does this.
 </details>
 
 <details>
+  <summary>Modern</summary>
+
+  <details>
 <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-v2.svg" alt="Launcher" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/launcher-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/launcher-glass.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/launcher-zen.png" width = "33%">
 
@@ -168,7 +110,7 @@ Every screenshot below is shown three times, once for each of my saved profiles:
 
 <details>
 <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-picker-v2.svg" alt="Wallpaper Picker" align="absmiddle"></picture></summary>
-  
+
 ![wallpaper-picker](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/wallpaper-picker.gif)
 
 - **`Alt+W`** to open it.
@@ -270,6 +212,113 @@ Every screenshot below is shown three times, once for each of my saved profiles:
 </details>
 
 <details>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/old-stuff-no-longer-used-v2.svg" alt="Old Stuff (no longer used)" align="absmiddle"></picture></summary>
+
+  I replaced all of these with my Quickshell stuff. The configs are still in `archive/` if you want them.
+
+<details>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wofi-replaced-by-the-launcher-and-wallpaper-picker-v2.svg" alt="Wofi (replaced by the Launcher and Wallpaper Picker)" align="absmiddle"></picture></summary>
+    <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wofi1.png" width = "35%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wofi2.png" width = "35%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wofi3.png" width = "35%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wofi4.png" width = "35%">
+
+  - I launched wofi like this:
+    ```config
+    wofi --show drun -n
+    ```
+
+  ### How to Add Blur to Wofi
+
+  ```
+  layerrule = blur, wofi
+  layerrule = ignorezero, wofi
+  layerrule = ignorealpha 0.5, wofi
+  ```
+</details>
+
+<details>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/swaync-replaced-by-notifications-and-the-home-screen-v2.svg" alt="Swaync (replaced by Notifications and the Home Screen)" align="absmiddle"></picture></summary>
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync1.png" width = "20%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync2.png" width = "20%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync3.png" width = "20%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync4.png" width = "20%">
+
+  - Config is in `archive/swaync`.
+</details>
+
+<details>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/swayosd-replaced-by-the-osd-v2.svg" alt="SwayOSD (replaced by the OSD)" align="absmiddle"></picture></summary>
+
+  - Config is in `archive/swayosd`.
+</details>
+
+<details>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wlogout-replaced-by-the-launcher-s-home-dial-v2.svg" alt="Wlogout (replaced by the Launcher's Home dial)" align="absmiddle"></picture></summary>
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout1.png" width = "40%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout2.png" width = "40%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout3.png" width = "40%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout4.png" width = "40%">
+
+  - Config is in `archive/wlogout`.
+</details>
+
+<details>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/hyprlock-v2.svg" alt="Hyprlock" align="absmiddle"></picture></summary>
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/lock-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/lock-glass.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/lock-zen.png" width = "33%">
+
+  ![lock](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/lock.gif)
+
+  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock1.PNG" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock2.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock3.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock4.png" width = "50%">
+
+  - Hyprlock uses the current wallpaper from Pywal to generate a background, displays a greeting with your username, and applies Pywal colors.
+  - Config is in `archive/hyprlock`.
+</details>
+
+<details>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/old-wallpaper-solution-wofi-swww-v2.svg" alt="Old Wallpaper Solution (wofi + swww)" align="absmiddle"></picture></summary>
+
+  ![image](https://github.com/user-attachments/assets/7cbe58e3-7226-4537-8e69-bb316cdfaebc)
+
+  - A script that applied a wallpaper using `swww` and set the `Pywal` theme.
+  - The script uses Wofi to select wallpapers. I have not been able to optimize the wallpaper loading so it might load slowly but it should work.
+</details>
+
+</details>
+
+</details>
+
+<details>
+  <summary>Space</summary>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-v2.svg" alt="Launcher" align="absmiddle"></picture></summary>
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/home-screen-v2.svg" alt="Home Screen" align="absmiddle"></picture></summary>
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/settings-panel-v2.svg" alt="Settings Panel" align="absmiddle"></picture></summary>
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/osd-v2.svg" alt="OSD" align="absmiddle"></picture></summary>
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/notifications-v2.svg" alt="Notifications" align="absmiddle"></picture></summary>
+  </details>
+
+  <details>
+    <summary>Wallpaper</summary>
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/lock-screen-v2.svg" alt="Lock Screen" align="absmiddle"></picture></summary>
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/quickshell-bar-v2.svg" alt="Quickshell Bar" align="absmiddle"></picture></summary>
+  </details>
+
+</details>
+
+## Other Configurations
+
+<details>
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/nvim-v2.svg" alt="Nvim" align="absmiddle"></picture></summary>
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/nvim-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/nvim-glass.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/nvim-zen.png" width = "33%">
 
@@ -357,71 +406,55 @@ Every screenshot below is shown three times, once for each of my saved profiles:
   - Cursor: Bibata-Modern-Ice
 </details>
 
-<details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/old-stuff-no-longer-used-v2.svg" alt="Old Stuff (no longer used)" align="absmiddle"></picture></summary>
+# Install / Updating
 
-  I replaced all of these with my Quickshell stuff. The configs are still in `archive/` if you want them.
+Install
 
-<details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wofi-replaced-by-the-launcher-and-wallpaper-picker-v2.svg" alt="Wofi (replaced by the Launcher and Wallpaper Picker)" align="absmiddle"></picture></summary>
-    <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wofi1.png" width = "35%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wofi2.png" width = "35%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wofi3.png" width = "35%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wofi4.png" width = "35%">
-
-  - I launched wofi like this:
-    ```config
-    wofi --show drun -n
-    ```
-
-  ### How to Add Blur to Wofi
+  - With this script you should be able to install everything together, or just one of my bars on its own.
+  - Dont worry it doesn't delete anything. It asks to back up your `~/.config` first and moves anything it replaces to `~/.dotfiles_replaced_<date>`.
 
   ```
-  layerrule = blur, wofi
-  layerrule = ignorezero, wofi
-  layerrule = ignorealpha 0.5, wofi
+  cd && git clone --depth 1 https://github.com/elifouts/Dotfiles.git
+  cd ~/Dotfiles/InstallScripts
+  chmod +x install.sh
+  ./install.sh
   ```
-</details>
+
+  - `1. Full install` - everything
+  - `2. Waybar` - just my waybar
+  - `3. Quickshell bar` - just my quickshell bar
+  - `p. Package manager TUI` - see below
+
+Update:
+
+```
+git -C ~/Dotfiles pull && ~/Dotfiles/InstallScripts/apply.sh
+```
+
+Or if you have the bash alias `dotpull` that works too
+
+Uninstall:
 
 <details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/swaync-replaced-by-notifications-and-the-home-screen-v2.svg" alt="Swaync (replaced by Notifications and the Home Screen)" align="absmiddle"></picture></summary>
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync1.png" width = "20%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync2.png" width = "20%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync3.png" width = "20%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync4.png" width = "20%">
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/package-manager-tui-v2.svg" alt="Package Manager TUI" align="absmiddle"></picture></summary>
 
-  - Config is in `archive/swaync`.
+  A little tool I made to see what's installed, where it came from, and how big it is.
+
+  ```bash
+  ~/Dotfiles/.config/hypr/utilities/packages/package-tui.sh
+  ```
+
+  `j`/`k` to scroll, `d` to uninstall, `r` to reinstall, `q` to quit.
 </details>
 
-<details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/swayosd-replaced-by-the-osd-v2.svg" alt="SwayOSD (replaced by the OSD)" align="absmiddle"></picture></summary>
+```
+~/Dotfiles/InstallScripts/uninstall.sh
+```
 
-  - Config is in `archive/swayosd`.
-</details>
 
-<details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wlogout-replaced-by-the-launcher-s-home-dial-v2.svg" alt="Wlogout (replaced by the Launcher's Home dial)" align="absmiddle"></picture></summary>
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout1.png" width = "40%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout2.png" width = "40%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout3.png" width = "40%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout4.png" width = "40%">
 
-  - Config is in `archive/wlogout`.
-</details>
+## My Applications
 
-<details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/hyprlock-v2.svg" alt="Hyprlock" align="absmiddle"></picture></summary>
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/lock-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/lock-glass.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/lock-zen.png" width = "33%">
-
-  ![lock](https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/lock.gif)
-
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock1.PNG" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock2.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock3.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock4.png" width = "50%">
-
-  - Hyprlock uses the current wallpaper from Pywal to generate a background, displays a greeting with your username, and applies Pywal colors.
-  - Config is in `archive/hyprlock`.
-</details>
-
-<details>
-  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/old-wallpaper-solution-wofi-swww-v2.svg" alt="Old Wallpaper Solution (wofi + swww)" align="absmiddle"></picture></summary>
-
-  ![image](https://github.com/user-attachments/assets/7cbe58e3-7226-4537-8e69-bb316cdfaebc)
-
-  - A script that applied a wallpaper using `swww` and set the `Pywal` theme.
-  - The script uses Wofi to select wallpapers. I have not been able to optimize the wallpaper loading so it might load slowly but it should work.
-</details>
-
-</details>
 
 <details>
 <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/gallery-v2.svg" alt="Gallery" align="absmiddle"></picture></summary>
@@ -668,7 +701,7 @@ Every screenshot below is shown three times, once for each of my saved profiles:
 
 `Alt+A` - Toggle Bar
 
-`Mod+Tab` - Workspace Overview
+`Mod+Tab` - Workspace Overview/Galaxy Map
 
 > [!NOTE]
 > This isnt every Keybind. Just some highlighted ones.
@@ -706,7 +739,7 @@ That file is one of many that is created by `Pywal`. Make sure `Pywal` has run a
 ```
 @define-color background <Replace>;
 @define-color color0 <Replace>;
-@define-color color9 <Repace>;
+@define-color color9 <Replace>;
 ```
 Instead of those colors, you can use whichever color is needed by the style.css file.
 
