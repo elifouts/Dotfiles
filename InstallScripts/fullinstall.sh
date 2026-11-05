@@ -70,6 +70,9 @@ apply_dotfiles() {
     git -C "$DOTFILES_DIR" config core.hooksPath .githooks
     link_entry "$HOME/.config/hypr/utilities/pypr/pypr.py" "$HOME/.local/bin/pypr" "$backup/.local/bin"
 
+    local old_style
+    old_style="$(cut -d/ -f1 "$src/hypr/state/profile" 2>/dev/null || true)"
+
     [[ -z "$HYPRLAND_STYLE_DIR" ]] ||
         "$src/hypr/utilities/settings/hypr-profile.sh" apply "${HYPRLAND_STYLE_DIR%%/*}" "${HYPRLAND_STYLE_DIR#*/}" --offline
 
@@ -78,8 +81,8 @@ apply_dotfiles() {
     nohup bash -c 'sleep 1; hyprctl reload' >/dev/null 2>&1 &
 
     if [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
-        "$src/hypr/utilities/session/shells.sh" restart
-        "$src/hypr/utilities/bars/bar.sh" boot
+        HYPR_STYLE="$old_style" "$src/hypr/utilities/session/session.sh" stop
+        "$src/hypr/utilities/session/session.sh" start
     fi
 }
 

@@ -284,34 +284,94 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-v2.svg" alt="Launcher" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/launcher.png" width = "50%">
+
+![launcher](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/launcher.gif)
+
+- **Tap `Super`** to open it.
+- Little terminal under the bar. `Tab` cycles apps, commands and a bare prompt.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/home-screen-v2.svg" alt="Home Screen" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/home.png" width = "50%">
+
+- **`Alt+Tab`** to open it.
+- A visor with system stats, network and whatever is playing.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/settings-panel-v2.svg" alt="Settings Panel" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/settings.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/settings-colors.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/settings-motion.png" width = "33%">
+
+- **`Alt+S`** to open it.
+- Colors, fonts, motion and profiles all in one sheet. It all updates live.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/osd-v2.svg" alt="OSD" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/osd.png" width = "50%">
+
+- Pops up at the bottom when you change volume, brightness, caps lock or use the media keys.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/notifications-v2.svg" alt="Notifications" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/notify.png" width = "50%">
+
+- Notifications show up in the bottom left. The bell in the bar has the old ones.
   </details>
 
   <details>
-    <summary>Wallpaper</summary>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-v2.svg" alt="Wallpaper" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-1.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-2.png" width = "50%">
+
+![wallpaper](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper.gif)
+
+![wallpaper-pan](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/wallpaper-pan.gif)
+
+- **`Alt+W`** to hop to a new world. New land and new colors for everything.
+- It's a shader, not an image, so it moves when you switch workspaces.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/lock-screen-v2.svg" alt="Lock Screen" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/lock.png" width = "50%">
+
+- `Mod+L` to lock. Just the land dimmed behind a small hud.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/quickshell-bar-v2.svg" alt="Quickshell Bar" align="absmiddle"></picture></summary>
+
+![bar](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/bar.png)
+
+![bar-menus](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/bar-menus.gif)
+
+![stars](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/stars.gif)
+
+- **`Alt+A`** turns it on and off.
+- Hover an icon to open its menu. Music also has tabs for a timer, color picker, screenshots and weather.
+- The stars are your workspaces. A workspace with windows gets a bigger star, and extra windows orbit it as moons.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/space-map-v2.svg" alt="Space Map" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/map.png" width = "50%">
+
+![map](https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/map.gif)
+
+- **`Mod+Tab`** to open it.
+- Workspaces are stars, windows are planets and scratchpads are moons.
+- `wasd` to fly, `Tab` for the next system, `Enter` to land there, `Esc` to go back.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/desktop-widgets-v2.svg" alt="Desktop Widgets" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets-edit.png" width = "50%">
+
+- **`Alt+D`** to edit them. Drag them around, add more or change their style.
+- Layouts save per monitor shape.
   </details>
 
 </details>
