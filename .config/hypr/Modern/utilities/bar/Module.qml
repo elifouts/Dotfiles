@@ -91,13 +91,6 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 10
 
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "󰝚"
-                        font.pixelSize: 16
-                        color: Theme.fg
-                    }
-
                     SwapText {
                         id: title
                         anchors.verticalCenter: parent.verticalCenter
