@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import "common"
 import "bar"
+import "bar/panels"
 import "desk"
 import "land"
 import "launcher"

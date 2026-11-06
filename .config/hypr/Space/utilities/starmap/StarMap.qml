@@ -589,6 +589,7 @@ Scope {
                 function onFrameSwapped() {
                     if (map.gate) map.gateFrames++
                     else if (map.poseDirty) map.flyPath()
+                    if (win.main && (takeoff.running || descend.running)) Pace.frame()
                 }
             }
             Item {
@@ -907,6 +908,8 @@ Scope {
                 z: 50
                 visible: map.warm || map.ground * map.veil > 0
                 opacity: map.warm ? 0.0015 : map.ground * Math.min(1, map.veil * 2)
+                layer.enabled: visible && Pace.scale < 1
+                layer.textureSize: Pace.size(width, height, win.modelData)
                 ws: map.landWs
                 asTheme: true
                 screenX: win.ox

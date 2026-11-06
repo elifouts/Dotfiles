@@ -146,7 +146,7 @@ shells.sh <utility> [call] [args]   # default call is toggle, starts the shell i
 | Utility | Key | Notes |
 |---|---|---|
 | launcher | tap `Super` | dial, apps, commands, keybinds |
-| home-screen | `Alt+Tab` | also hosts the notification daemon |
+| home-screen | `Alt+Tab` | Music, System stats, Notifications, Calendar |
 | settings | `Alt+S` | sheet from the left |
 | music | `Alt+Enter` | follows Spotify, else whatever's playing |
 | wallpaper-picker | `Alt+W` | previews on every monitor |
@@ -175,7 +175,7 @@ shells.sh <utility> [call] [args]   # default call is toggle, starts the shell i
 | `height` `gap` | sizes |
 | `shape` | `round`, `capsule`, `square` |
 
-Modules: `user` `workspaces` `media` `date` `constdate` `timer` `clock` `tray` `updates` `network` `audio` `battery` `power`, and `|` for a divider.
+Modules: `user` `workspaces` `media` `date` `constdate` `timer` `clock` `tray` `updates` `notifications` `network` `audio` `battery` `power`, and `|` for a divider.
 
 `InstallScripts/quickshellbarinstall.sh` and `waybarinstall.sh` install either bar alone. The standalone quickshell bar reads `style.json` next to its `shell.qml`.
 
@@ -239,7 +239,8 @@ The land's colors go through `dither()` in `land.frag`, or the faint moon and sk
 The scenery has no images and there's no 3D engine. QML keeps the state and hands numbers and colors to the shaders, and a QML property reaches the shader when it has the same name as a uniform. Colors get mixed from the theme in `Terrain.qml`, so a new theme doesn't need a recompile. Editing a `.frag` does, see "I edited a shader and nothing happened".
 
 - `land.frag` draws the sky, moon, planets, hills and trees in one pass. Switching workspaces only animates `pan`.
-- Drawing all of that every frame is expensive, so `Land.qml` draws it once with `layerMode: 1` and keeps the result. `Twinkle.qml` runs the same shader with `layerMode: 2` on top, which only draws the stars, about 30 times a second.
+- Drawing all of that every frame is expensive, so `Land.qml` draws it once, stars included, and keeps the result. It only redraws when something like `pan` actually changes.
+- `craters()` skips cells further than 0.83 away because a crater can't reach past that. That's the biggest radius times the 1.8 fade, so if you change either one change the number too.
 - Only `Hypr.moonScreen` gets the moon, the other monitors are `moonless`.
 - `starmap.frag` is only the backdrop, nebula and far stars worked out from where the camera is looking. Everything you can fly to is a normal QML item, and `project()` in `StarMap.qml` does the 3D math by hand to get its screen position and size.
 - `common/orb.frag` is the small orb used by `Orb.qml`.
@@ -335,6 +336,8 @@ It's also why `lock.qml` and `boot.qml` are tiny wrappers at the top of `utiliti
 
 Edit the real file in `shared/`, not the link. It changes both styles.
 
+The bar's wifi, bluetooth, sound, updates and notifications menus work like this too. What they do is in `shared/menus/`. What they look like is `Entry`, `Group`, `Header`, `Round`, `Chips`, `Slider`, `Switch` and `Tile`, each style has its own. Space's panels are links with a `Panel` name, `Wing.qml` tells them when they're open.
+
 One folder link per style doesn't work, I tried. The shared singletons would have to import a folder that lists them, and Qt fails with `Audio is instantiated recursively`.
 
 </details>
@@ -342,7 +345,7 @@ One folder link per style doesn't work, I tried. The shared singletons would hav
 <details>
 <summary><b>Why does Modern's shell.qml import folders it doesn't use?</b></summary>
 
-Quickshell only registers a folder's components if it reaches that folder through an `import`, starting from the root file. Modern loads its utilities with `createComponent`, which it can't follow, so the imports at the top of `utilities/shell.qml` are how it finds them.
+Quickshell only registers a folder's components if it reaches that folder through an `import`, starting from the root file. Modern loads its utilities with `createComponent`, which it can't follow, so the imports at the top of `utilities/shell.qml` are how it finds them. Same for Space's `bar/panels`, those load through a `Loader`.
 
 There are no `qmldir` files anymore, Quickshell makes them from these. A singleton just needs `pragma Singleton`.
 
@@ -385,7 +388,7 @@ So a bind has to fit on one line to show up, and that's why `binds.lua` spells o
 <details>
 <summary><b>Things that aren't where you'd think</b></summary>
 
-- `home-screen` is also the notification host, so it's always running
+- `notifications` is the notification host, so it's always running. Home isn't, so a notification can't depend on it
 - Popups are bottom left and hide while the home screen is open
 - Wallpapers live in `~/wallpapers/library`, only favorites are in this repo. The pre-commit hook copies them in from `favorites.txt`
 - Spotify always opens through `spotify.sh`
@@ -433,7 +436,10 @@ Things that took me a while. Worth reading before "fixing" any of them.
 <details>
 <summary><b>Performance</b></summary>
 
-- The land is drawn once and kept. `Twinkle` redraws only the stars, the whole shader looping repainted every pixel at full refresh
+- The land is drawn once and kept, the stars are part of that one layer and don't twinkle. Looping the whole shader repainted every pixel at full refresh, and even redrawing only the stars made Hyprland redraw everything on top of them. Now the GPU goes back to idle when nothing is moving
+- Vsync stays on unless the monitors have different refresh rates, that's `qs_sync` in `paths.sh`. With it off the shell drew around 280 fps on a 165hz screen and none of it lined up with the display. My desktop is 240 and 75, so it still runs without vsync
+- `Pace.qml` watches frame times while the land, a hop, a launch or a landing is moving. Under about 40 fps it draws the terrain at lower resolution, down to half, and goes back up when frames are fast again. It only applies while moving, the land goes back to full resolution when it stops. A fast GPU never drops
+- If everything is suddenly laggy on the laptop check the battery first. At 6% the GPU was capped to 30W instead of 125W and stuck around 500MHz, by 14% the cap was gone. `nvidia-smi -q -d POWER` shows the current limit
 - One `Cava` for every visualizer, each monitor's bar used to spawn its own
 - `Panel` frees textures after it's been closed a while
 - Wifi scanning stops while typing and only runs while the menu is open
@@ -460,7 +466,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 
 ## Every file
 
-All 346 of them. `→` means it's a symlink, the real file is in that `shared/` folder.
+All 372 of them. `→` means it's a symlink, the real file is in that `shared/` folder.
 
 <details>
 <summary><b>hypr/ (root)</b></summary>
@@ -531,7 +537,7 @@ utilities/
 │  ├─ wallpaper-index.py      builds thumbs, screen copies and palettes for the picker
 │  └─ wallpapers.sh           git wrapper for the wallpaper library repo
 ├─ launcher.py                desktop entries, commands and usage counts, both launchers use it
-└─ paths.sh                   sourced by scripts. sets $HYPR $UTIL $STYLE $QS from state/profile
+└─ paths.sh                   sourced by scripts. sets $HYPR $UTIL $STYLE $QS from state/profile, qs_sync picks vsync
 ```
 
 </details>
@@ -555,6 +561,17 @@ shared/
 ├─ machine/
 │  ├─ machine-desktop.lua     desktop monitors, boot and cursor defaults
 │  └─ machine-laptop.lua      laptop monitors, boot and cursor defaults
+├─ menus/
+│  ├─ BluetoothList.qml       bluetooth devices and their rows, pair and connect
+│  ├─ Card.qml                Tile with padding for menu content
+│  ├─ Network.qml             wifi and bluetooth side by side
+│  ├─ Notifications.qml       notification history, dnd and clear
+│  ├─ Oops.qml                inline error text
+│  ├─ Sound.qml               speakers, mics, volume rows and device picking
+│  ├─ Toggle.qml              label and switch row
+│  ├─ UpdateMenu.qml          pending updates, update now or check again
+│  ├─ Wifi.qml                wifi list and connect
+│  └─ WifiEditor.qml          edit a saved connection: ip, dns, security, with its fields
 ├─ media/
 │  ├─ Audio.qml               default speaker and mic, volume and mute
 │  ├─ cava.conf               base cava config, CavaFeed swaps in bars and framerate
@@ -578,6 +595,7 @@ shared/
 │  ├─ Notifs.qml              the notification daemon, keeps history and dnd
 │  ├─ Osd.qml                 osd pill and media card
 │  ├─ OsdState.qml            what the osd does, caps lock tracking
+│  ├─ net.sh                  nmcli calls for the wifi menus
 │  ├─ Power.qml               session actions and battery
 │  ├─ stats.sh                system info from /proc and /sys, read by home and scan
 │  └─ Updates.qml             pending pacman and aur count, every 30 min
@@ -676,25 +694,28 @@ Modern/utilities/bar/
 │  ├─ Forecast.qml       → widgets: wttr.in weather data, refreshes every 30 min
 │  └─ MediaTab.qml       island's media tab, with its button and empty state
 ├─ menus/
-│  ├─ BluetoothList.qml  bluetooth devices and their rows, pair and connect
-│  ├─ Card.qml           Tile with padding for menu content
+│  ├─ BluetoothList.qml  → menus: bluetooth devices and their rows, pair and connect
+│  ├─ Card.qml           → menus: Tile with padding for menu content
+│  ├─ Chips.qml          row of pickable chips
 │  ├─ Entry.qml          menu row base, wiggles while connecting
 │  ├─ Group.qml          titled group, clips rows to its corners
 │  ├─ Header.qml         card header with title and icon
-│  ├─ Network.qml        wifi and bluetooth side by side
-│  ├─ Oops.qml           inline error text
+│  ├─ Network.qml        → menus: wifi and bluetooth side by side
+│  ├─ Notifications.qml  → menus: notification history, dnd and clear
+│  ├─ Oops.qml           → menus: inline error text
 │  ├─ Round.qml          small round icon button
 │  ├─ Session.qml        power menu, the scary ones need a second press
-│  ├─ Sound.qml          speakers, mics, volume rows and device picking
-│  ├─ Toggle.qml         label and switch row
+│  ├─ Sound.qml          → menus: speakers, mics, volume rows and device picking
+│  ├─ Toggle.qml         → menus: label and switch row
 │  ├─ Tray.qml           system tray with its menus
-│  ├─ Wifi.qml           wifi list and connect
-│  └─ WifiEditor.qml     edit a saved connection: ip, dns, security, with its fields and chips
+│  ├─ UpdateMenu.qml     → menus: pending updates, update now or check again
+│  ├─ Wifi.qml           → menus: wifi list and connect
+│  └─ WifiEditor.qml     → menus: edit a saved connection: ip, dns, security, with its fields
 ├─ alarm.ogg             the alarm sound
 ├─ Alarm.qml             rings out of the bar when the focus timer ends
 ├─ Island.qml            the media and clock card with its tabs
 ├─ Module.qml            every bar module in one file
-├─ net.sh                nmcli calls for the wifi menus
+├─ net.sh                → system: nmcli calls for the wifi menus
 ├─ Pill.qml              one pill. grows into a card on hover
 ├─ procs.sh              per pid: cmdline, cwd and running program, for saving workspaces
 ├─ shell.qml             bar windows per monitor, `bar` ipc, picks the style
@@ -772,9 +793,10 @@ Modern/utilities/
 ├─ boot/
 │  └─ BootShell.qml          boot animation, runs alone
 ├─ home-screen/
+│  ├─ Home.qml               home screen. clock, music, stats, notifications
 │  ├─ home-stats.sh          → system: system info from /proc and /sys, read by home and scan
 │  ├─ home-wall.sh           prints a screen sized wallpaper copy per monitor
-│  └─ shell.qml              home screen. clock, music, stats, notifications
+│  └─ shell.qml              loads Home when it opens, drops it when it closes
 ├─ launcher/
 │  ├─ AppGrid.qml            app grid
 │  ├─ Binds.js               parses binds.lua and shortcuts.lua into keybind rows
@@ -793,6 +815,8 @@ Modern/utilities/
 ├─ music/
 │  ├─ shell.qml              music card. move, resize, tuck away
 │  └─ Visualizer.qml         cava bars for the card
+├─ notifications/
+│  └─ shell.qml              the always on part: daemon, popups, dnd and clear calls
 ├─ osd/
 │  └─ shell.qml              `osd` ipc, the real osd is shared/system/Osd.qml
 ├─ overview/
@@ -898,6 +922,7 @@ Space/utilities/common/
 ├─ Orb.qml                 glowing ball, bar dots and stars
 ├─ Osd.qml                 → system: osd pill and media card
 ├─ OsdState.qml            → system: what the osd does, caps lock tracking
+├─ Pace.qml                lowers the terrain's resolution while moving if frames get slow
 ├─ PlayButton.qml          → media: accent circle with the play/pause morph
 ├─ PlayPause.qml           → media: shape that morphs between play and pause
 ├─ Power.qml               → system: session actions and battery
@@ -907,12 +932,15 @@ Space/utilities/common/
 ├─ Seek.qml                → media: smooth progress bar
 ├─ Settle.qml              → ui: NumberAnimation on hyprland's window curve
 ├─ SkipButton.qml          → media: prev/next that kicks when it skips
+├─ Slider.qml              segmented slider, Kit.Slide uses it too
 ├─ spotify.sh              → media: opens spotify's scratchpad, or a normal window without pypr
 ├─ Store.qml               → core: settings state, batches writes to hypr-settings.py
 ├─ SwapText.qml            → ui: text that slides out and types back in
+├─ Switch.qml              Kit toggle for the shared menus
 ├─ Sys.qml                 cpu, ram and link from /proc, no processes
 ├─ Theme.qml               ThemeBase, square, Space's font, accent outlines
 ├─ ThemeBase.qml           → core: palette, rounding, gaps, timing. each Theme.qml extends this
+├─ Tile.qml                outlined panel behind menu rows
 ├─ TimerTab.qml            → widgets: drag ring timer ui
 ├─ Todos.qml               → widgets: todo storage in state/todos.json
 ├─ Tour.qml                → ui: first run tour, each style gives it steps and spots
@@ -933,15 +961,27 @@ Space/utilities/
 ├─ bar/
 │  ├─ Bar.qml            bar window, two wings and input regions
 │  ├─ panels/
-│  │  ├─ PanelAudio.qml    volume, mic and device
+│  │  ├─ BluetoothList.qml → menus: bluetooth devices and their rows, pair and connect
+│  │  ├─ Card.qml          → menus: Tile with padding for menu content
+│  │  ├─ Chips.qml         row of pickable chips, made of Buttons
+│  │  ├─ Entry.qml         menu row, a Kit line with a gear
+│  │  ├─ Group.qml         titled group of rows that scrolls
+│  │  ├─ Header.qml        Kit title for the shared menus
+│  │  ├─ Oops.qml          → menus: inline error text
+│  │  ├─ PanelAudio.qml    → menus: Sound.qml
 │  │  ├─ PanelMedia.qml    shared island tabs under the media chip
-│  │  ├─ PanelNet.qml      wifi and bluetooth
-│  │  ├─ PanelNotifs.qml   notification history, dnd and clear
+│  │  ├─ PanelNet.qml      → menus: Network.qml
+│  │  ├─ PanelNotifs.qml   → menus: Notifications.qml
 │  │  ├─ PanelPower.qml    battery, brightness and session
 │  │  ├─ PanelTime.qml     big clock, calendar and todos
 │  │  ├─ PanelTray.qml     tray apps as lines
-│  │  └─ PanelUpdates.qml  pending updates
+│  │  ├─ PanelUpdates.qml  → menus: UpdateMenu.qml
+│  │  ├─ Round.qml         small Button with a glyph
+│  │  ├─ Toggle.qml        → menus: label and switch row
+│  │  ├─ Wifi.qml          → menus: wifi list and connect
+│  │  └─ WifiEditor.qml    → menus: edit a saved connection: ip, dns, security, with its fields
 │  ├─ Chip.qml           readout that opens a panel
+│  ├─ net.sh             → system: nmcli calls for the wifi menus
 │  ├─ Stars.qml          workspace dots as orbs
 │  └─ Wing.qml           glass wing with corner brackets, loads Panel<kind>.qml
 ├─ desk/
@@ -954,8 +994,7 @@ Space/utilities/
 │  ├─ land.frag          sky, moon, hills and pines. no image files
 │  ├─ land.frag.qsb      compiled, this is what runs
 │  ├─ Land.qml           one monitor's wallpaper window, pans with workspaces
-│  ├─ Terrain.qml        the land shader with theme colors
-│  └─ Twinkle.qml        only the stars redraw, on top of a still Terrain
+│  └─ Terrain.qml        the land shader with theme colors
 ├─ launcher/
 │  └─ Launcher.qml       little terminal under the bar
 ├─ scan/

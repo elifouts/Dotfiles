@@ -11,7 +11,8 @@ launch() (
     exec 9>"${XDG_RUNTIME_DIR:-/tmp}/quickshell-utilities.lock"
     flock -w 5 9 || exit 1
     qs ipc -p "$QS" show 2>/dev/null | grep -q '^target' && exit 0
-    QSG_USE_SIMPLE_ANIMATION_DRIVER=1 QSG_NO_VSYNC=1 qs -n -p "$QS" --daemonize </dev/null >/dev/null 2>&1 9>&-
+    qs_sync
+    QSG_USE_SIMPLE_ANIMATION_DRIVER=1 qs -n -p "$QS" --daemonize </dev/null >/dev/null 2>&1 9>&-
     for _ in $(seq 1 60); do
         qs ipc -p "$QS" show 2>/dev/null | grep -q '^target' && exit 0
         sleep 0.02

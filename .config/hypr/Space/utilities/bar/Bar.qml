@@ -40,7 +40,23 @@ PanelWindow {
         Chip { decode: false; show: Live.timer.active; glyph: "󰔛"; text: Live.timer.format(Live.timer.remaining); panel: "media"; tab: "timer"; hot: !Live.timer.running }
         Chip { show: Updates.count > 0; glyph: "󰚰"; text: Updates.count; panel: "updates" }
         Chip { glyph: Sys.net === "OFFLINE" ? "󰤭" : Sys.net === "WLAN" ? "󰤨" : "󰈀"; panel: "net"; hot: Sys.net === "OFFLINE" }
-        Chip { decode: false; glyph: Audio.muted ? "󰝟" : "󰕾"; text: Audio.muted ? "" : Math.round(Audio.volume * 100); panel: "audio"; onWheel: dir => Audio.nudge(dir) }
+        Chip {
+            glyph: Audio.muted ? "󰝟" : "󰕾"
+            panel: "audio"
+            room: 66
+            onWheel: dir => Audio.nudge(dir)
+            Slider {
+                anchors.right: parent.right
+                anchors.rightMargin: 14
+                anchors.verticalCenter: parent.verticalCenter
+                width: 60
+                cells: 12
+                scrollable: false
+                value: Math.min(1, Audio.volume)
+                dimmed: Audio.muted
+                onMoved: v => Audio.setVolume(v)
+            }
+        }
         Chip {
             show: Power.hasBattery
             glyph: Power.charging ? "󰂄" : "󰁹"

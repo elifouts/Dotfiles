@@ -21,7 +21,7 @@ Item {
     }
 
     readonly property var opens: ({ workspaces: "workspaces", media: "island", date: "island", constdate: "island", timer: "island",
-        clock: "calendar", tray: "tray", network: "network", audio: "audio", power: "power" })
+        clock: "calendar", tray: "tray", updates: "updates", notifications: "notifications", network: "network", audio: "audio", power: "power" })
     function has(page) {
         return modules.some(m => opens[m] === (page === "alarm" ? "island" : page))
     }
@@ -34,8 +34,8 @@ Item {
         return before && after
     }
     readonly property bool wideNet: align === "center"
-    readonly property var widths: ({ workspaces: 600, island: 600, network: wideNet ? 672 : 350, calendar: 652, audio: 340, power: 330, tray: 290, alarm: 300 })
-    readonly property var widest: ({ workspaces: 900, island: 900, network: wideNet ? 640 : 560, calendar: 620, audio: 720, power: 420, tray: 360, alarm: 340 })
+    readonly property var widths: ({ workspaces: 600, island: 600, network: wideNet ? 672 : 350, calendar: 652, audio: 340, power: 330, tray: 290, updates: 290, notifications: 340, alarm: 300 })
+    readonly property var widest: ({ workspaces: 900, island: 900, network: wideNet ? 640 : 560, calendar: 620, audio: 720, power: 420, tray: 360, updates: 360, notifications: 420, alarm: 340 })
     readonly property int pad: 16
 
     property string page: ""
@@ -303,12 +303,14 @@ Item {
         transform: Translate { y: (1 - slot.f) * 8 }
         Rise { target: slot.item }
         active: page !== ""
-        sourceComponent: ({ workspaces: workspacesC, island: islandC, network: networkC, audio: audioC, power: powerC, tray: trayC, alarm: alarmC, calendar: calendarC })[page] ?? null
+        sourceComponent: ({ workspaces: workspacesC, island: islandC, network: networkC, audio: audioC, power: powerC, tray: trayC, updates: updatesC, notifications: notificationsC, alarm: alarmC, calendar: calendarC })[page] ?? null
     }
 
     Component { id: workspacesC; Workspaces.Page { expose: self.ctx.expose; screen: self.screen; onPicked: self.close(); onOverview: self.ctx.toggleOverview() } }
     Component { id: islandC; Island { ctx: self.ctx; pill: self } }
     Component { id: networkC; Menus.Network { open: self.open; onRun: c => self.ctx.run(c) } }
+    Component { id: updatesC; Menus.UpdateMenu { onDone: self.close() } }
+    Component { id: notificationsC; Menus.Notifications {} }
     Component { id: audioC; Menus.Sound { open: self.open; onRun: c => self.ctx.run(c); onDone: self.close() } }
     Component { id: powerC; Menus.Session { open: self.open; standalone: self.ctx.standalone; onRun: c => self.ctx.run(c); onDone: self.close() } }
     Component { id: calendarC; Calendar { open: self.open && self.page === "calendar" } }

@@ -10,6 +10,7 @@ Item {
     property bool hot: false
     property bool show: true
     property bool decode: true
+    property real room: 0
     signal wheel(int dir)
     readonly property var wing: parent?.parent
     readonly property bool open: Ui.panel === panel && Ui.panelScreen === wing?.scr && (tab === "" || Ui.tab === tab)
@@ -18,7 +19,7 @@ Item {
     Behavior on reveal { Settle { duration: Theme.ms(260) } }
     visible: reveal > 0.001
     opacity: reveal
-    property real natW: row.width + 14
+    property real natW: row.width + 14 + room
     Behavior on natW { Settle { id: resize; duration: Theme.open } }
     clip: reveal < 0.999 || resize.running
     width: natW * reveal
@@ -62,8 +63,8 @@ Item {
     Rectangle {
         anchors.bottom: parent.bottom
         height: 2
-        width: chip.open ? row.width : 0
-        x: (row.width - width) / 2
+        width: chip.open ? row.width + chip.room : 0
+        x: (row.width + chip.room - width) / 2
         color: Theme.accent
         Behavior on width { Settle { duration: Theme.ms(200) } }
     }

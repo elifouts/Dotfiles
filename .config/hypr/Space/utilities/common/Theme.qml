@@ -11,6 +11,7 @@ ThemeBase {
     lines: 1
     caps: Font.AllUppercase
     tracking: 1.6
+    menuRow: 24
     fg: c(15, "#d8e2f0")
     bg: wal ? wal.special.background : "#05070c"
     edge: alpha(accent, 0.35)

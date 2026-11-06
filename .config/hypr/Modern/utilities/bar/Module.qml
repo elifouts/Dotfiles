@@ -43,7 +43,7 @@ Item {
         id: loader
         anchors.verticalCenter: parent.verticalCenter
         sourceComponent: ({ user: userC, workspaces: workspacesC, media: mediaC, date: dateC, constdate: constdateC, timer: timerC, clock: clockC,
-            tray: trayC, updates: updatesC, network: networkC, audio: audioC, power: powerC,
+            tray: trayC, updates: updatesC, notifications: notificationsC, network: networkC, audio: audioC, power: powerC,
             "|": dividerC })[mod.name] ?? null
     }
 
@@ -227,12 +227,22 @@ Item {
             on: mod.ctx.updates > 0
             Chip {
                 pill: mod.pill
+                page: "updates"
                 glyph: "󰅢"
                 tint: Theme.caution
                 glyphColor: Theme.caution
                 text: mod.ctx.updates > 0 ? mod.ctx.updates : ""
-                onClicked: b => { if (b === Qt.LeftButton) mod.ctx.runUpdate() }
             }
+        }
+    }
+
+    Component {
+        id: notificationsC
+        Chip {
+            pill: mod.pill
+            page: "notifications"
+            glyph: Notifs.dnd ? "󰂛" : "󰂚"
+            text: Notifs.count || ""
         }
     }
 

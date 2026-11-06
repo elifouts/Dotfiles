@@ -15,14 +15,18 @@
     "kind": "quickshell"
   },
   "colors": {
-    "theme": "dark/catppuccin-macchiato-copy"
+    "theme": "pywal"
   },
   "config": {
-    "animations": {
-      "enabled": true
-    },
     "decoration": {
-      "active_opacity": 0.76,
+      "active_opacity": 1,
+      "blur": {
+        "brightness": 0.75,
+        "enabled": true,
+        "passes": 6,
+        "size": 20,
+        "vibrancy": 0.4
+      },
       "dim_inactive": true,
       "dim_strength": 0.25,
       "glow": {
@@ -32,7 +36,7 @@
       "motion_blur": {
         "enabled": false
       },
-      "rounding": 3,
+      "rounding": 0,
       "rounding_power": 5,
       "shadow": {
         "enabled": true,
@@ -44,16 +48,16 @@
     },
     "general": {
       "border_size": 0,
-      "gaps_in": 11,
+      "gaps_in": 0,
       "gaps_out": 0,
       "gaps_workspaces": 0
     }
   },
   "quickshell": {
-    "style": "full"
+    "style": "experimental"
   },
   "wallpaper": {
-    "path": "$HOME/wallpapers/library/catppuccin/cat-02.jpg"
+    "path": "$HOME/wallpapers/library/catppuccin/cat-05.jpg"
   },
   "waybar": {
     "style": "default"

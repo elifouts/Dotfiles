@@ -22,10 +22,8 @@ layout(std140, binding = 0) uniform buf {
     vec4 sun;
     vec4 shade;
     vec4 moonEnd;
-    float starClock;
     float lift;
     float glow;
-    float layerMode;
     float moonless;
     float skyFade;
     float wipe;
@@ -110,7 +108,10 @@ vec2 craters(vec3 n, vec3 L, float sc, float dens, float s) {
     for (int z = -1; z <= 1; z++)
     for (int y = -1; y <= 1; y++)
     for (int x = -1; x <= 1; x++) {
-        vec3 c = i + vec3(x, y, z), r = h3(c + s);
+        vec3 c = i + vec3(x, y, z);
+        vec3 gap = max(max(c + 0.2 - p, p - c - 0.8), vec3(0.0));
+        if (dot(gap, gap) > 0.6889) continue;
+        vec3 r = h3(c + s);
         if (r.x > dens) continue;
         vec3 dv = p - (c + 0.2 + 0.6 * h3(c + s + 17.0));
         float rad = mix(0.14, 0.46, r.y * r.y), d = length(dv) / rad;
@@ -208,8 +209,6 @@ void main() {
     vec3 col = vec3(0.0);
     float cover = 0.0;
     if (rise < 0.5) {
-    if (layerMode > 1.5 && y < 0.37) { fragColor = vec4(0.0); return; }
-
     col = mix(horizon.rgb, zenith.rgb, smoothstep(0.16, 0.9, y));
     col += warm.rgb * 0.55 * exp(-length(vec2(x * 0.55, (y - 0.27) * 2.4)) * 3.0);
     col = mix(col, mix(warm.rgb, horizon.rgb, 0.3), glow * 0.55 * smoothstep(0.75, 0.15, y));
@@ -220,7 +219,7 @@ void main() {
     float disc = smoothstep(0.31 + fwidth(mr), 0.31 - fwidth(mr), mr) * (1.0 - moonless);
     float handed = rise > 0.0 ? step(0.5, moonEnd.w) : 0.0;
     float face = 0.0, mpx = fwidth(mr) / 0.31;
-    if (mr < 0.32 && moonless < 0.5) face = skyFace(vec3(md / 0.31, sqrt(max(0.0, 1.0 - dot(md, md) / 0.0961))), skyL, mpx, 0.0);
+    if (mr < 0.32 && moonless < 0.5 && handed < 0.5) face = skyFace(vec3(md / 0.31, sqrt(max(0.0, 1.0 - dot(md, md) / 0.0961))), skyL, mpx, 0.0);
     col = mix(col, mix(col, mix(moon.rgb, warm.rgb * 1.1, glow * 0.75), face + max(smoothstep(0.0, 0.3, abs(lift)), glow) * 0.5), disc * (1.0 - handed));
 
     vec2 g = vec2(x * 12.0 + pan * 0.05, y * 12.0);
@@ -232,22 +231,8 @@ void main() {
     float dist = length(p);
     float size = mix(0.009, 0.022, h2(cell + 1.3));
     float starDot = exp(-3.2 * (dist / size) * (dist / size)) * starOn * skyFade;
-    float rate = mix(0.6, 1.8, h2(cell + 4.9));
-    float phase = h2(cell + 8.3) * 6.2831853;
-    float blink = sin(starClock * rate + phase);
-    float twinkle = layerMode < 0.5 ? 0.88 + 0.12 * blink : layerMode < 1.5 ? 0.76 : 0.12 + 0.12 * blink;
-    if (layerMode > 1.5) col = vec3(0.0);
-    col += starDot * twinkle * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 1.2 * (1.0 - glow * 0.6);
-    if (layerMode > 1.5) {
-        float sxw = x + pan * 0.3;
-        float sc = floor(sxw / 7.0 + 0.5);
-        vec2 sp0 = vec2(sxw - (sc * 7.0 + (h1(sc + 7.0) - 0.5) * 2.4), y - (0.5 + 0.25 * h1(sc + 13.0)));
-        float sa = (h1(sc + 19.0) - 0.5) * 0.4, scs = cos(sa), sns = sin(sa);
-        vec2 sq = vec2(scs * sp0.x + sns * sp0.y, -sns * sp0.x + scs * sp0.y);
-        fragColor = vec4(col * (1.0 - shipShape(sq, 0.09, fwidth(y)) * skyFade), 0.0) * qt_Opacity;
-        return;
-    }
-    vec2 s0 = vec2((h1(5.0) - 0.2) * aspect * 0.6, 0.8), dir = normalize(vec2(1.0, 0.28));
+    col += starDot * 0.88 * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 1.2 * (1.0 - glow * 0.6);
+    vec2 s0 =vec2((h1(5.0) - 0.2) * aspect * 0.6, 0.8), dir = normalize(vec2(1.0, 0.28));
     vec2 sp = vec2(x, y) - s0;
     float along = dot(sp, dir), off = abs(dot(sp, vec2(-dir.y, dir.x)));
     col += (1.0 - smoothstep(0.0, 0.0015, off)) * smoothstep(0.0, 0.08, along) * (1.0 - smoothstep(0.06, 0.1, along))

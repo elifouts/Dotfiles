@@ -212,7 +212,7 @@ Column {
             anchors.rightMargin: 14
             anchors.verticalCenter: parent.verticalCenter
             checked: menu.dnd
-            onToggled: menu.run(Hypr.util + "/session/shells.sh home toggleDnd")
+            onToggled: menu.run(Hypr.util + "/session/shells.sh notifications toggleDnd")
         }
     }
 }

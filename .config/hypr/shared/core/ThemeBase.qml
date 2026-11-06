@@ -14,6 +14,7 @@ Singleton {
     property real round: 1
     property real lines: 0
     property int caps: Font.MixedCase
+    property int menuRow: 40
     property real tracking: 0
     property real gapsOut: 8
     property bool hyprAnimates: true

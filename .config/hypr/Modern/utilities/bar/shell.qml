@@ -98,7 +98,6 @@ ShellRoot {
             readonly property alias weather: forecast
 
             readonly property int updates: Updates.count
-            function runUpdate() { Updates.run() }
 
             readonly property var players: Media.players
             property string pinned: ""

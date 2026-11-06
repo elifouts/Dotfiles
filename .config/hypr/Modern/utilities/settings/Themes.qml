@@ -270,7 +270,7 @@ Item {
             HoverHandler {
                 id: listHover
                 onPointChanged: {
-                    const i = list.indexAt(point.position.x, point.position.y + list.contentY)
+                    const i = list.indexAt(point.position.x, point.position.y)
                     if (i >= 0) { back.stop(); tp.cur = i }
                 }
                 onHoveredChanged: hovered ? back.stop() : back.restart()

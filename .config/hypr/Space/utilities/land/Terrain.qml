@@ -39,15 +39,6 @@ ShaderEffect {
     property color near: Theme.mix(tone, "#0e1528", 0.88)
     property color moon: Theme.mix(fg, accent, 0.4)
     property color shade: Theme.mix(bg, "#000000", 0.5)
-    property real layerMode: 0
-    property real starClock: 0
     property real moonless: 0
-    NumberAnimation on starClock {
-        running: layerMode === 0
-        from: 0
-        to: 6.28318530718
-        duration: 12000
-        loops: Animation.Infinite
-    }
     fragmentShader: Qt.resolvedUrl("land.frag.qsb")
 }

@@ -15,7 +15,8 @@ begin() {
     printf 'return { gaps_in = { top = %s }, gaps_out = { top = %s } }\n' "$(gap gaps_in)" "$(gap gaps_out)" > "$HOLD"
     reserved > "$OLD"
     qs kill -p "$QML" </dev/null >/dev/null 2>&1
-    QSG_USE_SIMPLE_ANIMATION_DRIVER=1 QSG_NO_VSYNC=1 qs -n -p "$QML" --daemonize </dev/null >/dev/null 2>&1
+    qs_sync
+    QSG_USE_SIMPLE_ANIMATION_DRIVER=1 qs -n -p "$QML" --daemonize </dev/null >/dev/null 2>&1
     for _ in $(seq 1 40); do
         [ "$(call covered)" = true ] && break
         sleep 0.02

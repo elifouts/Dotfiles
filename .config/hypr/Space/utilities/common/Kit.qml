@@ -52,29 +52,14 @@ Item {
         width: parent?.width ?? 280
         height: 22
         Text { id: sg; text: sl.glyph; width: sl.readout ? 0 : 20; font.family: Theme.font; font.pixelSize: 13; color: sl.off ? Theme.dim : Theme.accent; anchors.verticalCenter: parent.verticalCenter }
-        Item {
-            id: track
+        Slider {
             x: sl.readout ? 0 : sg.width + 6
             width: parent.width - x - (sl.readout ? 58 : 40)
             height: parent.height
-            Repeater {
-                model: 24
-                Rectangle {
-                    required property int index
-                    x: index * track.width / 24
-                    width: track.width / 24 - 2
-                    height: 6
-                    anchors.verticalCenter: parent.verticalCenter
-                    color: index < Math.round(sl.value * 24) && !sl.off ? Theme.accent : Theme.faint
-                }
-            }
-            MouseArea {
-                anchors.fill: parent
-                function set(mx) { sl.moved(Math.max(0, Math.min(1, mx / width))) }
-                onPressed: m => set(m.x)
-                onPositionChanged: m => { if (pressed) set(m.x) }
-                onWheel: w => w.accepted = sl.scrollable && (sl.moved(Math.max(0, Math.min(1, sl.value + (w.angleDelta.y > 0 ? 0.05 : -0.05)))), true)
-            }
+            value: sl.value
+            dimmed: sl.off
+            scrollable: sl.scrollable
+            onMoved: v => sl.moved(v)
         }
         Hud { decode: false; anchors.right: parent.right; height: parent.height; text: sl.off ? "off" : sl.readout || Math.round(sl.value * 100); color: Theme.fg }
     }

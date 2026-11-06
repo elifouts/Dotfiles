@@ -24,7 +24,7 @@ Item {
     default property alias content: inner.data
 
     readonly property real natW: inner.implicitWidth + padL + padR
-    readonly property real panelW: Math.max(natW, kind === "media" ? 480 : 360)
+    readonly property real panelW: Math.max(natW, ({ media: 480, net: 672, audio: 672 })[kind] ?? 360)
     readonly property string live: dropped ? Ui.panel : ""
     property string kind: ""
     onLiveChanged: if (live !== "") { kind = live }
@@ -73,6 +73,12 @@ Item {
     Row { id: inner; x: wing.padL + (wing.lean < 0 ? wing.extraW : 0); height: 28 }
 
     HoverHandler { id: hh }
+    Connections {
+        target: body.item
+        ignoreUnknownSignals: true
+        function onRun(cmd) { Hypr.run(cmd) }
+        function onDone() { Ui.panel = "" }
+    }
     Timer { interval: 260; running: wing.dropped && !hh.hovered && !body.item?.holdOpen; onTriggered: Ui.panel = "" }
 
     Item {
@@ -89,6 +95,7 @@ Item {
             opacity: wing.dropped ? 1 : 0
             Behavior on opacity { Settle { duration: Theme.open } }
             source: wing.kind ? "panels/Panel" + wing.kind[0].toUpperCase() + wing.kind.slice(1) + ".qml" : ""
+            onLoaded: if ("open" in item) item.open = Qt.binding(() => wing.dropped)
         }
     }
 }

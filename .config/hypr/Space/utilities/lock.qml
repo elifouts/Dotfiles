@@ -16,8 +16,7 @@ ShellRoot {
 
         SystemClock { id: clock; precision: SystemClock.Minutes }
 
-        Terrain { id: land; anchors.fill: parent; layerMode: 1; layer.enabled: true }
-        Twinkle { anchors.fill: parent; under: land }
+        Terrain { anchors.fill: parent; layer.enabled: true }
         Rectangle { anchors.fill: parent; color: Theme.void_; opacity: 0.35 + 0.3 * face.t }
 
         Item {
