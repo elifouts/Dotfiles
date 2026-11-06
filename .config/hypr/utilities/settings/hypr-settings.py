@@ -395,6 +395,9 @@ def cmd_set(pairs):
     reapply(reload)
     if any(p.startswith("cursor.") for p in pairs):
         cmd_cursor()
+    if "space.world=null" in pairs:
+        sync_world(live_settings())
+        detached(str(HYPR / "utilities/colors/color-apply.sh"), dig(settings, "colors.theme") or DEFAULT_THEME)
 
 
 def cmd_reset():
@@ -515,7 +518,7 @@ def sync_world(settings):
         return
     write_atomic(SCHEMES / "dark/space.json", json.dumps(world["palette"]))
     path = HOME / ".config/space/world.json"
-    write_atomic(path, json.dumps({**load(path, {}), "hue": world["hue"], "curTheme": world["theme"], "random": world["random"]}))
+    write_atomic(path, json.dumps({**load(path, {}), "hue": world["hue"], "curTheme": world["theme"], "random": world["random"], "restored": True}))
 
 
 def cmd_colors():

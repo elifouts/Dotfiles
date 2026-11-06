@@ -11,6 +11,7 @@ Terrain {
     zoom: under.zoom
     lift: under.lift
     glow: under.glow
+    skyFade: under.skyFade
     seed: under.seed
     rise: under.rise
     moonless: under.moonless

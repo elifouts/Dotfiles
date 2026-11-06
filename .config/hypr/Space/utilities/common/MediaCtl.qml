@@ -74,7 +74,7 @@ Column {
             scale: ma.pressed ? 0.84 : (ma.containsMouse ? 1.08 : 1)
             Behavior on scale {
                 NumberAnimation {
-                    duration: ma.pressed ? 70 : 240
+                    duration: Theme.ms(ma.pressed ? 70 : 240)
                     easing.type: ma.pressed ? Easing.OutQuad : Easing.OutBack
                 }
             }
@@ -84,8 +84,8 @@ Column {
                 color: Theme.alpha(Theme.accent, ma.pressed ? 0.28 : (ma.containsMouse ? 0.16 : 0.08))
                 border.width: 1
                 border.color: Theme.alpha(Theme.accent, ma.containsMouse ? 0.9 : 0.4)
-                Behavior on color { ColorAnimation { duration: 120 } }
-                Behavior on border.color { ColorAnimation { duration: 120 } }
+                Behavior on color { ColorAnimation { duration: Theme.fast } }
+                Behavior on border.color { ColorAnimation { duration: Theme.fast } }
             }
             Text {
                 anchors.centerIn: parent
@@ -93,7 +93,7 @@ Column {
                 font.family: Theme.font
                 font.pixelSize: (b.primary ? 20 : 15) * b.s
                 color: ma.containsMouse ? Theme.accent : b.ink
-                Behavior on color { ColorAnimation { duration: 120 } }
+                Behavior on color { ColorAnimation { duration: Theme.fast } }
             }
         }
         Hover {
@@ -178,6 +178,7 @@ Column {
             caps: false
             anchors.left: parent.left
             anchors.top: parent.top
+            decode: false
             text: mc.fmt(mc.pos)
             font.pixelSize: 9 * mc.s
             font.letterSpacing: 1.5
@@ -187,6 +188,7 @@ Column {
             caps: false
             anchors.right: parent.right
             anchors.top: parent.top
+            decode: false
             text: "-" + mc.fmt(mc.len - mc.pos)
             font.pixelSize: 9 * mc.s
             font.letterSpacing: 1.5
@@ -196,11 +198,12 @@ Column {
             caps: false
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
+            decode: false
             text: Math.round(mc.frac * 100) + "%"
             font.pixelSize: 9 * mc.s
             font.letterSpacing: 1.5
             color: Theme.alpha(mc.ink, seekBar.active ? 0.7 : 0.3)
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: Theme.fast } }
         }
 
         Repeater {
@@ -226,7 +229,7 @@ Column {
             width: parent.width * mc.frac
             height: 5 * mc.s
             color: Theme.alpha(Theme.accent, seekBar.active ? 0.28 : 0.16)
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: Theme.fast } }
         }
         Rectangle {
             x: 0
@@ -245,7 +248,7 @@ Column {
                 width: seekBar.active ? 3 : 2
                 height: 15 * mc.s
                 color: Theme.accent
-                Behavior on width { NumberAnimation { duration: 120 } }
+                Behavior on width { Settle { duration: Theme.ms(120) } }
             }
         }
 

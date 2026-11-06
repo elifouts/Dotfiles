@@ -1,8 +1,21 @@
 .pragma library
-.import "Motion.js" as Motion
+.import "SchemaBase.js" as Base
+
+var shown = Base.shown
+var LAYOUT = {
+    windows: [["Spacing", "Borders", "Opacity"], ["Tiling", "Border gradient"], ["Behavior"]],
+    effects: [["Blur"], ["Shadow", "Glow", "Focus"]],
+    animations: [["Motion", "Details"], ["Curve"]],
+    input: [["Mouse", "Keyboard"], ["Cursor look", "Cursor behavior"], ["Touchpad", "Gestures"]],
+    system: [["Display"], ["Behavior"]]
+}
+var PAGES = Object.keys(LAYOUT).map(function (id) {
+    var p = Base.PAGES.find(function (x) { return x.id === id })
+    return { id: id, columns: LAYOUT[id].map(function (col) {
+        return col.map(function (label) { return p.sections.find(function (s) { return s.label === label }) })
+    }) }
+})
+
 function keys() {
-    return ["config.decoration.glow.enabled", "config.decoration.blur.enabled", "config.decoration.rounding",
-        "config.general.gaps_in", "config.general.gaps_out", "config.general.border_size", "config.general.layout",
-        "config.animations.enabled", "config.input.sensitivity", "config.input.touchpad.natural_scroll",
-        "space.parallax", "space.clock24", "space.font"].concat(Motion.KEYS)
+    return Base.keys().concat(["space.parallax", "space.clock24", "space.font"])
 }

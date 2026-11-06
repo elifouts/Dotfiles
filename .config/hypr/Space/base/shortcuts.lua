@@ -4,7 +4,6 @@ local util = "~/.config/hypr/utilities/"
 local space = function(name) return hl.dsp.exec_cmd(util .. "session/shells.sh space toggle " .. name) end
 
 hl.bind(mod .. " + SUPER_L", space("launcher"), { release = true })
-hl.bind(mod .. " + P", space("profiles"))
 hl.bind(mod .. " + TAB", space("overview"))
 hl.bind(mod .. " + L", hl.dsp.exec_cmd(util .. "session/lock.sh"))
 hl.bind(mod .. " + M", hl.dsp.exit())

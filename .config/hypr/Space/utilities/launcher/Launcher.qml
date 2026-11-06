@@ -19,7 +19,7 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.namespace: "space-launcher"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    WlrLayershell.keyboardFocus: Ui.touring ? WlrKeyboardFocus.None : WlrKeyboardFocus.Exclusive
 
     property int sel: 0
     property int mode: 0
@@ -40,14 +40,14 @@ PanelWindow {
     property real t: 0
     Component.onCompleted: grow.start()
     function close() { if (!shut.running) { grow.stop(); shut.start() } }
-    NumberAnimation { id: grow; target: win; property: "t"; to: 1; duration: Theme.open; easing.type: Easing.OutCubic }
+    Settle { id: grow; target: win; property: "t"; to: 1; duration: Theme.open }
     SequentialAnimation {
         id: shut
-        NumberAnimation { target: win; property: "t"; to: 0; duration: Theme.quick; easing.type: Easing.InCubic }
+        Settle { target: win; property: "t"; to: 0; duration: Theme.quick; easing.bezierCurve: Theme.leave }
         ScriptAction { script: win.done() }
     }
 
-    HyprlandFocusGrab { active: true; windows: [win]; onCleared: win.close() }
+    HyprlandFocusGrab { active: !Ui.touring; windows: [win]; onCleared: win.close() }
 
     function score(q, s) {
         s = (s || "").toLowerCase()
@@ -151,7 +151,7 @@ PanelWindow {
                         property string from: ""
                         property real k: 1
                         onTargetChanged: { from = shown; k = 0; morph.restart() }
-                        NumberAnimation { id: morph; target: line; property: "k"; to: 1; duration: 220 + line.index * 35 }
+                        NumberAnimation { id: morph; target: line; property: "k"; to: 1; duration: Theme.ms(220 + line.index * 35) }
                         readonly property string shown: Decode.frame(from, target, k, true)
 
                         Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.accent, line.on && line.app ? 0.14 : 0) }

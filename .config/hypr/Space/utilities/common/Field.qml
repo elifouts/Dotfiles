@@ -7,6 +7,7 @@ Rectangle {
     property string placeholder: ""
     property bool secret: false
     property bool readOnly: false
+    property var keysTo: []
     signal accepted()
     function grab() { input.forceActiveFocus() }
 
@@ -28,6 +29,7 @@ Rectangle {
         color: Theme.fg
         clip: true
         focus: true
+        Keys.forwardTo: field.keysTo
         onAccepted: field.accepted()
     }
     Hud { x: 8; height: parent.height; visible: !input.text; text: field.placeholder; color: Theme.alpha(Theme.fg, 0.3) }

@@ -9,6 +9,7 @@ import "launcher"
 import "scan"
 import "settings"
 import "starmap"
+import "welcome"
 
 ShellRoot {
     id: shell
@@ -32,10 +33,10 @@ ShellRoot {
     Binding { target: Media; property: "side"; value: "left" }
 
     component Overlay: LazyLoader {
-        function toggle() {
-            if (active) return item?.close()
+        function toggle(scr) {
+            if (active) return item?.toggle ? item.toggle() : item?.close()
             Ui.panel = ""
-            Ui.target = Hypr.focusedScreen()
+            Ui.target = scr ?? Hypr.focusedScreen()
             active = true
         }
     }
@@ -43,9 +44,18 @@ ShellRoot {
     Overlay { id: overview; StarMap { onDone: overview.active = false } }
     Overlay { id: scan; Scan { onDone: scan.active = false } }
     Overlay { id: settings; Settings { onDone: settings.active = false } }
+    Welcome {
+        id: tour
+        landing: overview.active
+        onPanel: (name, call) => {
+            const o = ({ settings: settings, launcher: launcher, overview: overview })[name]
+            if (o && o.active !== (call === "open")) o.toggle(tour.screen)
+        }
+        onPeek: page => { if (Ui.sheet !== page) shell.sheet(page) }
+    }
 
     function sheet(which) {
-        if (settings.active && Ui.sheet !== which) { Ui.sheet = which; settings.item.tab = which; return }
+        if (settings.active && Ui.sheet !== which) { Ui.sheet = which; settings.item.tab = which; settings.item.open(); return }
         Ui.sheet = which
         settings.toggle()
     }
@@ -55,9 +65,8 @@ ShellRoot {
         case "overview": return overview.toggle()
         case "scan": return scan.toggle()
         case "settings": return sheet("core")
-        case "profiles": return sheet("profiles")
         case "colors": return sheet("colors")
-        case "motion": return sheet("motion")
+        case "motion": return sheet("animations")
         case "desk": return Ui.editing = Ui.editing ? "" : Hypr.focusedScreen()?.name ?? ""
         case "bar": return Ui.bar = !Ui.bar
         case "world": return World.hop()

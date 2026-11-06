@@ -30,8 +30,8 @@ Item {
     onLiveChanged: if (live !== "") { kind = live }
     property real extraW: dropped ? panelW - natW : 0
     property real drop: dropped ? body.height + 22 : 0
-    Behavior on extraW { NumberAnimation { duration: Theme.open; easing.type: Easing.OutCubic } }
-    Behavior on drop { NumberAnimation { duration: Theme.open; easing.type: Easing.OutCubic } }
+    Behavior on extraW { Settle { duration: Theme.open } }
+    Behavior on drop { Settle { duration: Theme.open } }
 
     width: natW + extraW
     height: 28 + drop
@@ -39,7 +39,7 @@ Item {
     transform: Translate { y: -(1 - wing.intro) * 12 }
     SequentialAnimation on intro {
         PauseAnimation { duration: wing.introDelay }
-        NumberAnimation { to: 1; duration: Theme.open; easing.type: Easing.OutCubic }
+        Settle { to: 1; duration: Theme.open }
     }
 
     function fx(v) { return lean > 0 ? v : width - v }
@@ -87,7 +87,7 @@ Item {
             y: 11 + Math.min(0, parent.height - height - 22)
             width: wing.panelW - 24
             opacity: wing.dropped ? 1 : 0
-            Behavior on opacity { NumberAnimation { duration: Theme.open; easing.type: Easing.OutCubic } }
+            Behavior on opacity { Settle { duration: Theme.open } }
             source: wing.kind ? "panels/Panel" + wing.kind[0].toUpperCase() + wing.kind.slice(1) + ".qml" : ""
         }
     }

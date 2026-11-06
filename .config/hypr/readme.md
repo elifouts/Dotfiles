@@ -124,7 +124,7 @@ wallpaper-apply.sh → awww + color-apply.sh → wal → ~/.cache/wal/*
                                                  └ firefox    pywalfox update
 ```
 
-In Space each profile keeps its color in `space.world`, with the finished palette so the switch doesn't need the shell to make it. `sync_world` writes it to `dark/space.json` and `~/.config/space/world.json`. A profile without one uses Default, which is gruvbox. Picking a color on Default moves you onto the variant entry. Hopping worlds or landing on a star doesn't touch the profile, so switching back brings its color back.
+In Space each profile keeps its color in `space.world`, with the finished palette so the switch doesn't need the shell to make it. `sync_world` writes it to `dark/space.json` and `~/.config/space/world.json`. A profile without one uses Default, which is gruvbox. Picking a color on Default moves you onto the variant entry. Hopping worlds or landing on a star doesn't touch the profile, so switching back brings its color back. Each star also keeps its own hue and landing on it applies that, so `sync_world` sets `restored` in `world.json` and `World.qml` repaints the current workspace's star to match.
 
 `state/color-theme` is `pywal` or a scheme from `~/.config/wal/colorschemes/`. Role picks like the accent slot are saved per scheme, and per wallpaper on pywal.
 
@@ -203,13 +203,20 @@ Same scripts, settings and color themes as Modern, none of the visuals. One proc
 | Part | Key | What it is |
 |---|---|---|
 | land | | the wallpaper is a shader, workspaces pan across it |
-| world | `Alt+W` | hue and seed in `World.qml`, writes `wal/colorschemes/dark/space.json`, not saved to the profile |
+| world | `Alt+W` | new color and land from `World.qml`, not saved to the profile. `before` in `Land.qml` is a second terrain holding the old seed and colors. `hopProg` in `World.qml` drives every monitor: both pan together while a soft edge wipes the old one away and the moon comes back overhead. a press mid way only runs it to the end fast. the reload waits for it all to stop with `Ui.holdTheme` |
 | star map | `Super+Tab` | workspaces and special workspaces with windows are stars, windows are planets, pypr scratchpads are moons |
 | scan | `Alt+Tab` | visor with system info |
 | launcher | tap `Super` | little terminal under the bar, `Tab` cycles apps, commands and a bare kitty prompt, `Shift+Enter` runs in the background instead of kitty |
 | desk | `Alt+D` | widgets, layouts in `~/.config/space/layouts/` |
-| settings, profiles | `Alt+S`, `Super+P` | hud sheet |
+| settings | `Alt+S` | hud sheet that sizes to each tab, most pages come from the shared `Schema.js`, `LAYOUT` in Space's `Schema.js` sets their columns, right click resets an option |
+| welcome | first run | the tour. the galaxy map opens, closes itself after takeoff and moves on once it has landed. goes to one empty workspace and back so it can't jump monitors |
 | lock | `Super+L` | land dimmed behind a small hud |
+
+Panels move on Hyprland's curves like Modern, through `Settle`, `Theme.leave` and `Theme.ms`. The star map's flights and the world hop keep their own timing, they're tied to the capture and terrain steps below. `hyprctl animations` reports `windowsIn` as `spring:easy` and a spring isn't a bezier, so `ThemeBase` falls back to `global`.
+
+`Hud` text scrambles when it first shows and when it changes. Anything that ticks sets `decode: false`, like the timer, volume, sliders and seek times.
+
+Star map cards show the color you'd land on in the corner: the preset's name, or the hex if it's random, in its accent. Planets get their own accent from the system's preset unless that preset has a pinned accent.
 
 Star map keys: mouse aims, `wasd`, arrows or `hjkl` fly, `q` `e` turn, `shift` is fast, `tab` cycles your systems.
 
@@ -226,6 +233,8 @@ Launch and landing stay smooth because the heavy work happens while nothing is m
 - the camera updates once per finished frame, so it works at any refresh rate
 
 **How the shaders work**
+
+The land's colors go through `dither()` in `land.frag`, or the faint moon and sky band into shapes in 8-bit. `h3` is a `mod 289` hash because the old float one could give a cell's shared corner different values, which drew hard blocks on the moon. Don't use `uint` in these shaders, Qt loads a GLSL version here that doesn't have it.
 
 The scenery has no images and there's no 3D engine. QML keeps the state and hands numbers and colors to the shaders, and a QML property reaches the shader when it has the same name as a uniform. Colors get mixed from the theme in `Terrain.qml`, so a new theme doesn't need a recompile. Editing a `.frag` does, see "I edited a shader and nothing happened".
 
@@ -287,7 +296,7 @@ wallpaper/wallpapers.sh install | pull | dev-pull | push
 | gaps, blur, curves, window rules | `<Style>/base/style.lua` |
 | what runs at login | `session.lua`, `<Style>/base/session.sh` |
 | idle timeouts | `hypridle.conf` |
-| add a setting | one line in `Modern/utilities/settings/Schema.js` |
+| add a setting | one line in `shared/core/Schema.js`, both styles draw it. Space picks its pages in `Space/utilities/common/Schema.js` |
 | add a Modern utility | new folder with a `shell.qml` and an `IpcHandler`, then a bind. if it has its own components, add `import "folder"` to `utilities/shell.qml` |
 | add a bar module | `Modern/utilities/bar/Module.qml` |
 | add a bar style | new folder in `quickshellbar/` or `waybar/` |
@@ -395,7 +404,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - `Space` binds go through `shells.sh`, not `GlobalShortcut`. That crashed the shell on exit and it kept respawning on style switches
 - `shells.sh stop` loops because a crash on exit gets respawned
 - Never hide the launcher window. The icon textures drop and it stutters
-- `Backdrop` and blur opacity never reach 0, Qt skips the first blur render otherwise
+- `Backdrop` and blur opacity never reach 0, Qt skips the first blur render otherwise.
 - `Entry.qml` hardcodes its loop time. `Theme.ms` can hit 0 and a 0ms infinite loop maxes the cpu
 - The bar surface is one fixed size, tall enough for the biggest card. Resizing it glitches and redraws the blur
 - Lock surfaces are transparent, opaque ones get a low precision format and the blur bands
@@ -451,7 +460,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 
 ## Every file
 
-All 338 of them. `→` means it's a symlink, the real file is in that `shared/` folder.
+All 346 of them. `→` means it's a symlink, the real file is in that `shared/` folder.
 
 <details>
 <summary><b>hypr/ (root)</b></summary>
@@ -539,6 +548,7 @@ shared/
 ├─ core/
 │  ├─ Hypr.qml                paths, which screen has focus or the cursor, dispatch
 │  ├─ Motion.js               animation presets and curves for both settings pages
+│  ├─ Schema.js               every settings page and option, one line per setting
 │  ├─ Store.qml               settings state, batches writes to hypr-settings.py
 │  ├─ ThemeBase.qml           palette, rounding, gaps, timing. each Theme.qml extends this
 │  └─ Watched.qml             FileView that rereads when the file changes
@@ -580,7 +590,8 @@ shared/
 │  ├─ Morph.qml               the grow out of a dot open and close
 │  ├─ SettingBezier.qml       full curve editor with preview and randomize
 │  ├─ Settle.qml              NumberAnimation on hyprland's window curve
-│  └─ SwapText.qml            text that slides out and types back in
+│  ├─ SwapText.qml            text that slides out and types back in
+│  └─ Tour.qml                first run tour, each style gives it steps and spots
 └─ widgets/
    ├─ Calendar.qml            calendar and todo list
    ├─ CaptureTab.qml          screenshot, record, cast and share tab
@@ -729,6 +740,7 @@ Modern/utilities/common/
 ├─ PlayButton.qml          → media: accent circle with the play/pause morph
 ├─ PlayPause.qml           → media: shape that morphs between play and pause
 ├─ Pop.qml                 quick bounce on a rename
+├─ Say.qml                 the tour's text, plain in Modern
 ├─ Power.qml               → system: session actions and battery
 ├─ Rise.qml                staggered fade and pop in
 ├─ Seek.qml                → media: smooth progress bar
@@ -742,6 +754,7 @@ Modern/utilities/common/
 ├─ Theme.qml               Modern's theme, just ThemeBase
 ├─ ThemeBase.qml           → core: palette, rounding, gaps, timing. each Theme.qml extends this
 ├─ Tile.qml                the faint panel behind menu rows
+├─ Tour.qml                → ui: first run tour, each style gives it steps and spots
 ├─ TimerTab.qml            → widgets: drag ring timer ui
 ├─ Todos.qml               → widgets: todo storage in state/todos.json
 ├─ Updates.qml             → system: pending pacman and aur count, every 30 min
@@ -791,7 +804,7 @@ Modern/utilities/
 │  ├─ CurvePlot.qml          → ui: draggable bezier graph
 │  ├─ Dropdown.qml           dropdown control
 │  ├─ Motion.js              → core: animation presets and curves for both settings pages
-│  ├─ Schema.js              every page and option, one line per setting
+│  ├─ Schema.js              → core: every settings page and option, one line per setting
 │  ├─ Segmented.qml          segmented control
 │  ├─ SettingAnimpreset.qml  animation preset picker
 │  ├─ SettingBar.qml         waybar or quickshell picker
@@ -812,7 +825,7 @@ Modern/utilities/
 │  ├─ blur.frag.qsb          compiled blur shader, this is what runs
 │  └─ shell.qml              full screen wallpaper picker
 ├─ welcome/
-│  └─ shell.qml              first run tour
+│  └─ shell.qml              Modern's tour steps
 ├─ boot.qml                  wrapper so boot can reach common/
 ├─ lock.qml                  wrapper so lock can reach common/
 └─ shell.qml                 the shell. loads every */shell.qml
@@ -888,7 +901,9 @@ Space/utilities/common/
 ├─ PlayButton.qml          → media: accent circle with the play/pause morph
 ├─ PlayPause.qml           → media: shape that morphs between play and pause
 ├─ Power.qml               → system: session actions and battery
-├─ Schema.js               only the keys Space's sheet touches
+├─ Say.qml                 the tour's text, scrambles in Space
+├─ Schema.js               which shared pages Space shows, plus its own keys
+├─ SchemaBase.js           → core: every settings page and option, one line per setting
 ├─ Seek.qml                → media: smooth progress bar
 ├─ Settle.qml              → ui: NumberAnimation on hyprland's window curve
 ├─ SkipButton.qml          → media: prev/next that kicks when it skips
@@ -900,6 +915,7 @@ Space/utilities/common/
 ├─ ThemeBase.qml           → core: palette, rounding, gaps, timing. each Theme.qml extends this
 ├─ TimerTab.qml            → widgets: drag ring timer ui
 ├─ Todos.qml               → widgets: todo storage in state/todos.json
+├─ Tour.qml                → ui: first run tour, each style gives it steps and spots
 ├─ Ui.qml                  what's open, so windows can react to each other
 ├─ Updates.qml             → system: pending pacman and aur count, every 30 min
 ├─ Watched.qml             → core: FileView that rereads when the file changes
@@ -955,6 +971,8 @@ Space/utilities/
 │  ├─ starmap.frag       far sky shader
 │  ├─ starmap.frag.qsb   compiled, this is what runs
 │  └─ StarMap.qml        3d star map. workspaces are stars, windows are planets
+├─ welcome/
+│  └─ Welcome.qml        Space's tour steps
 ├─ lock.qml              lock and its screen, own process with the land behind it
 └─ shell.qml             the whole shell. overlays load lazily and drop on close
 ```

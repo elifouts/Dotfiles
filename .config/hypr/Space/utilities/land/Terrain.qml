@@ -4,10 +4,13 @@ import "../common"
 ShaderEffect {
     property int ws: 1
     property real screenX: 0
-    property real pan: (ws - 1) * (Store.values["space.parallax"] ?? 1) + screenX / 2000
+    property real pan: (ws - 1) * (Store.values["space.parallax"] ?? 1) + screenX / 2000 + drift
     property real zoom: 1
     property real lift: 0
     property real glow: 0
+    property real drift: 0
+    property real skyFade: 1
+    property real wipe: 0
     property real rise: 0
     property real clear: 0
     property real orbit: 1

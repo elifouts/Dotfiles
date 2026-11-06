@@ -26,40 +26,37 @@ PanelWindow {
         asTheme: true
         moonless: win.screen === Hypr.moonScreen ? 0 : 1
         layerMode: 1
+        fade: World.hopBusy || Ui.overview ? 0 : Theme.ms(900)
+        drift: World.hopBusy ? World.hopTravel - (World.hopSwapped ? 1.2 : 0) : 0
+        lift: World.hopBusy && World.hopSwapped ? 0.9 * Math.pow(1 - World.hopAfter, 3) : 0
+        skyFade: !World.hopBusy ? 1 : World.hopSwapped ? World.ease(World.hopAfter) : 1 - World.ease(World.hopProg / 0.3)
         layer.enabled: true
-        Behavior on pan { NumberAnimation { duration: 1400; easing.type: Easing.InOutCubic } }
+        Behavior on pan { enabled: !World.hopBusy; NumberAnimation { duration: Theme.ms(1400); easing.type: Easing.InOutCubic } }
+    }
+    Terrain {
+        id: before
+        anchors.fill: parent
+        visible: World.hopBusy
+        ws: win.ws
+        screenX: land.screenX
+        moonless: land.moonless
+        layerMode: 1
+        drift: World.hopTravel
+        lift: -0.9 * (1 - Math.cos(Math.PI / 2 * Math.min(1, World.hopProg / 0.5)))
+        skyFade: 1 - World.ease(World.hopProg / 0.5)
+        wipe: World.ease(World.hopAfter)
     }
     Twinkle { anchors.fill: parent; under: land; running: !Ui.overview }
 
-    Rectangle { id: flash; anchors.fill: parent; color: Theme.accent; opacity: 0 }
     Connections {
         target: World
-        function onLanded() { if (!World.hopping && !Ui.overview) landing.restart() }
-        function onHopped(h) { land.fade = 900; land.hue = h; release.stop(); fadeOff.stop(); hopping.restart() }
-    }
-    SequentialAnimation {
-        id: hopping
-        ParallelAnimation {
-            NumberAnimation { target: land; property: "lift"; to: -0.9; duration: 450; easing.type: Easing.InSine }
-            NumberAnimation { target: land; property: "glow"; to: 1; duration: 450; easing.type: Easing.OutQuad }
-            SequentialAnimation {
-                PauseAnimation { duration: 200 }
-                ScriptAction { script: World.hopLand() }
-            }
+        function onHopped() {
+            before.seed = land.seed
+            before.bg = land.bg
+            before.accent = land.accent
+            before.fg = land.fg
+            before.tone = land.tone
         }
-        ScriptAction { script: land.lift = 0.9 }
-        ParallelAnimation {
-            NumberAnimation { target: land; property: "lift"; to: 0; duration: 500; easing.type: Easing.OutSine }
-            NumberAnimation { target: land; property: "glow"; to: 0; duration: 500; easing.type: Easing.InQuad }
-        }
-        ScriptAction { script: release.restart() }
-    }
-    Timer { id: release; interval: 4000; onTriggered: { land.hue = -1; fadeOff.restart() } }
-    Timer { id: fadeOff; interval: 1000; onTriggered: land.fade = 0 }
-    ParallelAnimation {
-        id: landing
-        NumberAnimation { target: land; property: "zoom"; from: 2.6; to: 1; duration: 1300; easing.type: Easing.OutCubic }
-        NumberAnimation { target: flash; property: "opacity"; from: 0.5; to: 0; duration: 900; easing.type: Easing.OutQuad }
     }
 
     Desk { anchors.fill: parent; model: win.desk; visible: Ui.editing !== win.screen?.name }

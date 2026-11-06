@@ -35,10 +35,10 @@ Scope {
     property real cpu: 0
 
     Component.onCompleted: { poll.running = true; opening.start() }
-    NumberAnimation { id: opening; target: scan; property: "t"; to: 1; duration: Theme.slow; easing.type: Easing.OutCubic }
+    Settle { id: opening; target: scan; property: "t"; to: 1; duration: Theme.slow }
     SequentialAnimation {
         id: closing
-        NumberAnimation { target: scan; property: "t"; to: 0; duration: Theme.quick; easing.type: Easing.InCubic }
+        Settle { target: scan; property: "t"; to: 0; duration: Theme.quick; easing.bezierCurve: Theme.leave }
         ScriptAction { script: scan.done() }
     }
     function close() { if (!closing.running) { opening.stop(); closing.start() } }
@@ -102,6 +102,7 @@ Scope {
             width: parent.width - 90
             horizontalAlignment: Text.AlignRight
             elide: Text.ElideLeft
+            decode: false
             text: parent.v
             font.pixelSize: 12
             color: Theme.fg
@@ -110,7 +111,7 @@ Scope {
     component Meter: Kit.Slide {
         property real target: 0
         value: target
-        Behavior on value { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+        Behavior on value { Settle { duration: Theme.ms(400) } }
         MouseArea { anchors.fill: parent }
     }
 
@@ -160,6 +161,7 @@ Scope {
                     SystemClock { id: clock; precision: SystemClock.Seconds }
                     Hud {
                         caps: false
+                        decode: false
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: Qt.formatTime(clock.date, Store.values["space.clock24"] === false ? "h:mm:ss" : "HH:mm:ss")
                         font.pixelSize: 34

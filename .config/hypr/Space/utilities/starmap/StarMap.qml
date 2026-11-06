@@ -170,7 +170,7 @@ Scope {
     function worldHue(s, i) {
         const h = sysHue(s), f = World.random ? null : World.themeFor(h)
         if (!f) return (h + (i + 1) * 0.618) % 1
-        return World.accentHue(f.t.c[3 + (f.i - 3 + i + 1) % 6])
+        return World.accentHue(f.t.c[World.pins[f.t.id] ?? 3 + (f.i - 3 + i + 1) % 6])
     }
     function sysSeed(s, n = 5) { return 1 + Math.round(sysRand(s, n) * 996) }
     function tiltOf(s) { return 0.22 + sysRand(s, 2) * 0.3 }
@@ -364,6 +364,7 @@ Scope {
     }
     SequentialAnimation {
         id: takeoff
+        onFinished: if (map.queued || Ui.touring) map.close()
         ParallelAnimation {
             NumberAnimation { target: map; property: "veil"; to: 1; duration: 600; easing.type: Easing.OutCubic }
             SequentialAnimation {
@@ -436,7 +437,8 @@ Scope {
         gateFrames = 0
         gate = descend
     }
-    function close() { if (!busy) warp(currentStar()) }
+    property bool queued: false
+    function close() { if (!busy) warp(currentStar()); else queued = warm || takeoff.running }
     SequentialAnimation {
         id: descend
         property int ms: 4200
@@ -580,7 +582,7 @@ Scope {
             color: "transparent"
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.namespace: "space-overview"
-            WlrLayershell.keyboardFocus: main ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+            WlrLayershell.keyboardFocus: main && !Ui.touring ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
             Connections {
                 target: scene.Window.window
@@ -701,7 +703,7 @@ Scope {
                     Orb {
                         id: sb
                         property real boost: u.picked ? 1.7 : 1
-                        Behavior on boost { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
+                        Behavior on boost { Settle { duration: Theme.ms(500) } }
                         visible: !!u.p && u.p.z > 3
                         width: map.starSize(u.p?.s ?? 0) * boost
                         height: width
@@ -714,12 +716,12 @@ Scope {
                         opacity: Math.max(0.55, 1 - u.far * u.far) * Math.min(1, ((u.p?.z ?? 0) - 3) / 10)
                     }
                     Column {
-                        visible: sb.visible && map.carded?.id !== u.modelData.id
+                        visible: sb.visible && map.ui > 0 && map.carded?.id !== u.modelData.id
                         opacity: map.ui
                         x: (u.p?.x ?? 0) - win.ox + sb.width / 2 + 6
                         y: (u.p?.y ?? 0) - win.oy - 8
-                        Hud { text: map.sysName(u.modelData.id) + (u.modelData.id === map.current ? "  ◂" : ""); color: u.picked ? Theme.accent : Theme.fg; opacity: u.picked || map.aimed === u.modelData ? 1 : 0.6 }
-                        Hud { text: map.nameOf(u.modelData.ws); font.pixelSize: 10; color: Theme.dim; visible: text !== "" && (u.picked || map.aimed === u.modelData || u.modelData.id === map.current) }
+                        Hud { decode: false; text: map.sysName(u.modelData.id) + (u.modelData.id === map.current ? "  ◂" : ""); color: u.picked ? Theme.accent : Theme.fg; opacity: u.picked || map.aimed === u.modelData ? 1 : 0.6 }
+                        Hud { decode: false; text: map.nameOf(u.modelData.ws); font.pixelSize: 10; color: Theme.dim; visible: text !== "" && (u.picked || map.aimed === u.modelData || u.modelData.id === map.current) }
                     }
                 }
             }
@@ -750,6 +752,7 @@ Scope {
                     Hud {
                         x: -Math.cos(mk.ang) * 20 - width / 2
                         y: -Math.sin(mk.ang) * 14 - height / 2
+                        decode: false
                         text: mk.modelData.special ?? String(mk.modelData.id).padStart(2, "0")
                         font.pixelSize: 9
                         color: mk.modelData.id === map.current ? Theme.accent : Theme.dim
@@ -785,6 +788,7 @@ Scope {
                         visible: pl.visible && bd.modelData.kind !== "home" && !bd.modelData.natural && map.aimed === bd.modelData
                         x: pl.x + pl.width / 2 + bd.rpx + 8
                         y: pl.y + pl.height / 2 - 7
+                        decode: false
                         text: bd.modelData.kind === "moon" ? (bd.modelData.special ?? "") : map.appOf(bd.modelData.window)
                         font.pixelSize: 10
                         color: Theme.accent
@@ -820,6 +824,9 @@ Scope {
                     Column {
                         id: info
                         readonly property var o: cardBox.o
+                        readonly property real hue: o ? o.hue ?? map.sysHue(o) : 0
+                        readonly property string accent: World.palette(hue).colors.color9
+                        readonly property string world: World.random ? accent : World.themeFor(hue)?.t.name ?? accent
                         readonly property string kind: o?.kind ?? ""
                         readonly property var wins: kind === "ws" ? o.ws.toplevels.values : []
                         x: 16
@@ -835,14 +842,17 @@ Scope {
                                 : info.kind === "home" ? (info.o.sys.kind === "ws" ? map.sysName(info.o.sys.id) + " home" : "uncharted world")
                                 : info.kind ? "uncharted system" : ""
                         }
+                        Row {
+                        spacing: 8
                         Hud {
                             color: Theme.accent
                             text: info.kind === "ws" ? (info.wins.length + 1) + (info.wins.length ? " planets" : " planet")
                                 : info.kind === "planet" ? "planet of " + map.sysName(info.o.wsid)
                                 : info.kind === "moon" ? (info.o.natural ? "of " + (info.o.sys.kind === "ws" ? map.sysName(info.o.sys.id) : "an uncharted world") : "scratchpad moon")
-                                : info.kind === "home" ? (info.o.sys.kind === "ws" ? "your world" : "a new world, new colours")
+                                : info.kind === "home" ? (info.o.sys.kind === "ws" ? "your world" : "a new world")
                                 : info.kind ? "1 planet  //  unexplored" : ""
                         }
+                        Hud { visible: info.kind === "home" && info.o.sys.kind !== "ws";}}
                         Repeater {
                             model: info.wins.slice(0, 8)
                             Hud {
@@ -853,10 +863,16 @@ Scope {
                             }
                         }
                         Hud { caps: false; elide: Text.ElideRight; font.pixelSize: 11; color: Theme.dim; width: info.width; visible: info.kind === "planet"; text: info.o?.window?.title ?? "" }
-                        Hud {
-                            color: Theme.alpha(Theme.fg, 0.4)
-                            font.pixelSize: 9
-                            text: !info.kind ? "" : info.o.star ? "click  land" : info.o.id === map.sel?.id ? "click  land here" : "click  fly to it"
+                        Item {
+                            width: info.width
+                            height: hint.height
+                            Hud {
+                                id: hint
+                                color: Theme.alpha(Theme.fg, 0.4)
+                                font.pixelSize: 9
+                                text: !info.kind ? "" : info.o.star ? "click  land" : info.o.id === map.sel?.id ? "click  land here" : "click  fly to it"
+                            }
+                            Hud { anchors.right: parent.right; font.pixelSize: 9; visible: !!info.kind; text: info.world; color: info.accent }
                         }
                     }
                 }
@@ -873,12 +889,13 @@ Scope {
             }
 
             Hud {
-                visible: win.main
+                visible: win.main && map.ui > 0
                 anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottomMargin: 26
                 opacity: map.ui * (map.idle ? 0 : 1)
-                Behavior on opacity { NumberAnimation { duration: 600 } }
+                Behavior on opacity { Settle { duration: Theme.ms(600) } }
+                decode: false
                 text: "mouse  look    wasd  fly    shift  fast    q e  turn    tab  next system    space  home    click  select    esc  land"
                 color: Theme.alpha(Theme.fg, 0.45)
             }

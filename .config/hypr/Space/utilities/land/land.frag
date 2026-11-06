@@ -27,6 +27,8 @@ layout(std140, binding = 0) uniform buf {
     float glow;
     float layerMode;
     float moonless;
+    float skyFade;
+    float wipe;
 };
 
 float h1(float n) {
@@ -50,16 +52,30 @@ float n2(vec2 p) {
     return mix(mix(h2(i), h2(i + vec2(1.0, 0.0)), f.x),
                mix(h2(i + vec2(0.0, 1.0)), h2(i + vec2(1.0, 1.0)), f.x), f.y);
 }
+vec3 perm(vec3 x) {
+    return mod((x * 34.0 + 1.0) * x, 289.0);
+}
 vec3 h3(vec3 p) {
-    p = fract(p * vec3(0.1031, 0.103, 0.0973) + seed * 0.011);
-    p += dot(p, p.yxz + 33.33);
-    return fract((p.xxy + p.yxx) * p.zyx);
+    p = mod(p + floor(seed), 289.0);
+    return perm(perm(perm(p) + p.yzx) + p.zxy) / 289.0;
+}
+float perm1(float x) {
+    return mod((x * 34.0 + 1.0) * x, 289.0);
+}
+float hx(vec3 p) {
+    p = mod(p + floor(seed), 289.0);
+    return perm1(perm1(perm1(p.x) + p.y) + p.z) / 289.0;
 }
 float n3(vec3 p) {
     vec3 i = floor(p), f = fract(p);
     f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(mix(h3(i).x, h3(i + vec3(1, 0, 0)).x, f.x), mix(h3(i + vec3(0, 1, 0)).x, h3(i + vec3(1, 1, 0)).x, f.x), f.y),
-               mix(mix(h3(i + vec3(0, 0, 1)).x, h3(i + vec3(1, 0, 1)).x, f.x), mix(h3(i + vec3(0, 1, 1)).x, h3(i + vec3(1, 1, 1)).x, f.x), f.y), f.z);
+    return mix(mix(mix(hx(i), hx(i + vec3(1, 0, 0)), f.x), mix(hx(i + vec3(0, 1, 0)), hx(i + vec3(1, 1, 0)), f.x), f.y),
+               mix(mix(hx(i + vec3(0, 0, 1)), hx(i + vec3(1, 0, 1)), f.x), mix(hx(i + vec3(0, 1, 1)), hx(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+}
+vec3 dither() {
+    float a = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+    float b = fract(52.9829189 * fract(dot(gl_FragCoord.yx + 17.0, vec2(0.06711056, 0.00583715))));
+    return vec3((a + b - 1.0) / 255.0);
 }
 float keep(float f, float px) {
     return smoothstep(0.5, 0.2, f * px);
@@ -95,9 +111,10 @@ vec2 craters(vec3 n, vec3 L, float sc, float dens, float s) {
     for (int y = -1; y <= 1; y++)
     for (int x = -1; x <= 1; x++) {
         vec3 c = i + vec3(x, y, z), r = h3(c + s);
+        if (r.x > dens) continue;
         vec3 dv = p - (c + 0.2 + 0.6 * h3(c + s + 17.0));
         float rad = mix(0.14, 0.46, r.y * r.y), d = length(dv) / rad;
-        float on = step(r.x, dens) * smoothstep(1.8, 1.3, d);
+        float on = smoothstep(1.8, 1.3, d);
         float side = dot(dv / max(length(dv), 1e-4), Lt);
         float wall = smoothstep(0.35, 0.95, d) * smoothstep(1.05, 0.9, d);
         float slope = smoothstep(0.95, 1.1, d) * smoothstep(1.7, 1.1, d);
@@ -108,7 +125,9 @@ vec2 craters(vec3 n, vec3 L, float sc, float dens, float s) {
 }
 float moonTone(vec3 n, vec3 L, float px, float crisp) {
     vec3 q = n + seed * 0.21;
-    float maria = smoothstep(0.48, 0.62, n3(q * 1.7 + 11.0) * 0.65 + n3(q * 4.1 + 3.0) * 0.35);
+    vec3 w = vec3(n3(q * 2.1 + 5.0), n3(q * 2.1 + 9.0), n3(q * 2.1 + 13.0)) - 0.5;
+    vec3 qw = q + w * 0.44;
+    float maria = smoothstep(0.42, 0.66, n3(qw * 1.7 + 11.0) * 0.55 + n3(qw * 4.1 + 3.0) * 0.3 + n3(qw * 8.3 + 7.0) * 0.15);
     float t = 0.72 - 0.26 * maria + (n3(q * 13.0) - 0.5) * 0.08 * keep(13.0, px) + (n3(q * 31.0) - 0.5) * 0.05 * keep(31.0, px);
     vec2 c = craters(n, L, 4.0, 0.45, 1.0) * smoothstep(0.12, 0.05, 4.0 * px);
     float k9 = smoothstep(0.12, 0.05, 9.0 * px), k18 = smoothstep(0.12, 0.05, 18.0 * px);
@@ -212,7 +231,7 @@ void main() {
     vec2 p = f - (vec2(h2(cell + 3.1), h2(cell + 7.7)) - 0.5) * 0.7;
     float dist = length(p);
     float size = mix(0.009, 0.022, h2(cell + 1.3));
-    float starDot = exp(-3.2 * (dist / size) * (dist / size)) * starOn;
+    float starDot = exp(-3.2 * (dist / size) * (dist / size)) * starOn * skyFade;
     float rate = mix(0.6, 1.8, h2(cell + 4.9));
     float phase = h2(cell + 8.3) * 6.2831853;
     float blink = sin(starClock * rate + phase);
@@ -225,24 +244,24 @@ void main() {
         vec2 sp0 = vec2(sxw - (sc * 7.0 + (h1(sc + 7.0) - 0.5) * 2.4), y - (0.5 + 0.25 * h1(sc + 13.0)));
         float sa = (h1(sc + 19.0) - 0.5) * 0.4, scs = cos(sa), sns = sin(sa);
         vec2 sq = vec2(scs * sp0.x + sns * sp0.y, -sns * sp0.x + scs * sp0.y);
-        fragColor = vec4(col * (1.0 - shipShape(sq, 0.09, fwidth(y))), 0.0) * qt_Opacity;
+        fragColor = vec4(col * (1.0 - shipShape(sq, 0.09, fwidth(y)) * skyFade), 0.0) * qt_Opacity;
         return;
     }
     vec2 s0 = vec2((h1(5.0) - 0.2) * aspect * 0.6, 0.8), dir = normalize(vec2(1.0, 0.28));
     vec2 sp = vec2(x, y) - s0;
     float along = dot(sp, dir), off = abs(dot(sp, vec2(-dir.y, dir.x)));
     col += (1.0 - smoothstep(0.0, 0.0015, off)) * smoothstep(0.0, 0.08, along) * (1.0 - smoothstep(0.06, 0.1, along))
-         * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 0.7;
+         * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 0.7 * skyFade;
     float sxw = x + pan * 0.3;
     float sc = floor(sxw / 7.0 + 0.5);
     vec2 sp0 = vec2(sxw - (sc * 7.0 + (h1(sc + 7.0) - 0.5) * 2.4), y - (0.5 + 0.25 * h1(sc + 13.0)));
     float sa = (h1(sc + 19.0) - 0.5) * 0.4, scs = cos(sa), sns = sin(sa);
     vec2 sq = vec2(scs * sp0.x + sns * sp0.y, -sns * sp0.x + scs * sp0.y);
-    float skyShip = shipShape(sq, 0.09, fwidth(y));
+    float skyShip = shipShape(sq, 0.09, fwidth(y)) * skyFade;
     float behind = -sq.x - 0.02;
     float tw = max(0.0018, fwidth(y) * 1.5);
     float trail = (1.0 - smoothstep(0.0, tw, abs(sq.y))) * smoothstep(-0.004, 0.0, behind) * (1.0 - smoothstep(0.0, 0.3, behind));
-    col += warm.rgb * trail * 0.8;
+    col += warm.rgb * trail * 0.8 * skyFade;
     col = mix(col, mix(near.rgb, horizon.rgb, 0.18), skyShip);
     cover = skyShip;
     y = y0 + r2 * 0.35;
@@ -329,7 +348,7 @@ void main() {
 
         if (rr > 1.6) {
             float a0 = mix(1.0, ma, sp2 * clear);
-            fragColor = vec4(mix(col, mcol, ma) * a0, a0) * qt_Opacity;
+            fragColor = vec4((mix(col, mcol, ma) + dither()) * a0, a0) * qt_Opacity;
             return;
         }
         float ball = smoothstep(1.0 + aa, 1.0 - aa, rr) * show;
@@ -349,8 +368,9 @@ void main() {
         float halo = 0.5 * (1.0 - kind) * exp(-max(rr - 1.0, 0.0) * 22.0) * step(1.0, rr) * show * smoothstep(-0.4, 0.5, dot(dn, L.xy));
         body += mix(horizon.rgb, warm.rgb, 0.4) * halo;
         float a = mix(1.0, clamp(ball + halo + ma, 0.0, 1.0), sp2 * clear);
-        fragColor = vec4(body * a, a) * qt_Opacity;
+        fragColor = vec4((body + dither()) * a, a) * qt_Opacity;
         return;
     }
-    fragColor = vec4(col, 1.0) * qt_Opacity;
+    float edge = mix(aspect * 0.5 + 0.7, -aspect * 0.5 - 0.7, wipe);
+    fragColor = vec4(col + dither(), 1.0) * qt_Opacity * (1.0 - smoothstep(edge - 0.7, edge + 0.7, x));
 }

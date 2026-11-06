@@ -37,7 +37,7 @@ Item {
                 core: star.lit ? 0.36 : 0.24
                 glow: star.lit ? 1 : 0.5
                 opacity: star.lit ? 1 : 0.75
-                Behavior on core { NumberAnimation { duration: Theme.quick } }
+                Behavior on core { Settle { duration: Theme.quick } }
             }
             Rectangle {
                 visible: !star.lit && !star.shown
@@ -94,8 +94,8 @@ Item {
     }
     ParallelAnimation {
         id: shoot
-        NumberAnimation { id: headAnim; target: stars; property: "head"; duration: 360; easing.type: Easing.OutCubic }
-        NumberAnimation { id: tailAnim; target: stars; property: "tail"; duration: 360; easing.type: Easing.InQuad }
+        Settle { id: headAnim; target: stars; property: "head"; duration: Theme.ms(360) }
+        NumberAnimation { id: tailAnim; target: stars; property: "tail"; duration: Theme.ms(360); easing.type: Easing.InQuad }
     }
     Rectangle {
         visible: shoot.running

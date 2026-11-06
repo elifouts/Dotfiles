@@ -71,6 +71,7 @@ Item {
             model: w.lines
             Hud {
                 caps: false
+                decode: false
                 required property var modelData
                 x: w.d.align === "center" ? (body.width - width) / 2 : w.d.align === "right" ? body.width - width : 0
                 text: modelData[0]

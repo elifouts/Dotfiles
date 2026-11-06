@@ -16,7 +16,7 @@ Rectangle {
 
     transform: Translate { id: lift; y: 60 }
     Component.onCompleted: rise.start()
-    NumberAnimation { id: rise; target: lift; property: "y"; to: 0; duration: Theme.slow; easing.type: Easing.OutCubic }
+    Settle { id: rise; target: lift; property: "y"; to: 0; duration: Theme.slow }
 
     component Chip: Hud {
         property bool on: false

@@ -107,7 +107,7 @@ ShellRoot {
     property int wrong: 0
     property real t: 0
     Component.onCompleted: fadeIn.start()
-    NumberAnimation { id: fadeIn; target: root; property: "t"; to: 1; duration: 700; easing.type: Easing.OutCubic }
+    Settle { id: fadeIn; target: root; property: "t"; to: 1; duration: Theme.ms(700) }
 
     function submit() {
         if (checking || !pw) return
@@ -129,7 +129,7 @@ ShellRoot {
     }
     SequentialAnimation {
         id: leave
-        NumberAnimation { target: root; property: "t"; to: 0; duration: 350; easing.type: Easing.InCubic }
+        Settle { target: root; property: "t"; to: 0; duration: Theme.ms(350); easing.bezierCurve: Theme.leave }
         ScriptAction { script: { session.locked = false; Qt.quit() } }
     }
 

@@ -28,7 +28,6 @@ Singleton {
     property string curTheme: ""
     signal offersChanged()
     property var stars: ({})
-    signal landed()
     property bool heldReload: false
     Connections {
         target: Ui
@@ -38,21 +37,66 @@ Singleton {
             Quickshell.execDetached(["hyprctl", "reload", "config-only"])
         }
     }
-    signal hopped(real h)
+    signal hopped()
+    property bool hopPending: false
+    property bool hopFresh: false
     property real hopHue: -1
-    property bool hopping: false
-    function hop() {
-        hopHue = snap(Math.random())
-        hopped(hopHue)
+    property bool hopBusy: false
+    property real hopProg: 0
+    property bool hopSwapped: false
+    property bool hopRushing: false
+    function ease(x) { return (1 - Math.cos(Math.PI * Math.max(0, Math.min(1, x)))) / 2 }
+    readonly property real hopAfter: hopSwapped ? Math.max(0, (hopProg - 0.3) / 0.7) : 0
+    readonly property real hopTravel: 1.2 * ease(hopProg)
+    onHopProgChanged: {
+        if (!hopBusy || hopSwapped || hopProg < 0.3) return
+        hopSwapped = true
+        hopLand()
+    }
+    NumberAnimation {
+        id: hopRun
+        target: root
+        property: "hopProg"
+        to: 1
+        duration: Theme.ms(root.hopRushing ? 220 : 1300)
+        onFinished: {
+            root.hopRushing = false
+            root.hopBusy = false
+            Ui.holdTheme = false
+        }
+    }
+    function hop(fresh) {
+        if (hopBusy) {
+            if (hopRushing) return
+            hopRushing = true
+            hopRun.stop()
+            hopRun.start()
+            return
+        }
+        if (Ui.holdTheme) return
+        hopStart(!!fresh)
+    }
+    function hopStart(fresh) {
+        hopHue = snap(Math.random(), true)
+        hopFresh = fresh
+        hopPending = true
+        hopBusy = true
+        Ui.holdTheme = true
+        hopped()
+        hopSwapped = false
+        hopProg = 0
+        hopRun.restart()
     }
     function hopLand() {
-        if (hopHue < 0) return
-        const h = hopHue
-        hopHue = -1
-        hopping = true
-        paint(h)
-        reroll(h, landSeed)
-        hopping = false
+        if (!hopPending) return
+        hopPending = false
+        if (hopHue >= 0) recolor(hopHue)
+        landSeed = Math.round(Math.random() * 997)
+        if (hopFresh) {
+            seed = landSeed
+            commit()
+        }
+        save()
     }
 
     FileView {
@@ -73,9 +117,19 @@ Singleton {
                 root.pins = w.pins ?? ({})
                 root.random = !!w.random
                 root.curTheme = w.curTheme || (root.random ? "" : root.themeFor(root.hue)?.t.id ?? "")
+                root.repaint = !!w.restored
+                root.flushRepaint()
             } catch (e) {}
         }
     }
+    property bool repaint: false
+    function flushRepaint() {
+        if (!repaint || !(Hyprland.focusedWorkspace?.id > 0)) return
+        repaint = false
+        paint(hue)
+        save()
+    }
+    Connections { target: Hyprland; function onFocusedWorkspaceChanged() { root.flushRepaint() } }
     property string written: ""
     function save() {
         written = JSON.stringify({ hue: hue, seed: seed, landSeed: landSeed, stars: stars, pins: pins, curTheme: curTheme, random: random })
@@ -164,9 +218,11 @@ Singleton {
     }
     readonly property var accentNames: ["", "", "", "red", "green", "yellow", "blue", "purple", "cyan"]
     function recolor(h) {
+        hopHue = -1
         settle(h)
         paint(h)
         scheme.setText(JSON.stringify(palette(hue)))
+        Theme.saved = palette(hue)
         save()
     }
     function paint(h) {
@@ -180,7 +236,6 @@ Singleton {
         else landSeed = s
         scheme.setText(JSON.stringify(palette(hue)))
         save()
-        landed()
     }
 
     function palette(h) {

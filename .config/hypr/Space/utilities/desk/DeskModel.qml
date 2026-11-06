@@ -42,9 +42,9 @@ Scope {
     function show(list) { pending = list; swap.restart() }
     SequentialAnimation {
         id: swap
-        NumberAnimation { target: dm; property: "shown"; to: 0; duration: Theme.quick }
+        Settle { target: dm; property: "shown"; to: 0; duration: Theme.quick }
         ScriptAction { script: { dm.items = dm.pending; dm.picked = -1 } }
-        NumberAnimation { target: dm; property: "shown"; to: 1; duration: Theme.quick * 1.5 }
+        Settle { target: dm; property: "shown"; to: 1; duration: Theme.quick * 1.5 }
     }
 
     Timer { id: saveTimer; interval: 300; onTriggered: layout.setText(JSON.stringify(dm.items)) }

@@ -46,14 +46,16 @@ Item {
         property real value: 0
         property string glyph
         property bool off: false
+        property string readout
+        property bool scrollable: true
         signal moved(real v)
         width: parent?.width ?? 280
         height: 22
-        Text { id: sg; text: sl.glyph; width: 20; font.family: Theme.font; font.pixelSize: 13; color: sl.off ? Theme.dim : Theme.accent; anchors.verticalCenter: parent.verticalCenter }
+        Text { id: sg; text: sl.glyph; width: sl.readout ? 0 : 20; font.family: Theme.font; font.pixelSize: 13; color: sl.off ? Theme.dim : Theme.accent; anchors.verticalCenter: parent.verticalCenter }
         Item {
             id: track
-            x: sg.width + 6
-            width: parent.width - x - 40
+            x: sl.readout ? 0 : sg.width + 6
+            width: parent.width - x - (sl.readout ? 58 : 40)
             height: parent.height
             Repeater {
                 model: 24
@@ -71,10 +73,10 @@ Item {
                 function set(mx) { sl.moved(Math.max(0, Math.min(1, mx / width))) }
                 onPressed: m => set(m.x)
                 onPositionChanged: m => { if (pressed) set(m.x) }
-                onWheel: w => sl.moved(Math.max(0, Math.min(1, sl.value + (w.angleDelta.y > 0 ? 0.05 : -0.05))))
+                onWheel: w => w.accepted = sl.scrollable && (sl.moved(Math.max(0, Math.min(1, sl.value + (w.angleDelta.y > 0 ? 0.05 : -0.05)))), true)
             }
         }
-        Hud { anchors.right: parent.right; height: parent.height; text: sl.off ? "off" : Math.round(sl.value * 100); color: Theme.fg }
+        Hud { decode: false; anchors.right: parent.right; height: parent.height; text: sl.off ? "off" : sl.readout || Math.round(sl.value * 100); color: Theme.fg }
     }
 
     component Toggle: Item {
@@ -98,8 +100,8 @@ Item {
                 color: Theme.alpha(Theme.accent, tg.on ? 0.35 : area.containsMouse ? 0.12 : 0.05)
                 border.width: 1
                 border.color: tg.on ? Theme.accent : Theme.alpha(Theme.fg, 0.3)
-                Behavior on color { ColorAnimation { duration: 160 } }
-                Behavior on border.color { ColorAnimation { duration: 160 } }
+                Behavior on color { ColorAnimation { duration: Theme.fast } }
+                Behavior on border.color { ColorAnimation { duration: Theme.fast } }
                 Rectangle {
                     y: 3
                     x: tg.on ? parent.width - width - 3 : 3
@@ -108,9 +110,9 @@ Item {
                     radius: 5
                     color: tg.on ? Theme.accent : Theme.alpha(Theme.fg, 0.55)
                     scale: area.pressed ? 0.8 : 1
-                    Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
-                    Behavior on color { ColorAnimation { duration: 160 } }
-                    Behavior on scale { NumberAnimation { duration: 80 } }
+                    Behavior on x { NumberAnimation { duration: Theme.ms(180); easing.type: Easing.OutBack } }
+                    Behavior on color { ColorAnimation { duration: Theme.fast } }
+                    Behavior on scale { Settle { duration: Theme.ms(80) } }
                 }
             }
             Hud { visible: tg.text !== ""; text: tg.text; height: parent.height; color: tg.on ? Theme.accent : Theme.dim }

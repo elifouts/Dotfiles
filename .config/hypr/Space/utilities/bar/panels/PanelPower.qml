@@ -40,7 +40,7 @@ Column {
                     width: tiles.w
                     height: parent.height
                     color: Theme.alpha(tile.armedNow ? Theme.warn : Theme.accent, tile.armedNow ? 0.14 : ma.containsMouse ? 0.08 : 0)
-                    Behavior on color { ColorAnimation { duration: 140 } }
+                    Behavior on color { ColorAnimation { duration: Theme.fast } }
                     Column {
                         anchors.centerIn: parent
                         spacing: 5
@@ -51,8 +51,8 @@ Column {
                             font.pixelSize: 16
                             color: tile.ink
                             scale: ma.pressed ? 0.85 : 1
-                            Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutBack } }
-                            Behavior on color { ColorAnimation { duration: 140 } }
+                            Behavior on scale { NumberAnimation { duration: Theme.ms(120); easing.type: Easing.OutBack } }
+                            Behavior on color { ColorAnimation { duration: Theme.fast } }
                         }
                         Hud { anchors.horizontalCenter: parent.horizontalCenter; font.pixelSize: 9; text: tile.armedNow ? "again" : tile.modelData[0]; color: tile.armedNow ? Theme.warn : Theme.dim }
                     }

@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../common"
 import "Motion.js" as Motion
+import "../common/Schema.js" as Schema
 
 PanelWindow {
     id: sheet
@@ -13,80 +14,123 @@ PanelWindow {
     screen: Ui.target
     anchors.bottom: true
     exclusionMode: ExclusionMode.Ignore
-    implicitWidth: Math.min(900, (screen?.width ?? 900) - 32)
-    implicitHeight: 500
+    implicitWidth: Math.min(1240, (screen?.width ?? 1240) - 32)
+    implicitHeight: 560
     color: "transparent"
     mask: Region { item: frame }
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "space-settings"
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    WlrLayershell.keyboardFocus: Ui.touring ? WlrKeyboardFocus.None : WlrKeyboardFocus.Exclusive
 
     property string tab: Ui.sheet
-    readonly property var tabs: ["core", "colors", "fonts", "motion", "profiles"]
+    readonly property var tabs: ["core", "colors", "fonts"].concat(Schema.PAGES.map(p => p.id), "profiles")
+    readonly property var page: Schema.PAGES.find(p => p.id === tab)
+    property int dir: 1
+    property int was: tabs.indexOf(tab)
+    onTabChanged: {
+        const i = tabs.indexOf(tab)
+        dir = i >= was ? 1 : -1
+        was = i
+        swap.restart()
+    }
     Component.onCompleted: { Store.refresh(); morph.open() }
     function close() { morph.close() }
+    function open() { morph.open() }
+    function toggle() { morph.leaving ? morph.open() : morph.close() }
     Morph { id: morph; openMs: 560; closeMs: 340; onClosed: sheet.done() }
-    property real h: tab === "motion" ? 500 : 330
-    Behavior on h { Settle { duration: Theme.move } }
+    property real w: Math.min(implicitWidth, Math.max(tabRow.implicitWidth + 96, content.implicitWidth + 48))
+    property real h: Math.min(implicitHeight, content.implicitHeight + 46)
+    Behavior on w { Settle { duration: Theme.fast } }
+    Behavior on h { Settle { duration: Theme.fast } }
     function step(d) {
         tab = tabs[(tabs.indexOf(tab) + d + tabs.length) % tabs.length]
     }
-    HyprlandFocusGrab { active: true; windows: [sheet]; onCleared: sheet.close() }
+    HyprlandFocusGrab { active: !Ui.touring && !morph.leaving; windows: [sheet]; onCleared: sheet.close() }
 
-    component Caption: Hud { width: 100; height: 24; color: Theme.alpha(Theme.fg, 0.35) }
-    component Pick: Row {
+    component Caption: Hud { width: 150; height: 20; caps: false; elide: Text.ElideRight; color: Theme.dim }
+    component Pick: Flow {
         id: pick
         property string label
         property var options: []
         property string key
         property var fallback
-        property var current: Store.values[key] || fallback
+        readonly property var raw: Store.values[key]
+        property var current: raw === "" ? options.find(o => o.dflt)?.v : raw ?? fallback
+        readonly property bool many: options.length > 6
+        readonly property var shown: many ? [options.find(o => (o.v ?? o) === current) ?? options[0]] : options
+        readonly property bool fits: shown.reduce((n, o) => n + String(o.l ?? o).length * 8.2 + 12, 0) <= width - 158
         signal chose(var v)
         onChose: v => { if (key) Store.set(key, v) }
-        height: 24
-        spacing: 12
-        Caption { text: pick.label }
-        Repeater {
-            model: pick.options
-            Hud {
-                required property var modelData
-                readonly property var v: modelData.v ?? modelData
-                text: modelData.l ?? modelData
-                height: 24
-                color: v === pick.current ? Theme.accent : area.containsMouse ? Theme.fg : Theme.dim
-                MouseArea { id: area; anchors.fill: parent; hoverEnabled: true; onClicked: pick.chose(parent.v) }
+        function next(d) {
+            const i = options.findIndex(o => (o.v ?? o) === current), o = options[(i + d + options.length) % options.length]
+            chose(o.v ?? o)
+        }
+        width: 320
+        Caption { width: 158; text: pick.label }
+        Flow {
+            width: pick.fits ? pick.width - 158 : pick.width
+            spacing: 12
+            Repeater {
+                model: pick.shown
+                Hud {
+                    required property var modelData
+                    readonly property var v: modelData.v ?? modelData
+                    text: (modelData.l ?? modelData) + (pick.many ? " \u203a" : "")
+                    height: 20
+                    color: v === pick.current ? Theme.accent : area.containsMouse ? Theme.fg : Theme.dim
+                    MouseArea {
+                        id: area
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: pick.many ? pick.next(1) : pick.chose(parent.v)
+                        onWheel: w => { if (pick.many) pick.next(w.angleDelta.y < 0 ? 1 : -1) }
+                    }
+                }
             }
         }
     }
-    component Toggle: Row {
+    component Toggle: Item {
         id: tg
         property string label
         property string key
         property bool fallback: true
-        height: 24
-        spacing: 12
-        Caption { text: tg.label }
+        property var raises
+        readonly property bool on: !!(Store.values[key] ?? fallback)
+        width: 320
+        implicitHeight: 20
+        Caption { width: tg.width - 40; text: tg.label }
         Kit.Toggle {
-            on: !!(Store.values[tg.key] ?? tg.fallback)
-            onFlip: Store.set(tg.key, !on)
+            anchors.right: parent.right
+            height: 20
+            on: tg.on
+            onFlip: {
+                const r = tg.raises, next = { [tg.key]: !tg.on }
+                if (!tg.on && r && Store.values[r.key] < r.min) next[r.key] = r.min
+                Store.setMany(next)
+            }
         }
     }
     component Knob: Row {
         id: knob
         property string key
         property string label
+        property string unit
         property real from: 0
         property real to: 1
         property real step: 1
-        property real fallback: 0
+        property real fallback: from
         readonly property real v: Store.values[key] ?? fallback
-        height: 22
-        spacing: 12
-        Caption { text: knob.label; height: 22 }
+        readonly property int digits: (String(step).split(".")[1] ?? "").length
+        width: 320
+        spacing: 8
+        Caption { text: knob.label }
         Kit.Slide {
-            width: 230
+            width: knob.width - 158
+            height: 20
+            scrollable: false
+            readout: knob.v.toFixed(knob.digits) + knob.unit
             value: (knob.v - knob.from) / (knob.to - knob.from)
-            onMoved: x => Store.set(knob.key, Math.round((knob.from + x * (knob.to - knob.from)) / knob.step) * knob.step)
+            onMoved: x => Store.set(knob.key, Number((Math.round((knob.from + x * (knob.to - knob.from)) / knob.step) * knob.step).toFixed(knob.digits)))
         }
     }
 
@@ -94,46 +138,68 @@ PanelWindow {
         id: frame
         anchors.bottom: parent.bottom
         anchors.bottomMargin: -(1 - morph.rise) * 18
-        anchors.horizontalCenter: parent.horizontalCenter
-        width: 44 + (sheet.width - 44) * Math.min(1, morph.mw)
-        height: 10 + (sheet.h - 10) * Math.min(1, morph.mh)
+        readonly property real fw: 44 + (sheet.w - 44) * Math.min(1, morph.mw)
+        x: Math.round((sheet.width - fw) / 2)
+        width: Math.round((sheet.width + fw) / 2) - x
+        height: Math.round(10 + (sheet.h - 10) * Math.min(1, morph.mh))
         opacity: Math.min(1, morph.t * 6)
         clip: true
         color: Theme.alpha(Theme.bg, 0.8)
         border.width: 1
         border.color: Theme.alpha(Theme.accent, 0.3)
         Rectangle { width: parent.width; height: 2; color: Theme.accent }
+        MouseArea {
+            anchors.fill: parent
+            z: 1
+            onPressed: m => { sheetKeys.forceActiveFocus(); m.accepted = false }
+        }
 
         Item {
-            x: (parent.width - width) / 2
-            width: sheet.width
-            height: sheet.h
+            x: Math.round((frame.fw - sheet.w) / 2)
+            width: Math.round(sheet.w)
+            height: Math.round(sheet.h)
             opacity: morph.stage(0.5)
 
             Row {
+                id: tabRow
                 x: 24
-                y: 14
-                spacing: 22
+                y: 10
+                spacing: 18
                 Repeater {
+                    id: tabItems
                     model: sheet.tabs
                     Hud {
                         required property string modelData
                         text: modelData
-                        font.pixelSize: 12
                         color: sheet.tab === modelData ? Theme.accent : Theme.dim
-                        Rectangle { anchors.top: parent.bottom; anchors.topMargin: 4; width: parent.width; height: 1; color: Theme.accent; visible: sheet.tab === parent.modelData }
                         MouseArea { anchors.fill: parent; onClicked: sheet.tab = parent.modelData }
                     }
                 }
             }
-            Hud { anchors.right: parent.right; anchors.rightMargin: 24; y: 14; text: "esc"; color: Theme.alpha(Theme.fg, 0.25) }
+            Rectangle {
+                readonly property Item on: tabItems.count ? tabItems.itemAt(sheet.tabs.indexOf(sheet.tab)) : null
+                x: tabRow.x + (on?.x ?? 0)
+                y: tabRow.y + tabRow.height + 3
+                width: on?.width ?? 0
+                height: 1
+                color: Theme.accent
+                Behavior on x { Settle { duration: Theme.fast } }
+                Behavior on width { Settle { duration: Theme.fast } }
+            }
+            Hud { anchors.right: parent.right; anchors.rightMargin: 24; y: 10; text: "esc"; color: Theme.alpha(Theme.fg, 0.25) }
 
             Loader {
+                id: content
                 x: 24
-                y: 50
-                width: parent.width - 48
-                height: parent.height - 62
-                sourceComponent: ({ colors: colors, fonts: fonts, motion: motion, profiles: profiles })[sheet.tab] ?? core
+                y: 34
+                transform: Translate { id: shift }
+                onLoaded: sheetKeys.forceActiveFocus()
+                sourceComponent: ({ core: core, colors: colors, fonts: fonts, profiles: profiles })[sheet.tab] ?? pageView
+            }
+            ParallelAnimation {
+                id: swap
+                Settle { target: content; property: "opacity"; from: 0; to: 1; duration: Theme.fast }
+                Settle { target: shift; property: "x"; from: 24 * sheet.dir; to: 0; duration: Theme.fast }
             }
         }
     }
@@ -141,11 +207,10 @@ PanelWindow {
     Component {
         id: core
         Row {
-            spacing: 40
+            spacing: 24
             Column {
-                spacing: 3
                 Pick {
-                    label: "style"
+                    label: "Style"
                     options: Object.keys(Store.styles).sort()
                     current: Store.active.style
                     onChose: v => {
@@ -154,25 +219,86 @@ PanelWindow {
                     }
                 }
                 Pick {
-                    label: "machine"
+                    label: "Machine"
                     options: Store.styles[Store.active.style] || []
                     current: Store.active.variant
                     onChose: v => { if (v !== Store.active.variant) Store.applyProfile(Store.active.style, v) }
                 }
-                Pick { label: "layout"; options: ["dwindle", "master"]; key: "config.general.layout" }
-                Toggle { label: "glow"; key: "config.decoration.glow.enabled" }
-                Toggle { label: "blur"; key: "config.decoration.blur.enabled" }
-                Toggle { label: "24h clock"; key: "space.clock24" }
-                Toggle { visible: !!Store.caps.touchpad; label: "natural scroll"; key: "config.input.touchpad.natural_scroll" }
             }
             Column {
-                spacing: 4
-                Knob { label: "gaps in"; key: "config.general.gaps_in"; to: 20; fallback: 4 }
-                Knob { label: "gaps out"; key: "config.general.gaps_out"; to: 40; fallback: 12 }
-                Knob { label: "border"; key: "config.general.border_size"; to: 4; fallback: 1 }
-                Knob { label: "rounding"; key: "config.decoration.rounding"; to: 20; fallback: 3 }
-                Knob { label: "mouse speed"; key: "config.input.sensitivity"; from: -1; to: 1; step: 0.05 }
-                Knob { label: "pan distance"; key: "space.parallax"; from: 0.2; to: 2; step: 0.1; fallback: 1 }
+                Toggle { label: "24h clock"; key: "space.clock24" }
+                Knob { label: "Pan distance"; key: "space.parallax"; from: 0.2; to: 2; step: 0.1; fallback: 1 }
+            }
+        }
+    }
+
+    Component {
+        id: pageView
+        Row {
+            spacing: 24
+            Repeater {
+                model: sheet.page?.columns ?? []
+                Column {
+                    id: col
+                    required property var modelData
+                    required property int index
+                    readonly property var all: modelData.reduce((a, s) => a.concat(s.controls), [])
+                    width: all.some(c => c.type === "bezier") ? 560 : 320
+                    visible: all.some(c => Schema.shown(c, Store.values, Store.caps))
+                    spacing: 10
+                    Repeater {
+                        model: col.modelData
+                        Column {
+                            id: sec
+                            required property var modelData
+                            required property int index
+                            visible: modelData.controls.some(c => Schema.shown(c, Store.values, Store.caps))
+                            width: col.width
+                            spacing: 2
+                            Kit.Title { glyph: "\u25c6"; text: sec.modelData.label }
+                            Repeater {
+                                model: sec.modelData.controls
+                                Loader {
+                                    id: ctl
+                                    required property var modelData
+                                    readonly property var def: modelData
+                                    width: sec.width
+                                    height: item?.implicitHeight ?? 0
+                                    visible: Schema.shown(def, Store.values, Store.caps)
+                                    active: visible
+                                    sourceComponent: ({ slider: slider, toggle: flip, choice: choice, bezier: bezier, animpreset: preset, cursors: cursors })[def.type]
+                                    Component { id: slider; Knob { key: ctl.def.key; label: ctl.def.label; unit: ctl.def.unit; from: ctl.def.min; to: ctl.def.max; step: ctl.def.step } }
+                                    Component { id: flip; Toggle { key: ctl.def.key; label: ctl.def.label; raises: ctl.def.raises } }
+                                    Component { id: choice; Pick { key: ctl.def.key; label: ctl.def.label; options: ctl.def.options } }
+                                    Component { id: bezier; SettingBezier {} }
+                                    Component {
+                                        id: preset
+                                        Pick {
+                                            label: "Preset"
+                                            options: Motion.PRESET_OPTIONS
+                                            current: Store.values["animation.preset"] || "theme"
+                                            onChose: v => Motion.pick(Store, v, Store.values["animation.curve"] || Motion.CURVE)
+                                        }
+                                    }
+                                    Component {
+                                        id: cursors
+                                        Pick {
+                                            label: "Cursor theme"
+                                            options: Store.cursors
+                                            current: Store.cursors.find(c => c.toLowerCase() === String(Store.values["cursor.theme"] || "").toLowerCase())
+                                            onChose: v => Store.set("cursor.theme", v)
+                                        }
+                                    }
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        acceptedButtons: Qt.RightButton
+                                        onClicked: Store.reset(ctl.def.key ?? (ctl.def.type === "cursors" ? "cursor.theme" : "animation"))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -180,21 +306,16 @@ PanelWindow {
     Component {
         id: colors
         Column {
-            spacing: 14
+            spacing: 8
+            TapHandler { acceptedButtons: Qt.RightButton; onTapped: Store.reset("space.world") }
             Row {
                 spacing: 12
-                Caption { text: "random" }
+                Caption { width: 60; caps: true; height: 24; text: "random" }
                 Kit.Toggle { on: World.random; onFlip: World.setRandom(!World.random) }
-                Item { width: 24; height: 1 }
-                Button { label: "new world"; onPressed: { World.reroll(); World.commit() } }
-                Hud { height: 24; color: Theme.alpha(Theme.fg, 0.3); text: World.random ? "any colour goes" : "click to apply  //  swatch picks accent" }
-            }
-            Row {
-                spacing: 12
-                Caption { text: "applied"; height: 14 }
-                Rectangle { width: 14; height: 14; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter }
+                Button { label: "new world"; onPressed: World.hop(true) }
+                Rectangle { width: 12; height: 12; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter }
                 Hud {
-                    height: 14
+                    height: 24
                     color: Theme.fg
                     text: World.applied ? World.applied.t.name + "  //  " + World.accentNames[World.applied.i] : World.random ? "random" : Store.colorTheme
                 }
@@ -203,7 +324,7 @@ PanelWindow {
                 columns: 9
                 spacing: 6
                 opacity: World.random ? 0.35 : 1
-                Behavior on opacity { NumberAnimation { duration: 200 } }
+                Behavior on opacity { Settle { duration: Theme.ms(200) } }
                 Repeater {
                     model: World.themes
                     Item {
@@ -211,20 +332,20 @@ PanelWindow {
                         required property var modelData
                         readonly property bool used: World.applied?.t.id === modelData.id
                         readonly property int usedAccent: used ? World.applied.i : -1
-                        width: 88
-                        height: 150
+                        width: 84
+                        height: 112
                         Rectangle {
                             anchors.fill: parent
                             color: Theme.alpha(Theme.accent, tile.used ? 0.1 : ma.containsMouse ? 0.06 : 0.02)
                             border.width: 1
                             border.color: tile.used ? Theme.accent : Theme.alpha(Theme.fg, 0.12)
-                            Behavior on color { ColorAnimation { duration: 140 } }
+                            Behavior on color { ColorAnimation { duration: Theme.fast } }
                         }
-                        Hud { x: 8; y: 8; font.pixelSize: 9; text: tile.modelData.name; color: tile.used ? Theme.fg : Theme.dim }
+                        Hud { x: 8; y: 6; font.pixelSize: 9; text: tile.modelData.name; color: tile.used ? Theme.fg : Theme.dim }
                         Column {
                             z: 2
                             x: 8
-                            y: 30
+                            y: 24
                             spacing: 2
                             Repeater {
                                 model: [0, 3, 4, 5, 6, 7, 8]
@@ -232,11 +353,11 @@ PanelWindow {
                                     id: sw
                                     required property int modelData
                                     readonly property bool pinned: World.pins[tile.modelData.id] === modelData
-                                    width: 72
-                                    height: 12
+                                    width: 68
+                                    height: 10
                                     color: tile.modelData.c[modelData]
                                     opacity: World.pins[tile.modelData.id] !== undefined && modelData > 2 && !pinned ? 0.35 : 1
-                                    Behavior on opacity { NumberAnimation { duration: 140 } }
+                                    Behavior on opacity { Settle { duration: Theme.ms(140) } }
                                     Hud { visible: sw.pinned || tile.usedAccent === sw.modelData; anchors.centerIn: parent; font.pixelSize: 9; text: sw.pinned ? "accent" : "now"; color: tile.modelData.c[0] }
                                     MouseArea {
                                         anchors.fill: parent
@@ -247,8 +368,6 @@ PanelWindow {
                                 }
                             }
                         }
-                        Rectangle { x: 8; y: 128; width: 72; height: 2; color: tile.used ? Theme.accent : "transparent" }
-                        Hud { x: 8; y: 133; font.pixelSize: 9; visible: tile.used; text: "applied"; color: Theme.accent }
                         MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; onClicked: World.use(tile.modelData.id, World.pins[tile.modelData.id] ?? 6) }
                     }
                 }
@@ -257,42 +376,11 @@ PanelWindow {
     }
 
     Component {
-        id: motion
-        Column {
-            id: mo
-            spacing: 6
-            readonly property bool on: !!(Store.values["config.animations.enabled"] ?? true)
-            readonly property bool own: on && (Store.values["animation.preset"] || "theme") !== "theme"
-            Row {
-                spacing: 40
-                Column {
-                    id: knobs
-                    spacing: 3
-                    Toggle { label: "motion"; key: "config.animations.enabled" }
-                    Toggle { label: "shell motion"; key: "utilities.animations"; fallback: false }
-                    Toggle { label: "resizes"; key: "config.misc.animate_manual_resizes"; fallback: false }
-                    Toggle { label: "dragging"; key: "config.misc.animate_mouse_windowdragging"; fallback: false }
-                    Knob { visible: mo.own; label: "speed"; key: "animation.speed"; from: 0.3; to: 2.5; step: 0.05; fallback: 1 }
-                }
-                SettingBezier { visible: mo.on; width: sheet.width - 48 - knobs.width - 40 }
-            }
-            Pick {
-                visible: mo.on
-                label: "preset"
-                options: Motion.PRESET_OPTIONS
-                current: Store.values["animation.preset"] || "theme"
-                onChose: v => Motion.pick(Store, v, Store.values["animation.curve"] || Motion.CURVE)
-            }
-            Pick { visible: mo.own; label: "windows"; options: Motion.WINDOWS; key: "animation.window"; fallback: "popin 90%" }
-            Pick { visible: mo.own; label: "workspaces"; options: Motion.WORKSPACES; key: "animation.workspace"; fallback: "slide" }
-        }
-    }
-
-    Component {
         id: fonts
         Column {
             id: fontsCol
             spacing: 8
+            TapHandler { acceptedButtons: Qt.RightButton; onTapped: Store.reset("space.font") }
             property var all: []
             Process {
                 running: true
@@ -301,21 +389,21 @@ PanelWindow {
             }
             Row {
                 spacing: 14
-                Caption { text: "font" }
-                Field { id: find; width: 260; placeholder: "search" }
+                Caption { width: 40; caps: true; height: 24; text: "font" }
+                Field { id: find; width: 260; placeholder: "search"; keysTo: [sheetKeys]; onAccepted: sheetKeys.forceActiveFocus() }
                 Hud { text: Theme.font; height: 24; color: Theme.accent }
             }
             GridView {
-                width: sheet.width - 48
-                height: 200
+                width: 720
+                height: 156
                 clip: true
                 cellWidth: width / 3
-                cellHeight: 26
+                cellHeight: 24
                 model: fontsCol.all.filter(f => f.toLowerCase().includes(find.text.toLowerCase()))
                 delegate: Item {
                     required property string modelData
                     width: GridView.view.cellWidth
-                    height: 26
+                    height: 24
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - 10
@@ -334,11 +422,11 @@ PanelWindow {
     Component {
         id: profiles
         Row {
-            spacing: 40
+            spacing: 24
             ListView {
                 id: plist
                 width: 320
-                height: 230
+                height: Math.min(168, Math.max(72, count * 24))
                 clip: true
                 model: Store.saved.entries.filter(e => e.exists)
                 delegate: Kit.Line {
@@ -360,17 +448,19 @@ PanelWindow {
                 spacing: 8
                 Hud { text: "save as"; color: Theme.alpha(Theme.fg, 0.35) }
                 Field {
-                    width: 240
+                    width: 320
                     placeholder: "name"
-                    onAccepted: { if (text.trim()) Store.savedRun("save", text.trim()); text = "" }
+                    keysTo: [sheetKeys]
+                    onAccepted: { if (text.trim()) Store.savedRun("save", text.trim()); text = ""; sheetKeys.forceActiveFocus() }
                 }
             }
         }
     }
 
     Item {
+        id: sheetKeys
         focus: true
-        Keys.onEscapePressed: sheet.close()
+        Keys.onEscapePressed: activeFocus ? sheet.close() : forceActiveFocus()
         Keys.onTabPressed: sheet.step(1)
         Keys.onBacktabPressed: sheet.step(-1)
     }

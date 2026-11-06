@@ -74,7 +74,7 @@ hl.window_rule({
     no_focus = true,
 })
 hl.window_rule({ name = "spotify-float", match = { class = "(?i)^spotify$" }, float = true })
-for _, ns in ipairs({ "space-bar", "space-launcher", "space-settings", "space-toast", "space-panel", "notification-popup" }) do
+for _, ns in ipairs({ "space-bar", "space-launcher", "space-settings", "space-toast", "space-panel", "notification-popup", "welcome" }) do
     hl.layer_rule({ name = ns .. "-blur", match = { namespace = ns }, blur = true, ignore_alpha = 0.2, no_anim = true })
 end
 hl.layer_rule({ name = "osd-blur", match = { namespace = "osd" }, blur = true, ignore_alpha = 0.05, no_anim = true })

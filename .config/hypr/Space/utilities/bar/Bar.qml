@@ -37,10 +37,10 @@ PanelWindow {
         active: bar.visible
         anchors.right: parent.right
         Chip { glyph: "󰝚"; panel: "media" }
-        Chip { show: Live.timer.active; glyph: "󰔛"; text: Live.timer.format(Live.timer.remaining); panel: "media"; tab: "timer"; hot: !Live.timer.running }
+        Chip { decode: false; show: Live.timer.active; glyph: "󰔛"; text: Live.timer.format(Live.timer.remaining); panel: "media"; tab: "timer"; hot: !Live.timer.running }
         Chip { show: Updates.count > 0; glyph: "󰚰"; text: Updates.count; panel: "updates" }
         Chip { glyph: Sys.net === "OFFLINE" ? "󰤭" : Sys.net === "WLAN" ? "󰤨" : "󰈀"; panel: "net"; hot: Sys.net === "OFFLINE" }
-        Chip { glyph: Audio.muted ? "󰝟" : "󰕾"; text: Audio.muted ? "" : Math.round(Audio.volume * 100); panel: "audio"; onWheel: dir => Audio.nudge(dir) }
+        Chip { decode: false; glyph: Audio.muted ? "󰝟" : "󰕾"; text: Audio.muted ? "" : Math.round(Audio.volume * 100); panel: "audio"; onWheel: dir => Audio.nudge(dir) }
         Chip {
             show: Power.hasBattery
             glyph: Power.charging ? "󰂄" : "󰁹"
