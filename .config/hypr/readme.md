@@ -1038,10 +1038,10 @@ Space/utilities/
 |---|---|
 | `InstallScripts/` | `install.sh` is the menu, `apply.sh` relinks after a pull, `common.sh` is shared helpers, plus each install and uninstall path |
 | `.githooks/pre-commit` | syncs favorite wallpapers into `wallpapers/library`. The installer sets `core.hooksPath` |
-| `.config/waybar/` | the live waybar config, see overwritten files above. `scripts/` is the color picker and toggle |
+| `.config/waybar/` | the live waybar config, see overwritten files above. `scripts/` is the color picker |
 | `.config/wal/` | color schemes and pywal templates |
 | `.config/pypr/config.toml` | scratchpads, the bar reads classes from here too |
 | `.config/kitty/` `nvim/` `starship.toml` `clock-rs/` | app configs |
 | `.bashrc` | aliases and functions, the launcher lists these too |
 | `wallpapers/library/` | favorite wallpapers and `favorites.txt` |
-| `archive/` | retired configs, nothing here runs |
+| `archive` branch | retired configs, nothing there runs |

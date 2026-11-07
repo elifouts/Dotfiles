@@ -214,7 +214,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 <details>
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/old-stuff-no-longer-used-v2.svg" alt="Old Stuff (no longer used)" align="absmiddle"></picture></summary>
 
-  I replaced all of these with my Quickshell stuff. The configs are still in `archive/` if you want them.
+  I replaced all of these with my Quickshell stuff. The configs are still on the [`archive` branch](https://github.com/elifouts/Dotfiles/tree/archive) if you want them.
 
 <details>
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wofi-replaced-by-the-launcher-and-wallpaper-picker-v2.svg" alt="Wofi (replaced by the Launcher and Wallpaper Picker)" align="absmiddle"></picture></summary>
@@ -238,20 +238,20 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/swaync-replaced-by-notifications-and-the-home-screen-v2.svg" alt="Swaync (replaced by Notifications and the Home Screen)" align="absmiddle"></picture></summary>
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync1.png" width = "20%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync2.png" width = "20%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync3.png" width = "20%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/swaync4.png" width = "20%">
 
-  - Config is in `archive/swaync`.
+  - Config is on the [`archive` branch](https://github.com/elifouts/Dotfiles/tree/archive/swaync).
 </details>
 
 <details>
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/swayosd-replaced-by-the-osd-v2.svg" alt="SwayOSD (replaced by the OSD)" align="absmiddle"></picture></summary>
 
-  - Config is in `archive/swayosd`.
+  - Config is on the [`archive` branch](https://github.com/elifouts/Dotfiles/tree/archive/swayosd).
 </details>
 
 <details>
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wlogout-replaced-by-the-launcher-s-home-dial-v2.svg" alt="Wlogout (replaced by the Launcher's Home dial)" align="absmiddle"></picture></summary>
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout1.png" width = "40%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout2.png" width = "40%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout3.png" width = "40%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/wlogout4.png" width = "40%">
 
-  - Config is in `archive/wlogout`.
+  - Config is on the [`archive` branch](https://github.com/elifouts/Dotfiles/tree/archive/wlogout).
 </details>
 
 <details>
@@ -263,7 +263,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock1.PNG" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock2.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock3.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/lock4.png" width = "50%">
 
   - Hyprlock uses the current wallpaper from Pywal to generate a background, displays a greeting with your username, and applies Pywal colors.
-  - Config is in `archive/hyprlock`.
+  - Config is on the [`archive` branch](https://github.com/elifouts/Dotfiles/tree/archive/hyprlock).
 </details>
 
 <details>

@@ -19,7 +19,7 @@ BAR_FILE = STATE / "bar"
 QUICKSHELL_FILE = STATE / "bar-style"
 SCHEMES = HOME / ".config/wal/colorschemes"
 LOOK_KEYS = ("wallpaper.", "colors.", "bar.", "waybar.", "quickshell.")
-INTERNAL_SCHEMES = {"pywal16", "ywal16"}
+INTERNAL_SCHEMES = {"pywal16"}
 UI_FILE = HOME / ".local/state/hypr-settings/ui.json"
 USAGE = "usage: hypr-settings.py state KEY... | set KEY=JSON... | reset | sync | cursor | colors | appearance | ui KEY=JSON... | saved save|apply|delete|preview|wipe [ID]"
 CURSOR_DIRS = [HOME / ".icons", HOME / ".local/share/icons", Path("/usr/share/icons")]
