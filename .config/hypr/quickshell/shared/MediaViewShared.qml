@@ -1,5 +1,4 @@
 import QtQuick
-import "../../shared"
 
 QtObject {
     property bool on: false

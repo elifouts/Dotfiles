@@ -2,28 +2,30 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import "../common"
+import "../style/common"
 
 ShellRoot {
     id: root
+
+    Component.onCompleted: StoreShared.refresh()
 
     property bool captured: false
     property bool released: false
     Process {
         running: !root.captured
-        command: ["sh", "-c", 'until [ -e "$0/.done" ]; do sleep 0.005; done', Lock.shots]
+        command: ["sh", "-c", 'until [ -e "$0/.done" ]; do sleep 0.005; done', LockShared.shots]
         onExited: root.captured = true
     }
     Timer { running: true; interval: 300; onTriggered: root.captured = true }
 
     WlSessionLock {
         id: lock
-        locked: root.captured && !Lock.preview
-        onSecureChanged: if (secure) Lock.enter()
+        locked: root.captured && !LockShared.preview
+        onSecureChanged: if (secure) LockShared.enter()
 
         WlSessionLockSurface {
             color: "transparent"
-            Face {
+            LockFaceShared {
                 anchors.fill: parent
                 screenName: screen ? screen.name : ""
             }
@@ -31,7 +33,7 @@ ShellRoot {
     }
 
     Variants {
-        model: !Lock.preview && (Lock.t === 1 || Lock.leaving) ? Quickshell.screens : []
+        model: !LockShared.preview && (LockShared.t === 1 || LockShared.leaving) ? Quickshell.screens : []
         PanelWindow {
             required property var modelData
             screen: modelData
@@ -46,20 +48,20 @@ ShellRoot {
 
             Backdrop {
                 anchors.fill: parent
-                source: Lock.wallpaper
+                source: LockShared.wallpaper
             }
         }
     }
 
     Variants {
-        model: Lock.preview && root.captured ? Quickshell.screens : []
+        model: LockShared.preview && root.captured ? Quickshell.screens : []
         FloatingWindow {
             required property var modelData
             title: "Lock preview"
             implicitWidth: Math.round(modelData.width * 0.7)
             implicitHeight: Math.round(modelData.height * 0.7)
             color: "transparent"
-            Face {
+            LockFaceShared {
                 anchors.fill: parent
                 screenName: modelData.name
             }
@@ -67,10 +69,10 @@ ShellRoot {
         }
     }
 
-    Timer { id: startTimer; interval: 40; onTriggered: Lock.enter() }
+    Timer { id: startTimer; interval: 40; onTriggered: LockShared.enter() }
 
     Connections {
-        target: Lock
+        target: LockShared
         function onUnlock() { lock.locked = false; root.released = true }
         function onFinish() { Qt.quit() }
     }

@@ -63,7 +63,7 @@ Item {
     signal bringBack()
     property bool musicOut: false
     property bool canPopOut: true
-    MediaView { on: page.active }
+    MediaViewShared { on: page.active }
 
 
     function openApp() {

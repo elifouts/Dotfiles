@@ -1,8 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import Quickshell
-import "../../shared"
-import "../common"
+import "../style/common"
 
 Item {
     id: face
@@ -10,9 +9,9 @@ Item {
     component Card: Rectangle {
         property real u: 1
         radius: Theme.rounding * u
-        color: Lock.card
+        color: LockShared.card
         border.width: 1
-        border.color: Lock.edge
+        border.color: LockShared.edge
     }
 
     component Wave: Row {
@@ -53,7 +52,7 @@ Item {
         property string glyph
         property real u: 1
         property real size: 44 * u
-        property color tint: "#ffffff"
+        property color tint: LockShared.ink
         property bool filled: false
         property bool armed: false
         signal clicked()
@@ -65,12 +64,12 @@ Item {
 
         Card {
             anchors.fill: parent
-            radius: Lock.corner(b.size, b.u)
+            radius: LockShared.corner(b.size, b.u)
             opacity: b.filled || b.armed ? 0 : 1
         }
         Rectangle {
             anchors.fill: parent
-            radius: Lock.corner(b.size, b.u)
+            radius: LockShared.corner(b.size, b.u)
             color: Theme.soft(b.armed ? Theme.warn : Theme.accent, area.containsMouse)
             opacity: b.filled || b.armed ? 1 : area.containsMouse ? 0.12 : 0
             Behavior on opacity { NumberAnimation { duration: Theme.ms(160) } }
@@ -100,16 +99,16 @@ Item {
         property real u: 1
         default property alias content: body.data
 
-        readonly property real p: Theme.seg(Lock.t, delay)
+        readonly property real p: Theme.seg(LockShared.t, delay)
         property real shown: on ? 1 : 0
         Behavior on shown { SettleShared { duration: Theme.ms(420) } }
 
         implicitWidth: body.childrenRect.width
         implicitHeight: body.childrenRect.height * shown
-        opacity: p * shown * (1 - Lock.out)
+        opacity: p * shown * (1 - LockShared.out)
         visible: opacity > 0.001
-        scale: (0.96 + 0.04 * p) * (1 - 0.03 * Lock.out)
-        transform: Translate { y: (1 - r.p) * 26 * r.u + (1 - r.shown) * -8 * r.u + Lock.out * 14 * r.u }
+        scale: (0.96 + 0.04 * p) * (1 - 0.03 * LockShared.out)
+        transform: Translate { y: (1 - r.p) * 26 * r.u + (1 - r.shown) * -8 * r.u + LockShared.out * 14 * r.u }
 
         Item {
             id: body
@@ -124,7 +123,7 @@ Item {
 
         property string value
         property real size: 100
-        property color color: "#ffffff"
+        property color color: LockShared.ink
         property int weight: Font.Light
         property string cur: value
 
@@ -165,22 +164,22 @@ Item {
         ? Math.max(0.6, Math.min(width / 760, height / 1350))
         : Math.max(0.6, Math.min(width / 1600, height / 900))
 
-    readonly property bool main: screenName === (Lock.lockedOn || (Quickshell.screens[0] || {}).name)
-    readonly property bool awake: !Lock.idle
+    readonly property bool main: screenName === (LockShared.lockedOn || (Quickshell.screens[0] || {}).name)
+    readonly property bool awake: !LockShared.idle
     readonly property real margin: 32 * u
 
-    opacity: Lock.preview ? Lock.fade : 1
+    opacity: LockShared.preview ? LockShared.fade : 1
 
     Rectangle { anchors.fill: parent; color: "black" }
 
     Item {
         anchors.fill: parent
-        scale: 1 + 0.035 * Lock.t
+        scale: 1 + 0.035 * LockShared.t
 
         Image {
             id: shot
             anchors.fill: parent
-            source: face.screenName ? "file://" + Lock.shots + "/" + face.screenName + ".ppm" : ""
+            source: face.screenName ? "file://" + LockShared.shots + "/" + face.screenName + ".ppm" : ""
             fillMode: Image.PreserveAspectCrop
             cache: false
             asynchronous: false
@@ -189,7 +188,7 @@ Item {
             anchors.fill: parent
             source: shot
             visible: shot.status === Image.Ready
-            opacity: Math.max(0.001, Math.min(1, Lock.t * 2.2))
+            opacity: Math.max(0.001, Math.min(1, LockShared.t * 2.2))
             blurEnabled: true
             blurMax: 64
             blur: 1
@@ -198,16 +197,16 @@ Item {
     }
     Backdrop {
         anchors.fill: parent
-        t: Lock.t
-        source: Lock.wallpaper
-        opacity: Math.max(0.001, shot.status === Image.Ready ? Math.min(1, (Lock.t - 0.2) * 1.8) : 1)
+        t: LockShared.t
+        source: LockShared.wallpaper
+        opacity: Math.max(0.001, shot.status === Image.Ready ? Math.min(1, (LockShared.t - 0.2) * 1.8) : 1)
     }
 
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
-        onPositionChanged: Lock.poke()
-        onClicked: { Lock.menuOpen = false; input.forceActiveFocus() }
+        onPositionChanged: LockShared.poke()
+        onClicked: { LockShared.menuOpen = false; input.forceActiveFocus() }
     }
 
     TextInput {
@@ -217,23 +216,23 @@ Item {
         opacity: 0
         focus: true
         echoMode: TextInput.Password
-        text: Lock.password
-        onTextEdited: { Lock.password = text; Lock.failed = false; Lock.poke() }
-        onAccepted: Lock.submit()
+        text: LockShared.password
+        onTextEdited: { LockShared.password = text; LockShared.failed = false; LockShared.poke() }
+        onAccepted: LockShared.submit()
         Keys.onPressed: event => {
-            Lock.poke()
-            Lock.checkCaps()
+            LockShared.poke()
+            LockShared.checkCaps()
             if (event.key === Qt.Key_Escape) {
-                if (Lock.menuOpen) Lock.menuOpen = false
-                else if (Lock.preview && Lock.password === "") Lock.leave()
-                else Lock.password = ""
+                if (LockShared.menuOpen) LockShared.menuOpen = false
+                else if (LockShared.preview && LockShared.password === "") LockShared.leave()
+                else LockShared.password = ""
                 event.accepted = true
             }
         }
         Component.onCompleted: forceActiveFocus()
         Connections {
-            target: Lock
-            function onMenuOpenChanged() { if (!Lock.menuOpen) input.forceActiveFocus() }
+            target: LockShared
+            function onMenuOpenChanged() { if (!LockShared.menuOpen) input.forceActiveFocus() }
         }
     }
 
@@ -243,13 +242,13 @@ Item {
         x: face.margin
         y: face.margin
         delay: 0.1
-        on: face.main && Lock.cfg.greeter && face.awake
+        on: face.main && LockShared.cfg.greeter && face.awake
         u: face.u
         LabelShared {
-            text: "Hello, <b>" + Lock.user + "</b>"
+            text: "Hello, <b>" + LockShared.user + "</b>"
             textFormat: Text.StyledText
             font.pixelSize: 22 * face.u
-            color: "#ffffff"
+            color: LockShared.ink
         }
     }
 
@@ -261,7 +260,7 @@ Item {
         Reveal {
             anchors.horizontalCenter: parent.horizontalCenter
             delay: 0.02
-            on: Lock.cfg.clock
+            on: LockShared.cfg.clock
             u: face.u
 
             Column {
@@ -297,7 +296,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Qt.formatDate(clock.date, "dddd, d MMMM")
                     font.pixelSize: 24 * face.u
-                    color: "#ccffffff"
+                    color: Theme.alpha(LockShared.ink, 0.8)
                 }
             }
         }
@@ -307,13 +306,13 @@ Item {
         Reveal {
             anchors.horizontalCenter: parent.horizontalCenter
             delay: 0.16
-            on: face.main && (face.awake || Lock.password !== "")
+            on: face.main && (face.awake || LockShared.password !== "")
             u: face.u
 
             Item {
                 id: field
                 readonly property real h: 54 * face.u
-                readonly property bool typing: Lock.password !== ""
+                readonly property bool typing: LockShared.password !== ""
                 width: typing ? dots.width + h + 22 * face.u : h
                 height: h
                 Behavior on width { SettleShared { duration: Theme.ms(300) } }
@@ -328,21 +327,21 @@ Item {
                     NumberAnimation { target: shakeX; property: "x"; to: 0; duration: Theme.ms(60); easing.type: Easing.OutQuad }
                 }
                 Connections {
-                    target: Lock
+                    target: LockShared
                     function onRejected() { shake.restart() }
                 }
 
                 Card {
                     anchors.fill: parent
-                    radius: Lock.corner(field.h, face.u)
+                    radius: LockShared.corner(field.h, face.u)
                 }
                 Rectangle {
                     anchors.fill: parent
-                    radius: Lock.corner(field.h, face.u)
+                    radius: LockShared.corner(field.h, face.u)
                     color: "transparent"
                     border.width: 1.5 * face.u
-                    border.color: Lock.failed ? Theme.warn : Theme.accent
-                    opacity: Lock.failed ? 1 : field.typing ? 0.5 : 0
+                    border.color: LockShared.failed ? Theme.warn : Theme.accent
+                    opacity: LockShared.failed ? 1 : field.typing ? 0.5 : 0
                     Behavior on opacity { NumberAnimation { duration: Theme.ms(200) } }
                     Behavior on border.color { ColorAnimation { duration: Theme.ms(200) } }
                 }
@@ -352,7 +351,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     text: ""
                     font.pixelSize: 19 * face.u
-                    color: Lock.failed ? Theme.warn : field.typing ? Theme.accent : "#ffffff"
+                    color: LockShared.failed ? Theme.warn : field.typing ? Theme.accent : LockShared.ink
                     Behavior on color { ColorAnimation { duration: Theme.ms(200) } }
                 }
 
@@ -362,7 +361,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 8 * face.u
                     Repeater {
-                        model: Math.min(Lock.password.length, 24)
+                        model: Math.min(LockShared.password.length, 24)
                         Rectangle {
                             id: dot
                             required property int index
@@ -375,7 +374,7 @@ Item {
                             Component.onCompleted: pop.start()
                             NumberAnimation on scale { id: pop; running: false; to: 1; duration: Theme.ms(260); easing.type: Easing.OutBack; easing.overshoot: 2.2 }
                             SequentialAnimation on opacity {
-                                running: Lock.checking
+                                running: LockShared.checking
                                 loops: Animation.Infinite
                                 PauseAnimation { duration: dot.index * 60 }
                                 NumberAnimation { to: 0.25; duration: 300; easing.type: Easing.InOutSine }
@@ -391,7 +390,7 @@ Item {
         Reveal {
             anchors.horizontalCenter: parent.horizontalCenter
             delay: 0.2
-            on: face.main && Lock.capsLock
+            on: face.main && LockShared.capsLock
             u: face.u
 
             Item {
@@ -412,12 +411,12 @@ Item {
         x: face.portrait ? (face.width - width) / 2 : face.width - width - face.margin
         y: face.height - height - face.margin
         delay: 0.24
-        on: face.main && Lock.cfg.music && !!Lock.player && face.awake
+        on: face.main && LockShared.cfg.music && !!LockShared.player && face.awake
         u: face.u
 
         Item {
             id: card
-            readonly property var p: Lock.player
+            readonly property var p: LockShared.player
             width: 400 * face.u
             height: 156 * face.u
 
@@ -429,11 +428,11 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 120 * face.u
                 height: width
-                radius: Lock.corner(width, face.u)
+                radius: LockShared.corner(width, face.u)
                 fill: Theme.alpha(Theme.info, 0.12)
                 glyph: ""
                 glyphColor: Theme.info
-                url: Lock.track.art
+                url: LockShared.track.art
             }
 
             Column {
@@ -452,27 +451,27 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Now Playing"
                         font.pixelSize: 12 * face.u
-                        color: "#80ffffff"
+                        color: Theme.alpha(LockShared.ink, 0.5)
                     }
                     Wave {
                         anchors.verticalCenter: parent.verticalCenter
                         u: face.u
-                        playing: face.main && face.awake && Lock.cfg.music && !!card.p && card.p.isPlaying && Lock.t > 0 && !Lock.leaving
+                        playing: face.main && face.awake && LockShared.cfg.music && !!card.p && card.p.isPlaying && LockShared.t > 0 && !LockShared.leaving
                     }
                 }
                 SwapTextShared {
                     width: parent.width
-                    value: card.p ? Lock.track.title || "Unknown" : ""
+                    value: card.p ? LockShared.track.title || "Unknown" : ""
                     elide: Text.ElideRight
                     font.pixelSize: 17 * face.u
-                    color: "#ffffff"
+                    color: LockShared.ink
                 }
                 SwapTextShared {
                     width: parent.width
-                    value: Lock.track.artist
+                    value: LockShared.track.artist
                     elide: Text.ElideRight
                     font.pixelSize: 13 * face.u
-                    color: "#99ffffff"
+                    color: Theme.alpha(LockShared.ink, 0.6)
                 }
 
                 Item { width: 1; height: 6 * face.u }
@@ -481,16 +480,16 @@ Item {
                     width: parent.width
                     player: card.p
                     u: face.u * 0.8
-                    active: face.main && face.awake && Lock.t > 0 && !Lock.leaving
+                    active: face.main && face.awake && LockShared.t > 0 && !LockShared.leaving
                 }
 
                 Item { width: 1; height: 4 * face.u }
 
                 Row {
                     spacing: 8 * face.u
-                    SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: -1; size: 34 * face.u; tint: "#ffffff" }
+                    SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: -1; size: 34 * face.u; tint: LockShared.ink }
                     PlayButtonShared { anchors.verticalCenter: parent.verticalCenter; player: card.p; size: 34 * face.u }
-                    SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: 1; size: 34 * face.u; tint: "#ffffff" }
+                    SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: 1; size: 34 * face.u; tint: LockShared.ink }
                 }
             }
         }
@@ -500,30 +499,30 @@ Item {
         x: face.width - width - face.margin
         y: face.margin
         delay: 0.28
-        on: face.main && face.awake && ((Lock.cfg.battery && PowerShared.hasBattery) || Lock.cfg.power)
+        on: face.main && face.awake && ((LockShared.cfg.battery && PowerShared.hasBattery) || LockShared.cfg.power)
         u: face.u
 
         Row {
             spacing: 8 * face.u
 
             Item {
-                visible: Lock.cfg.battery && PowerShared.hasBattery
+                visible: LockShared.cfg.battery && PowerShared.hasBattery
                 width: batText.implicitWidth + 30 * face.u
                 height: 40 * face.u
-                Card { anchors.fill: parent; radius: Lock.corner(parent.height, face.u) }
+                Card { anchors.fill: parent; radius: LockShared.corner(parent.height, face.u) }
                 LabelShared {
                     id: batText
                     anchors.centerIn: parent
-                    readonly property bool low: !Lock.charging && PowerShared.charge < 0.2
-                    text: (Lock.charging ? "\u{f0084}" : ["\u{f007b}", "\u{f007c}", "\u{f007e}", "\u{f0080}", "\u{f0082}", "\u{f0079}"][Math.min(5, Math.floor(PowerShared.charge * 6))])
+                    readonly property bool low: !LockShared.charging && PowerShared.charge < 0.2
+                    text: (LockShared.charging ? "\u{f0084}" : ["\u{f007b}", "\u{f007c}", "\u{f007e}", "\u{f0080}", "\u{f0082}", "\u{f0079}"][Math.min(5, Math.floor(PowerShared.charge * 6))])
                         + "  " + Math.round(PowerShared.charge * 100) + "%"
                     font.pixelSize: 13 * face.u
-                    color: low ? Theme.warn : "#ffffff"
+                    color: low ? Theme.warn : LockShared.ink
                 }
             }
 
             Repeater {
-                model: Lock.cfg.power ? [
+                model: LockShared.cfg.power ? [
                     { glyph: "\u{f04b2}", id: "suspend" },
                     { glyph: "\u{f0709}", id: "reboot" },
                     { glyph: "\u{f0425}", id: "poweroff" }
@@ -540,7 +539,7 @@ Item {
                     onClicked: {
                         if (PowerShared.confirm(modelData.id) && !armedNow) { armedNow = true; disarm.restart(); return }
                         armedNow = false
-                        if (!Lock.preview) PowerShared.act(modelData.id)
+                        if (!LockShared.preview) PowerShared.act(modelData.id)
                     }
                 }
             }
@@ -552,22 +551,22 @@ Item {
         x: face.margin
         y: face.height - height - face.margin
         delay: 0.3
-        on: face.main && (face.awake || Lock.menuOpen)
+        on: face.main && (face.awake || LockShared.menuOpen)
         u: face.u
 
         RoundButton {
             u: face.u
             size: 40 * face.u
             glyph: ""
-            rotation: Lock.menuOpen ? 90 : 0
+            rotation: LockShared.menuOpen ? 90 : 0
             Behavior on rotation { SettleShared { duration: Theme.ms(420) } }
-            onClicked: Lock.menuOpen = !Lock.menuOpen
+            onClicked: LockShared.menuOpen = !LockShared.menuOpen
         }
     }
 
     Item {
         id: menu
-        property real p: Lock.menuOpen && face.main && !Lock.leaving ? 1 : 0
+        property real p: LockShared.menuOpen && face.main && !LockShared.leaving ? 1 : 0
         Behavior on p { SettleShared { duration: Theme.ms(320) } }
 
         x: face.margin
@@ -595,27 +594,27 @@ Item {
                 bottomPadding: 6 * face.u
                 text: "Lock screen"
                 font.pixelSize: 13 * face.u
-                color: "#80ffffff"
+                color: Theme.alpha(LockShared.ink, 0.5)
             }
             Repeater {
-                model: Lock.labels
-                Toggle {
+                model: LockShared.labels
+                LockToggleShared {
                     required property var modelData
                     u: face.u
                     label: modelData[1]
-                    checked: !!Lock.cfg[modelData[0]]
-                    onToggled: Lock.set(modelData[0], !checked)
+                    checked: !!LockShared.cfg[modelData[0]]
+                    onToggled: LockShared.set(modelData[0], !checked)
                 }
             }
         }
     }
 
     LabelShared {
-        visible: Lock.preview
+        visible: LockShared.preview
         anchors.horizontalCenter: parent.horizontalCenter
         y: 12 * face.u
         text: "Preview · Esc closes"
         font.pixelSize: 12 * face.u
-        color: "#80ffffff"
+        color: Theme.alpha(LockShared.ink, 0.5)
     }
 }

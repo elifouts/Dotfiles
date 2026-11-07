@@ -1,3 +1,3 @@
-import "style/lock"
+import "shared"
 
-LockShell {}
+LockShellShared {}

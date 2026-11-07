@@ -83,7 +83,7 @@ Scope {
         return list.find(p => p.isPlaying) ?? list[0] ?? null
     }
     NowPlayingShared { id: track; player: root.player }
-    MediaView { on: root.shown && !root.closing }
+    MediaViewShared { on: root.shown && !root.closing }
 
     function animateTo(target) {
         tween.stop()

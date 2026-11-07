@@ -80,7 +80,7 @@ ShellRoot {
     property string pinned: ""
     readonly property var player: MediaShared.pickPlayer(pinned)
     NowPlayingShared { id: now; player: root.player }
-    MediaView { on: root.active && !root.leaving }
+    MediaViewShared { on: root.active && !root.leaving }
     readonly property bool spotify: MediaShared.isSpotify(player)
     readonly property bool playing: MediaShared.playing(player)
 

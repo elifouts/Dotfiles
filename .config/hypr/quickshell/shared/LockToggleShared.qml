@@ -1,6 +1,5 @@
 import QtQuick
-import "../../shared"
-import "../common"
+import "../style/common"
 
 Item {
     id: row
@@ -16,7 +15,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         anchors.margins: -2 * row.u
-        radius: Lock.corner(height, row.u)
+        radius: LockShared.corner(height, row.u)
         color: Theme.alpha(Theme.fg, area.containsMouse ? 0.06 : 0)
         Behavior on color { ColorAnimation { duration: Theme.ms(140) } }
     }
@@ -27,7 +26,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         text: row.label
         font.pixelSize: 13 * row.u
-        color: row.checked ? "#ffffff" : "#b3ffffff"
+        color: row.checked ? LockShared.ink : Theme.alpha(LockShared.ink, 0.7)
         Behavior on color { ColorAnimation { duration: Theme.ms(180) } }
     }
 

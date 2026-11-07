@@ -5,8 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import Quickshell.Services.Pam
-import "../../shared"
-import "../common"
+import "../style/common"
 
 Singleton {
     id: root
@@ -15,6 +14,7 @@ Singleton {
     readonly property bool preview: Quickshell.env("LOCK_PREVIEW") === "1"
     readonly property string shots: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/quickshell-lock"
 
+    readonly property color ink: Theme.lines ? Theme.fg : "#ffffff"
     readonly property color card: Theme.back(0.5)
     readonly property color edge: Theme.edge
     readonly property string wallpaper: {
@@ -132,7 +132,7 @@ Singleton {
 
     readonly property var player: MediaShared.pickPlayer("")
     NowPlayingShared { id: nowPlaying; player: root.player }
-    MediaView { on: root.t > 0 && root.cfg.music }
+    MediaViewShared { on: root.t > 0 && root.cfg.music }
     readonly property alias track: nowPlaying
 
     readonly property bool charging: PowerShared.charging || PowerShared.full
