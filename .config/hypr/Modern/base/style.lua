@@ -72,6 +72,7 @@ hl.layer_rule({ name = "waybar-blur", match = { namespace = "waybar" }, blur = t
 hl.layer_rule({ name = "quickshell-bar-blur", match = { namespace = "quickshell-bar" }, blur = true, ignore_alpha = 0.3, no_anim = true })
 hl.layer_rule({ name = "quickshell-overview-noanim", match = { namespace = "quickshell-overview" }, no_anim = true })
 hl.layer_rule({ name = "notification-popup-blur", match = { namespace = "notification-popup" }, blur = true, ignore_alpha = 0.5, no_anim = true })
+hl.layer_rule({ name = "quickshell-widgets-noanim", match = { namespace = "quickshell-widgets" }, no_anim = true })
 hl.layer_rule({ name = "selection-no-anim", match = { namespace = "selection" }, no_anim = true })
 hl.layer_rule({ name = "osd-blur", match = { namespace = "osd" }, blur = true, ignore_alpha = 0.05, no_anim = true })
 hl.layer_rule({ name = "launcher-blur", match = { namespace = "launcher" }, blur = true, ignore_alpha = 0.3 })

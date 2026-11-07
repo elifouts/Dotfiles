@@ -8,6 +8,7 @@ hl.bind("ALT + TAB", hl.dsp.exec_cmd("~/.config/hypr/utilities/session/shells.sh
 hl.bind("ALT + w", hl.dsp.exec_cmd("~/.config/hypr/utilities/session/shells.sh wallpaper"))
 hl.bind("ALT + a", hl.dsp.exec_cmd("~/.config/hypr/utilities/bars/bar.sh toggle"))
 hl.bind(mainMod .. " + TAB", hl.dsp.exec_cmd("~/.config/hypr/utilities/session/shells.sh overview"))
+hl.bind("ALT + D", hl.dsp.exec_cmd("~/.config/hypr/utilities/session/shells.sh widgets"))
 hl.bind("ALT + S", hl.dsp.exec_cmd("~/.config/hypr/utilities/session/shells.sh settings"))
 hl.bind("ALT + RETURN", hl.dsp.exec_cmd("~/.config/hypr/utilities/session/shells.sh music"))
 hl.bind(mainMod .. " + M", hl.dsp.exit())

@@ -1,7 +1,5 @@
 import QtQuick
-import "../../shared"
-import "../common"
-import "../bar"
+import "../style/common"
 
 Rectangle {
     id: strip
@@ -11,6 +9,7 @@ Rectangle {
 
     width: row.width + 32
     height: 44
+    radius: Theme.r(10)
     color: Theme.glass
     border.width: 1
     border.color: Theme.alpha(Theme.accent, 0.35)
@@ -19,7 +18,11 @@ Rectangle {
     Component.onCompleted: rise.start()
     SettleShared { id: rise; target: lift; property: "y"; to: 0; duration: Theme.slow }
 
-    component Chip: DecodeText {
+    component Chip: Say {
+        font.pixelSize: 11
+        font.capitalization: Theme.caps
+        font.letterSpacing: Theme.tracking
+        verticalAlignment: Text.AlignVCenter
         property bool on: false
         signal hit()
         height: 44
@@ -34,7 +37,7 @@ Rectangle {
         id: row
         anchors.centerIn: parent
 
-        DecodeText { text: "add"; height: 44; rightPadding: 6; color: Theme.alpha(Theme.fg, 0.3) }
+        Chip { text: "add"; rightPadding: 6; color: Theme.alpha(Theme.fg, 0.3) }
         Repeater {
             model: ["clock", "stats", "media", "viz", "note", "todo"]
             Chip { required property string modelData; text: "+" + modelData; onHit: strip.model.add(modelData) }
@@ -72,6 +75,6 @@ Rectangle {
         Chip { visible: !!strip.cur; text: "del"; color: Theme.warn; onHit: strip.model.remove(strip.model.picked) }
 
         Sep {}
-        Chip { text: "done"; on: true; onHit: Ui.editing = "" }
+        Chip { text: "done"; on: true; onHit: WidgetStateShared.editing = "" }
     }
 }

@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import "../common"
+import "../style/common"
 
 PanelWindow {
     id: win
@@ -12,14 +12,14 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "space-widgets"
+    WlrLayershell.namespace: "quickshell-widgets"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
     Rectangle { anchors.fill: parent; color: Theme.void_; opacity: 0.55 }
 
-    Widgets { anchors.fill: parent; model: win.model; editing: true }
+    WidgetBoardShared { anchors.fill: parent; model: win.model; editing: true }
 
-    WidgetEditor {
+    WidgetEditorShared {
         model: win.model
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
@@ -28,7 +28,7 @@ PanelWindow {
 
     Item {
         focus: true
-        Keys.onEscapePressed: Ui.editing = ""
+        Keys.onEscapePressed: WidgetStateShared.editing = ""
         Keys.onDeletePressed: if (win.model.picked >= 0) win.model.remove(win.model.picked)
     }
 }

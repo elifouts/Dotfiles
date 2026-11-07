@@ -20,12 +20,7 @@ ThemeBaseShared {
 
     readonly property int bar: 24
     readonly property int starGap: 16
-    readonly property int quick: ms(180)
-    readonly property int slow: ms(560)
     readonly property int open: Math.round(slow * 0.6)
-    readonly property color faint: alpha(fg, 0.14)
-    readonly property color glass: panel
-    readonly property color void_: Qt.darker(bg, 2.2)
 
     Connections { target: StoreShared; function onThemeApplied() { reload() } }
 }

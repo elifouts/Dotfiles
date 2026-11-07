@@ -1,8 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import Quickshell
-import "../../shared"
-import "../common"
+import "../style/common"
 
 Item {
     id: w
@@ -26,14 +25,14 @@ Item {
         const day = Qt.formatDate(clock.date, "ddd · dd MMM")
         switch (d.type) {
         case "clock": return [[Theme.clock(clock.date), 64, 1], [day, 12, 0.6]]
-        case "stats": return [["cpu " + Math.round(SystemStats.cpu * 100) + "%  ·  ram " + Math.round(SystemStats.ram * 100) + "%", 13, 1],
-                              [SystemStats.net + (PowerShared.hasBattery ? "  ·  bat " + Math.round(PowerShared.charge * 100) + "%" : ""), 11, 0.6]]
+        case "stats": return [["cpu " + Math.round(SystemStatsShared.cpu * 100) + "%  ·  ram " + Math.round(SystemStatsShared.ram * 100) + "%", 13, 1],
+                              [SystemStatsShared.net + (PowerShared.hasBattery ? "  ·  bat " + Math.round(PowerShared.charge * 100) + "%" : ""), 11, 0.6]]
         }
         return []
     }
 
     Repeater {
-        model: d.style === "frame" ? 4 : 0
+        model: d.style === "frame" && Theme.lines ? 4 : 0
         Item {
             required property int index
             readonly property bool r: index % 2 === 1
@@ -49,7 +48,10 @@ Item {
     Rectangle {
         anchors.fill: parent
         visible: d.style === "frame"
+        radius: Theme.r(10)
         color: Theme.back(0.25)
+        border.width: Theme.lines ? 0 : 1
+        border.color: Theme.edge
     }
 
     Column {
@@ -69,13 +71,10 @@ Item {
 
         Repeater {
             model: w.lines
-            DecodeText {
-                caps: false
-                decode: false
+            LabelShared {
                 required property var modelData
                 x: w.d.align === "center" ? (body.width - width) / 2 : w.d.align === "right" ? body.width - width : 0
                 text: modelData[0]
-                font.family: Theme.font
                 font.pixelSize: modelData[1] * w.s
                 font.weight: modelData[1] > 30 ? Font.ExtraLight : Font.Normal
                 font.letterSpacing: modelData[1] > 30 ? 2 * w.s : 1.6 * w.s
@@ -84,7 +83,7 @@ Item {
             }
         }
 
-        MediaTab {
+        MediaCardShared {
             visible: w.d.type === "media"
             width: 300 * w.s
             s: w.s
@@ -114,7 +113,7 @@ Item {
                     enabled: !w.editing
                     scale: w.s
                     transformOrigin: Item.TopLeft
-                    onTypingChanged: Ui.typing = typing ? parent.here : ""
+                    onTypingChanged: WidgetStateShared.typing = typing ? parent.here : ""
                 }
                 HoverHandler { id: inside }
                 Timer { interval: 1500; running: cal.typing && !inside.hovered; onTriggered: cal.letGo() }
@@ -129,7 +128,7 @@ Item {
             selectByMouse: false
             Keys.onEscapePressed: focus = false
             horizontalAlignment: w.d.align === "center" ? Text.AlignHCenter : w.d.align === "right" ? Text.AlignRight : Text.AlignLeft
-            font.family: Theme.font
+            font.family: Theme.sans
             font.pixelSize: 14 * w.s
             font.letterSpacing: 1
             color: w.ink

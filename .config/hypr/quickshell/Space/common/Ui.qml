@@ -10,8 +10,6 @@ Singleton {
     property bool overview: false
     property bool holdTheme: false
     property bool touring: false
-    property string editing: ""
-    property string typing: ""
     property string sheet: "core"
     property var target: null
 

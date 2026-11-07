@@ -214,7 +214,7 @@ Scope {
                     }
                     Block {
                         side: 1; order: 1; glyph: "󰤨"; title: "link"
-                        Read { k: "network"; v: SystemStats.net }
+                        Read { k: "network"; v: SystemStatsShared.net }
 
                         Controls.Slide {
                             glyph: AudioShared.muted ? "󰝟" : AudioShared.volume <= 0.5 ? "󰖀" : "󰕾"
@@ -232,7 +232,7 @@ Scope {
                     Block {
                         visible: !!MediaShared.pickPlayer("")
                         side: 1; order: 2; glyph: "󰎈"; title: "now playing"
-                        MediaTab { width: parent.width }
+                        MediaCardShared { width: parent.width }
                     }
                 }
             }

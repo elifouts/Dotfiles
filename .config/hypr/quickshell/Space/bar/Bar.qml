@@ -40,7 +40,7 @@ PanelWindow {
         Module { glyph: "󰝚"; panel: "media" }
         Module { decode: false; show: TimerForecast.timer.active; glyph: "󰔛"; text: TimerForecast.timer.format(TimerForecast.timer.remaining); panel: "media"; tab: "timer"; hot: !TimerForecast.timer.running }
         Module { show: UpdatesShared.count > 0; glyph: "󰚰"; text: UpdatesShared.count; panel: "updates" }
-        Module { glyph: SystemStats.net === "OFFLINE" ? "󰤭" : SystemStats.net === "WLAN" ? "󰤨" : "󰈀"; panel: "net"; hot: SystemStats.net === "OFFLINE" }
+        Module { glyph: SystemStatsShared.net === "OFFLINE" ? "󰤭" : SystemStatsShared.net === "WLAN" ? "󰤨" : "󰈀"; panel: "net"; hot: SystemStatsShared.net === "OFFLINE" }
         Module {
             glyph: AudioShared.muted ? "󰝟" : "󰕾"
             panel: "audio"

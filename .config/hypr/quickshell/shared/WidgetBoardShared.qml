@@ -1,5 +1,5 @@
 import QtQuick
-import "../common"
+import "../style/common"
 
 Item {
     id: board
@@ -45,7 +45,7 @@ Item {
     Repeater {
         id: widgets
         model: board.model.items
-        Widget {
+        WidgetShared {
             id: wdg
             required property var modelData
             required property int index
@@ -65,7 +65,9 @@ Item {
                 border.color: wdg.on ? Theme.accent : Theme.faint
             }
             MouseArea { anchors.fill: parent; enabled: board.editing; onPressed: m => { board.model.picked = wdg.index; m.accepted = false } }
-            DecodeText {
+            Say {
+                font.capitalization: Theme.caps
+                font.letterSpacing: Theme.tracking
                 visible: board.editing
                 x: parent.width + 2
                 y: -18

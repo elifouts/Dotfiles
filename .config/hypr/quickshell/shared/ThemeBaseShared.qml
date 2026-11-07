@@ -42,6 +42,8 @@ Singleton {
     readonly property var leave: ownMotion ? own : hyprLeave
     readonly property int fast: ms(160)
     readonly property int move: ms(280)
+    readonly property int quick: ms(180)
+    readonly property int slow: ms(560)
 
     function r(px) {
         return px * rounding / 10
@@ -168,6 +170,9 @@ Singleton {
     readonly property color dim: alpha(fg, 0.5)
     property color bg: wal ? wal.special.background : "#101418"
     readonly property color panel: back(0.6)
+    readonly property color glass: panel
+    readonly property color faint: alpha(fg, 0.14)
+    readonly property color void_: Qt.darker(bg, 2.2)
     property color edge: alpha(fg, 0.07)
 
     readonly property var shades: [bg].concat(Array.from({ length: 16 }, (_, i) => Qt.color(c(i, i < 8 ? "#101418" : "#ffffff"))))

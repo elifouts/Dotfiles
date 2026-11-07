@@ -5,7 +5,6 @@ import "../shared"
 import "common"
 import "bar"
 import "bar/menus"
-import "widgets"
 import "wallpaper"
 import "launcher"
 import "home"
@@ -23,10 +22,10 @@ ShellRoot {
         Scope {
             id: per
             required property var modelData
-            WidgetsModel { id: dm; screen: per.modelData }
+            WidgetModelShared { id: dm; screen: per.modelData }
             Wallpaper { screen: per.modelData; widgets: dm }
             Bar { screen: per.modelData }
-            LazyLoader { active: Ui.editing === per.modelData.name; WidgetsEdit { model: dm } }
+            LazyLoader { active: WidgetStateShared.editing === per.modelData.name; WidgetsEditShared { model: dm } }
         }
     }
 
@@ -69,7 +68,7 @@ ShellRoot {
         case "settings": return sheet("core")
         case "colors": return sheet("colors")
         case "motion": return sheet("animations")
-        case "widgets": return Ui.editing = Ui.editing ? "" : HyprShared.focusedScreen()?.name ?? ""
+        case "widgets": return WidgetStateShared.toggle()
         case "bar": return Ui.bar = !Ui.bar
         case "world": return World.hop()
         case "capture": return Ui.openPanel("media", HyprShared.focusedScreen(), "capture")

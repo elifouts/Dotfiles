@@ -4,7 +4,6 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../../shared"
 import "../common"
-import "../widgets"
 
 PanelWindow {
     id: win
@@ -15,7 +14,7 @@ PanelWindow {
     color: "black"
     WlrLayershell.layer: WlrLayer.Background
     WlrLayershell.namespace: "space-wall"
-    WlrLayershell.keyboardFocus: Ui.typing === screen?.name ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: WidgetStateShared.typing === screen?.name ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     readonly property int ws: Hyprland.focusedWorkspace?.id ?? 1
     readonly property bool moving: World.hopBusy || panning.running
@@ -67,5 +66,5 @@ PanelWindow {
         }
     }
 
-    Widgets { anchors.fill: parent; model: win.widgets; visible: Ui.editing !== win.screen?.name }
+    WidgetBoardShared { anchors.fill: parent; model: win.widgets; visible: WidgetStateShared.editing !== win.screen?.name }
 }

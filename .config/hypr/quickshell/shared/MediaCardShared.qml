@@ -1,7 +1,7 @@
-
 import QtQuick
 import Quickshell
-import "../../shared"
+import Quickshell.Widgets
+import "../style/common"
 
 Column {
     id: mc
@@ -24,21 +24,27 @@ Column {
             anchors.centerIn: parent
             spacing: 8 * mc.s
 
-            DecodeText {
+            Say {
+                font.capitalization: Theme.caps
+                font.letterSpacing: Theme.tracking
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "󰝚"
                 font.pixelSize: 26 * mc.s
                 color: Theme.accent
             }
 
-            DecodeText {
+            Say {
+                font.capitalization: Theme.caps
+                font.letterSpacing: Theme.tracking
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Nothing playing"
                 font.pixelSize: 12 * mc.s
                 color: Theme.dim
             }
 
-            DecodeText {
+            Say {
+                font.capitalization: Theme.caps
+                font.letterSpacing: Theme.tracking
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Open Spotify"
                 font.pixelSize: 10 * mc.s
@@ -131,6 +137,7 @@ Column {
             Rectangle {
                 anchors.fill: parent
                 visible: b.primary
+                radius: Theme.r(8)
                 color: Theme.alpha(Theme.accent, ma.pressed ? 0.28 : (ma.containsMouse ? 0.16 : 0.08))
                 border.width: 1
                 border.color: Theme.alpha(Theme.accent, ma.containsMouse ? 0.9 : 0.4)
@@ -141,7 +148,7 @@ Column {
             Text {
                 anchors.centerIn: parent
                 text: b.glyph
-                font.family: Theme.font
+                font.family: Theme.sans
                 font.pixelSize: (b.primary ? 20 : 15) * b.s
                 color: ma.containsMouse ? Theme.accent : b.ink
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
@@ -160,9 +167,10 @@ Column {
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 12 * mc.s
 
-        Rectangle {
+        ClippingRectangle {
             width: 52 * mc.s
             height: width
+            radius: Theme.r(8)
             color: Theme.alpha(Theme.accent, 0.12)
             border.width: 1
             border.color: Theme.alpha(Theme.accent, 0.4)
@@ -182,7 +190,7 @@ Column {
                 verticalAlignment: Text.AlignVCenter
                 visible: !now.art
                 text: "󰎈"
-                font.family: Theme.font
+                font.family: Theme.sans
                 font.pixelSize: 20 * mc.s
                 color: Theme.accent
             }
@@ -193,16 +201,17 @@ Column {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
 
-            DecodeText {
+            Say {
+                font.capitalization: Theme.caps
+                font.letterSpacing: Theme.tracking
                 id: who
                 text: mc.player ? mc.player.identity : "nothing playing"
                 font.pixelSize: 9 * mc.s
                 color: Theme.dim
             }
 
-            DecodeText {
+            Say {
                 id: title
-                caps: false
                 width: parent.width
                 text: now.title || "—"
                 elide: Text.ElideRight
@@ -210,9 +219,8 @@ Column {
                 color: mc.ink
             }
 
-            DecodeText {
+            Say {
                 id: artist
-                caps: false
                 width: parent.width
                 visible: text !== ""
                 text: [now.artist, now.album].filter(Boolean).join("  ·  ")
@@ -259,33 +267,27 @@ Column {
         readonly property int ticks: Math.max(16, Math.round(width / (6 * mc.s)))
         readonly property real barY: 24 * mc.s
 
-        DecodeText {
-            caps: false
+        LabelShared {
             anchors.left: parent.left
             anchors.top: parent.top
-            decode: false
             text: mc.fmt(mc.pos)
             font.pixelSize: 9 * mc.s
             font.letterSpacing: 1.5
             color: Theme.accent
         }
 
-        DecodeText {
-            caps: false
+        LabelShared {
             anchors.right: parent.right
             anchors.top: parent.top
-            decode: false
             text: "-" + mc.fmt(mc.len - mc.pos)
             font.pixelSize: 9 * mc.s
             font.letterSpacing: 1.5
             color: Theme.dim
         }
 
-        DecodeText {
-            caps: false
+        LabelShared {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
-            decode: false
             text: Math.round(mc.frac * 100) + "%"
             font.pixelSize: 9 * mc.s
             font.letterSpacing: 1.5

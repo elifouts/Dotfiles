@@ -3,7 +3,7 @@ import QtQuick
 DecodeText {
     id: say
     caps: false
-    implicitWidth: probe.implicitWidth
+    implicitWidth: probe.implicitWidth + leftPadding + rightPadding
     implicitHeight: probe.implicitHeight
     baselineOffset: probe.baselineOffset
     property int replay
