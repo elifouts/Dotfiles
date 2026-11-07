@@ -577,11 +577,11 @@ ShellRoot {
                 readonly property real a: 1 - win.height / height
                 readonly property real d: root.fadeH * root.u / height
                 gradient: Gradient {
-                    GradientStop { position: haze.a; color: Theme.alpha(Theme.bg, 0) }
-                    GradientStop { position: haze.a + haze.d / 3; color: Theme.alpha(Theme.bg, 0.07) }
-                    GradientStop { position: haze.a + haze.d * 2 / 3; color: Theme.alpha(Theme.bg, 0.25) }
-                    GradientStop { position: haze.a + haze.d; color: Theme.alpha(Theme.bg, 0.35) }
-                    GradientStop { position: 1; color: Theme.alpha(Theme.bg, 0.45) }
+                    GradientStop { position: haze.a; color: Theme.back(0) }
+                    GradientStop { position: haze.a + haze.d / 3; color: Theme.back(0.07) }
+                    GradientStop { position: haze.a + haze.d * 2 / 3; color: Theme.back(0.25) }
+                    GradientStop { position: haze.a + haze.d; color: Theme.back(0.35) }
+                    GradientStop { position: 1; color: Theme.back(0.45) }
                 }
             }
         }

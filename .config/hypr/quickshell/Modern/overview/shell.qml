@@ -484,7 +484,7 @@ ShellRoot {
                                         anchors.fill: parent
                                         windows: entry.ws.windows
                                         k: entry.k
-                                        fill: Theme.alpha(Theme.bg, 0.85)
+                                        fill: Theme.back(0.85)
                                         edge: Theme.alpha(Theme.fg, 0.12)
                                     }
                                 }

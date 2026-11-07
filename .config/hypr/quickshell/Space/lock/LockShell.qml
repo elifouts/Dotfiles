@@ -49,7 +49,7 @@ ShellRoot {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: 300
                     height: 34
-                    color: Theme.alpha(Theme.bg, 0.45)
+                    color: Theme.back(0.45)
                     border.width: 1
                     border.color: face.lock.wrong && !input.text ? Theme.warn : input.activeFocus ? Theme.accent : Theme.faint
                     Rectangle { width: 2; height: parent.height; color: Theme.accent }

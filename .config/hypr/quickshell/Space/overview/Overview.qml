@@ -818,7 +818,7 @@ Scope {
                     id: card
                     width: 250
                     height: info.height + 22
-                    color: Theme.alpha(Theme.bg, 0.72)
+                    color: Theme.back(0.72)
                     border.width: 1
                     border.color: Theme.alpha(Theme.fg, 0.08)
                     Rectangle { width: 2; height: parent.height; color: Theme.accent }

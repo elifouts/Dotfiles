@@ -13,7 +13,7 @@ Rectangle {
 
     width: parent?.width ?? 280
     height: 24
-    color: Theme.alpha(Theme.bg, 0.5)
+    color: Theme.back(0.5)
     border.width: 1
     border.color: input.activeFocus ? Theme.accent : Theme.faint
 

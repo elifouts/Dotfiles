@@ -49,7 +49,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         visible: d.style === "frame"
-        color: Theme.alpha(Theme.bg, 0.25)
+        color: Theme.back(0.25)
     }
 
     Column {

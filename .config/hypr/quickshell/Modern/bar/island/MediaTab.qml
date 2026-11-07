@@ -110,7 +110,7 @@ Item {
 
             Rectangle {
                 anchors.fill: parent
-                color: Theme.alpha(Theme.bg, 0.45)
+                color: Theme.back(0.45)
                 opacity: artArea.containsMouse ? 1 : 0
                 Behavior on opacity { NumberAnimation { duration: Theme.fast } }
                 LabelShared {

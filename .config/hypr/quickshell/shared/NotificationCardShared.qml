@@ -44,7 +44,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Theme.rounding
-        color: card.popup ? Theme.alpha(Theme.bg, 0.86) : (area.containsMouse ? "#26ffffff" : "#14ffffff")
+        color: card.popup ? Theme.back(0.86) : (area.containsMouse ? "#26ffffff" : "#14ffffff")
         border.width: card.popup || card.critical ? 1 : 0
         border.color: Qt.alpha(card.critical ? Theme.warn : Theme.accent, card.critical ? 0.7 : 0.4)
         Behavior on color { ColorAnimation { duration: Theme.ms(150) } }

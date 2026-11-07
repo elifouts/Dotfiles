@@ -228,7 +228,7 @@ ShellRoot {
                             width: parent.width + rounding + 2
                             height: parent.height
                             radius: rounding
-                            color: Theme.alpha(Theme.bg, 0.64)
+                            color: Theme.back(0.64)
                             border.width: 1
                             border.color: Theme.edge
                         }

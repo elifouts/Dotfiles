@@ -53,8 +53,8 @@ Item {
             strokeColor: Theme.alpha(Theme.accent, 0.4)
             fillGradient: LinearGradient {
                 y2: pill.height
-                GradientStop { position: 0; color: Theme.alpha(Theme.bg, 0.72) }
-                GradientStop { position: 1; color: Theme.alpha(Theme.bg, 0.42) }
+                GradientStop { position: 0; color: Theme.back(0.72) }
+                GradientStop { position: 1; color: Theme.back(0.42) }
             }
             startX: pill.fx(8); startY: 0
             PathLine { x: pill.fx(pill.width); y: 0 }

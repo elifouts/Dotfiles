@@ -90,7 +90,7 @@ PanelWindow {
             id: frame
             width: parent.width
             height: col.height + 26
-            color: Theme.alpha(Theme.bg, 0.8)
+            color: Theme.back(0.8)
             border.width: 1
             border.color: Theme.alpha(Theme.accent, 0.3)
             Rectangle { width: 3; height: parent.height; color: Theme.accent }

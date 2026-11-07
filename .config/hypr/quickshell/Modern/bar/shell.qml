@@ -231,7 +231,7 @@ ShellRoot {
                         Item {
                             visible: root.look.strip === true
                             anchors.fill: parent
-                            opacity: 0.6
+                            opacity: Theme.surface(0.6)
                             layer.enabled: visible
 
                             Shape {

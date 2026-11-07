@@ -28,6 +28,9 @@ Singleton {
     readonly property bool ownMotion: utility("animations") === "true"
     property bool clock24Default: false
     readonly property bool h24: utility("clock24", String(clock24Default)) === "true"
+    readonly property real shellOpacity: parseFloat(utility("opacity", "1"))
+    function surface(a) { return Math.min(1, a * shellOpacity) }
+    function back(a) { return alpha(bg, surface(a)) }
     function clock(date, seconds, mark) {
         return Qt.formatTime(date, (h24 ? "HH" : "h") + ":mm" + (seconds ? ":ss" : "") + (mark && !h24 ? " " + mark : ""))
     }
@@ -164,7 +167,7 @@ Singleton {
     readonly property color bright: readable(c(15, "#ffffff"))
     readonly property color dim: alpha(fg, 0.5)
     property color bg: wal ? wal.special.background : "#101418"
-    readonly property color panel: alpha(bg, 0.6)
+    readonly property color panel: back(0.6)
     property color edge: alpha(fg, 0.07)
 
     readonly property var shades: [bg].concat(Array.from({ length: 16 }, (_, i) => Qt.color(c(i, i < 8 ? "#101418" : "#ffffff"))))

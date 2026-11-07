@@ -310,7 +310,7 @@ ShellRoot {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    color: Theme.alpha(Theme.bg, 0.5 * Math.min(1, env.ad))
+                                    color: Theme.back(0.5 * Math.min(1, env.ad))
                                 }
                             }
 

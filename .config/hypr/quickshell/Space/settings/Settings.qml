@@ -145,7 +145,7 @@ PanelWindow {
         height: Math.round(10 + (sheet.h - 10) * Math.min(1, morph.mh))
         opacity: Math.min(1, morph.t * 6)
         clip: true
-        color: Theme.alpha(Theme.bg, 0.8)
+        color: Theme.back(0.8)
         border.width: 1
         border.color: Theme.alpha(Theme.accent, 0.3)
         Rectangle { width: parent.width; height: 2; color: Theme.accent }

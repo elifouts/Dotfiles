@@ -15,7 +15,7 @@ Singleton {
     readonly property bool preview: Quickshell.env("LOCK_PREVIEW") === "1"
     readonly property string shots: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/quickshell-lock"
 
-    readonly property color card: Theme.alpha(Theme.bg, 0.5)
+    readonly property color card: Theme.back(0.5)
     readonly property color edge: Theme.edge
     readonly property string wallpaper: {
         const p = walPath.text().trim()

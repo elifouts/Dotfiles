@@ -191,7 +191,7 @@ Item {
             x: -self.ctx.flare
             width: parent.width + 2 * self.ctx.flare
             height: parent.height
-            opacity: self.ctx.look.strip ? 0 : 0.6 * (self.filled ? 1 : self.t)
+            opacity: self.ctx.look.strip ? 0 : Theme.surface(0.6) * (self.filled ? 1 : self.t)
             visible: opacity > 0
             layer.enabled: true
             layer.smooth: true

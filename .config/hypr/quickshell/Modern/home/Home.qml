@@ -36,7 +36,7 @@ Scope {
     property bool wallReady: false
     property string pendingCmd: ""
     property bool startWaited: false
-    readonly property color glass: Theme.alpha(Theme.bg, 0.5)
+    readonly property color glass: Theme.back(0.5)
 
     property real cpu: 0
     property real prevTotal: 0

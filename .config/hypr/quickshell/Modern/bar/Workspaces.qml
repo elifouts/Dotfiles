@@ -423,7 +423,7 @@ Item {
                     ClippingRectangle {
                         anchors.fill: parent
                         radius: Math.min(tile.r - 2, 6)
-                        color: Theme.alpha(Theme.bg, 0.85)
+                        color: Theme.back(0.85)
 
                         ScreencopyView {
                             id: shot
@@ -460,7 +460,7 @@ Item {
                         width: Math.min(label.implicitWidth + 16, Math.max(40, win.width - 8))
                         height: tile.big ? 24 : 16
                         radius: Math.min(Theme.rounding, height / 2)
-                        color: Theme.alpha(Theme.bg, 0.85)
+                        color: Theme.back(0.85)
                         LabelShared {
                             id: label
                             anchors.centerIn: parent
@@ -622,7 +622,7 @@ Item {
             ClippingRectangle {
                 anchors.fill: parent
                 radius: Math.min(Theme.rounding, 6)
-                color: Theme.alpha(Theme.bg, 0.85)
+                color: Theme.back(0.85)
                 ScreencopyView {
                     anchors.fill: parent
                     visible: !proxy.entry
@@ -829,7 +829,7 @@ Item {
                         anchors.fill: parent
                         visible: page.renaming === savedRow.modelData
                         radius: Math.min(Theme.rounding, 8)
-                        color: Theme.alpha(Theme.bg, 0.95)
+                        color: Theme.back(0.95)
                         border.width: 1
                         border.color: Theme.alpha(Theme.accent, 0.6)
                         onVisibleChanged: if (visible) { field.text = savedRow.entry.name; field.selectAll(); field.forceActiveFocus() }

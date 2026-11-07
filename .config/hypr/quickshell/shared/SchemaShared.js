@@ -77,7 +77,8 @@ var PAGES = [
             section("Opacity", [
                 slider("config.decoration.active_opacity", "Active windows", 0.3, 1, 0.01),
                 slider("config.decoration.inactive_opacity", "Inactive windows", 0.3, 1, 0.01),
-                slider("config.decoration.fullscreen_opacity", "Fullscreen windows", 0.3, 1, 0.01)
+                slider("config.decoration.fullscreen_opacity", "Fullscreen windows", 0.3, 1, 0.01),
+                slider("utilities.opacity", "Quickshell panels", 0.2, 1.5, 0.05, "×")
             ]),
             section("Behavior", [
                 toggle("config.general.resize_on_border", "Resize from borders"),

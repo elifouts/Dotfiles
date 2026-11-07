@@ -19,7 +19,7 @@ Scope {
         ShapePath {
             strokeWidth: 1
             strokeColor: Theme.alpha(Theme.accent, 0.35)
-            fillColor: Theme.alpha(Theme.bg, plate.fill)
+            fillColor: Theme.back(plate.fill)
             startX: plate.cut; startY: 0
             PathLine { x: plate.width; y: 0 }
             PathLine { x: plate.width; y: plate.height }
