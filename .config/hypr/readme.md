@@ -13,7 +13,7 @@ Everything is three layers stacked on each other:
 | Layer | What it is | Where it lives | Example |
 |---|---|---|---|
 | **Style** | the whole look, its own shell | `<Style>/` | `Modern`, `Space` |
-| **Variant** | what changes per machine | `<Style>/<variant>/machine.lua` | `desktop`, `laptop` |
+| **Variant** | what changes per machine | `machine/<variant>.lua` | `desktop`, `laptop` |
 | **Tweaks** | settings panel changes on top | `<Style>/tweaks/` | `saved/desktop/Zen.json` |
 
 And the folders split by who owns what:
@@ -21,9 +21,10 @@ And the folders split by who owns what:
 ```text
 hyprland.lua, overrides.lua       the same no matter the style
 session.lua, wal.lua
+machine/                          monitors and defaults per machine
 utilities/                        scripts any style can use
-shared/                           qml and scripts both styles link in
-Modern/  Space/                   the styles
+quickshell/                       the shell, one folder per style plus shared/
+Modern/  Space/                   each style's hyprland config, bars and tweaks
 state/                            what's live right now, gitignored
 ```
 
@@ -32,8 +33,8 @@ state/                            what's live right now, gitignored
 ## What happens at login
 
 ```text
-hyprland.lua                 reads state/profile, sets package.path: variant, base, state, then loads
-   ├─ machine.lua            monitors and defaults
+hyprland.lua                 reads state/profile, points quickshell/style at the style, sets package.path: base, state, then loads
+   ├─ machine/<variant>.lua  monitors and defaults
    ├─ startup.lua            pulls in session.lua, Modern also starts the boot animation
    ├─ style.lua              look, curves, rules
    ├─ shortcuts.lua          style binds, pulls in binds.lua for the shared ones
@@ -52,7 +53,7 @@ session.lua, on hyprland.start
 <details>
 <summary><b>Config loading</b></summary>
 
-The lua path goes variant, then base, then state. So a file in `desktop/` with the same name as one in `base/` replaces it.
+The lua path goes base, then state. The variant is loaded by name from `machine/` and kept as `require("machine")`.
 
 `hyprctl reload` reruns everything from scratch, which is why switching styles leaves no old binds or rules behind.
 
@@ -67,13 +68,13 @@ The block at the top of `hyprland.lua` moves state out of the old `.active-*` fi
 
 1. `transition.sh begin` freezes the screen behind a blurred frame and a loading bar
 2. `session.sh stop` kills the old shell, waybar and awww, in the background
-3. writes `state/profile`
+3. writes `state/profile` and points `quickshell/style` at the new style
 4. `hypr-settings.py sync` writes `state/settings.lua` and `state/bar`
-5. `hyprctl reload`
+5. waits for the old shell to die, then `hyprctl reload`. Both styles run from the same path, so a new shell started early would see the old one and quit
 6. `session.sh start` and `hypr-settings.py colors` run together, then the wallpaper
 7. `transition.sh reveal` fades into the new style
 
-A style counts if it has `base/style.lua`, `<variant>/machine.lua` and `utilities/`. It gets the transition for free, nothing in it knows about styles.
+A style counts if it has `<Style>/base/style.lua` and `quickshell/<Style>/`. Variants are whatever is in `machine/`. It gets the transition for free, nothing in it knows about styles.
 
 `TransitionShared.qml` runs as its own process because the shell it covers gets killed. It keeps the old bar's space with empty layers on the background level, which get arranged last so they don't push the new bar down. The old gaps stay through `$XDG_RUNTIME_DIR/style-transition.lua`, which `overrides.lua` reads. Both get released right as the fade starts, so windows resize during it.
 
@@ -135,7 +136,7 @@ Default slots: `color9` is the accent, `color7` is text.
 <details>
 <summary><b>The Modern shell</b></summary>
 
-One quickshell process. `utilities/shell.qml` finds every `*/shell.qml` and loads it, so adding a folder adds a utility. `boot` and `lock` run alone, their main files are `BootShell.qml` and `LockShell.qml` so the search skips them.
+One quickshell process. `quickshell/Modern/Shell.qml` finds every `*/shell.qml` and loads it, so adding a folder adds a utility. `boot` and `lock` run alone, their main files are `BootShell.qml` and `LockShell.qml` so the search skips them.
 
 Utilities stay loaded and hidden, then open over ipc. Windows stay mapped with an empty input region, which is why they open instantly.
 
@@ -162,9 +163,9 @@ shells.sh <utility> [call] [args]   # default call is toggle, starts the shell i
 
 `state/bar` says which one runs, `bar.sh` handles it, `Alt+A` toggles it.
 
-**Waybar:** a style is `<Style>/waybar/<name>/` with `config`, `style.css` and `preview.png`. `waybar-style.sh` copies it into `~/.config/waybar/`.
+**Waybar:** a style is `<Style>/waybar/<name>/` with `style.css`, `preview.png` and a `config`, or it uses `default/config`. `waybar-style.sh` copies it into `~/.config/waybar/`.
 
-**Quickshell bar:** `Modern/utilities/bar`. Modules sit in up to three pills, hovering grows a pill into a card. A style is `quickshellbar/<name>/config.json`:
+**Quickshell bar:** `quickshell/Modern/bar`. Modules sit in up to three pills, hovering grows a pill into a card. A style is `quickshellbar/<name>/config.json`:
 
 | Key | Does |
 |---|---|
@@ -177,14 +178,14 @@ shells.sh <utility> [call] [args]   # default call is toggle, starts the shell i
 
 Modules: `user` `workspaces` `media` `date` `constdate` `timer` `clock` `tray` `updates` `notifications` `network` `audio` `battery` `power`, and `|` for a divider.
 
-`InstallScripts/quickshellbarinstall.sh` and `waybarinstall.sh` install either bar alone. The standalone quickshell bar reads `style.json` next to its `shell.qml`.
+`InstallScripts/quickshellbarinstall.sh` and `waybarinstall.sh` install either bar alone. The standalone quickshell bar reads `style.json` next to its `shell.qml`. The installer copies `shared/` and the parts of Modern it needs into `style/`, so the imports work the same.
 
 </details>
 
 <details>
 <summary><b>Lock</b></summary>
 
-`lock.sh` runs `lock.qml` as its own process, so it still comes up if the shell is dead. It quits after unlocking and ships its own pam file.
+`lock.sh` runs `quickshell/lock.qml` as its own process, so it still comes up if the shell is dead. It quits after unlocking and ships its own pam file.
 
 Modern grabs a frame of each monitor with grim and fades from that into the blurred wallpaper. Handoff layers mapped under the lock take over on unlock.
 
@@ -198,7 +199,7 @@ Modern grabs a frame of each monitor with grim and fades from that into the blur
 <details>
 <summary><b>Space</b></summary>
 
-Same scripts, settings and color themes as Modern, none of the visuals. One process, `Space/utilities/shell.qml`. Each monitor gets the land and the bar, everything else is a `LazyLoader` thrown away when it closes.
+Same scripts, settings and color themes as Modern, none of the visuals. One process, `quickshell/Space/Shell.qml`. Each monitor gets the land and the bar, everything else is a `LazyLoader` thrown away when it closes.
 
 | Part | Key | What it is |
 |---|---|---|
@@ -295,17 +296,18 @@ wallpaper/wallpapers.sh install | pull | dev-pull | push
 | I want to change | Go to |
 |---|---|
 | keybinds | `binds.lua` for both styles, `<Style>/base/shortcuts.lua` for one |
-| monitors | `shared/machine/machine-<variant>.lua` |
+| monitors | `machine/<variant>.lua` |
 | gaps, blur, curves, window rules | `<Style>/base/style.lua` |
 | what runs at login | `session.lua`, `<Style>/base/session.sh` |
 | idle timeouts | `hypridle.conf` |
-| add a setting | one line in `shared/core/SchemaShared.js`, both styles draw it. Space picks its pages in `Space/utilities/common/Schema.js` |
-| add a Modern utility | new folder with a `shell.qml` and an `IpcHandler`, then a bind. if it has its own components, add `import "folder"` to `utilities/shell.qml` |
-| add a bar module | `Modern/utilities/bar/Module.qml` |
+| add a setting | one line in `quickshell/shared/SchemaShared.js`, both styles draw it. Each style picks its pages in `common/Schema.js` |
+| add a Modern utility | new folder with a `shell.qml` and an `IpcHandler`, then a bind. if it has its own components, add `import "folder"` to `quickshell/Modern/Shell.qml` |
+| add a bar module | `quickshell/Modern/bar/Module.qml` |
 | add a bar style | new folder in `quickshellbar/` or `waybar/` |
 | add a color scheme | new json in `.config/wal/colorschemes/` |
-| add a machine | new `machine-*.lua`, then link it as `<Style>/<variant>/machine.lua` |
-| add a style | new folder with `base/`, `<variant>/`, `utilities/`, link what you need from `shared/` |
+| add a machine | new `machine/<name>.lua` |
+| add a style | new `<Style>/base/` and `quickshell/<Style>/` with a `Shell.qml`, `lock/LockShell.qml`, `common/Theme.qml`, `common/Schema.js` and the `bar/menus` parts shared menus use |
+| add something both styles use | new file in `quickshell/shared/`, add `import "../style/common"` if it needs `Theme` |
 
 ## Confusing stuff
 
@@ -319,9 +321,7 @@ wallpaper/wallpapers.sh install | pull | dev-pull | push
 <details>
 <summary><b id="file-names">File names</b></summary>
 
-Files in `shared/` end in `Shared`, `AudioShared.qml`, and the code uses that name, `AudioShared {}`. Links keep it too, `AudioShared.qml` in `common/` points at `shared/media/AudioShared.qml`. Files in `Modern/` and `Space/` have plain names.
-
-The links Space's bar and Modern's settings load by a name they build at runtime stay plain, like `PanelAudio.qml` and `SettingBezier.qml`.
+QML in `quickshell/shared/` ends in `Shared`, `AudioShared.qml`, and the code uses that name, `AudioShared {}`. Files in `Modern/` and `Space/` have plain names.
 
 </details>
 
@@ -331,32 +331,40 @@ The links Space's bar and Modern's settings load by a name they build at runtime
 | Name | Which is which |
 |---|---|
 | `session` | `session.lua` is login, `utilities/session/session.sh` starts and stops a style, `base/session.sh` is that style's extras, `menus/Session.qml` is the power menu |
-| `Theme` | `shared/core/ThemeBaseShared.qml` is the real one, each style's `common/Theme.qml` extends it |
-| `shell.qml` | one per utility, plus `utilities/shell.qml` which loads them |
+| `Theme` | `quickshell/shared/ThemeBaseShared.qml` is the real one, each style's `common/Theme.qml` extends it |
+| `shell.qml` | one per Modern utility. `quickshell/shell.qml` starts the style's `Shell.qml`, which loads them |
 | `Toggle`, `Card`, `Reveal` | each exists more than once, they're local to their folder |
-| `stats.sh` | one file, linked as `home-stats.sh` in both styles |
 
 </details>
 
 <details>
-<summary><b>Why so many symlinks?</b></summary>
+<summary><b>What's the style link?</b></summary>
 
-Quickshell won't import files outside the folder it started in. So shared qml lives in `shared/` and each style's `common/` links to it. Imports inside a linked file resolve from where the link is, so `Theme` in a shared file means that style's `Theme`.
+Quickshell won't import files outside the folder it started in, so it starts from `quickshell/` and everything sits inside it. `quickshell/style` is the only link, it points at `Modern` or `Space`. It's gitignored, `hyprland.lua` and `hypr-profile.sh` keep it right.
 
-It's also why `lock.qml` and `boot.qml` are tiny wrappers at the top of `utilities/`. They need to start from there to reach `common/`.
+```text
+quickshell/
+├─ shell.qml    import "style", Shell {}
+├─ lock.qml     import "style/lock", LockShell {}
+├─ boot.qml     import "style/boot", BootShell {}
+├─ style        → Modern or Space
+├─ Modern/
+├─ Space/
+└─ shared/
+```
 
-Edit the real file in `shared/`, not the link. It changes both styles.
+Shared files import `../style/common`, so `Theme` in a shared file means the running style's `Theme`. Style files import `../shared` from however deep they are. Always go through `style/` from a shared file, never `../Modern/`, or a singleton ends up loaded twice.
 
-The bar's wifi, bluetooth, sound, updates and notifications menus work like this too. What they do is in `shared/menus/`. What they look like is `Entry`, `Group`, `Header`, `Round`, `Chips`, `Slider`, `Switch` and `Tile`, each style has its own. Space links them under `bar/menus` with the same names, `Pill.qml` tells them when they're open.
+The bar's wifi, bluetooth, sound, updates and notifications menus work like this too. What they do is in `quickshell/shared/`. What they look like is `Entry`, `Group`, `Header`, `Round` and `Chips` in each style's `bar/menus`, and `Slider`, `Switch` and `Tile` in its `common`.
 
-One folder link per style doesn't work, I tried. The shared singletons would have to import a folder that lists them, and Qt fails with `Audio is instantiated recursively`.
+`shared/` is flat because a shared file sees everything next to it without an import.
 
 </details>
 
 <details>
-<summary><b>Why does Modern's shell.qml import folders it doesn't use?</b></summary>
+<summary><b>Why does Modern's Shell.qml import folders it doesn't use?</b></summary>
 
-Quickshell only registers a folder's components if it reaches that folder through an `import`, starting from the root file. Modern loads its utilities with `createComponent`, which it can't follow, so the imports at the top of `utilities/shell.qml` are how it finds them. Same for Space's `bar/menus`, those load through a `Loader`.
+Quickshell only registers a folder's components if it reaches that folder through an `import`, starting from the root file. Modern loads its utilities with `createComponent`, which it can't follow, so the imports at the top of `quickshell/Modern/Shell.qml` are how it finds them. Same for Space's `bar/menus`, those load through a `Loader`.
 
 There are no `qmldir` files, Quickshell makes them from these. A singleton just needs `pragma Singleton`.
 
@@ -372,7 +380,7 @@ There are no `qmldir` files, Quickshell makes them from these. A singleton just 
 | `~/.config/kitty/current-theme.conf` | `color-apply.sh` | a color scheme |
 | `~/.config/cava/config` | `color-apply.sh` | the heredoc in `color-apply.sh` |
 | `wal/colorschemes/dark/space.json` | `World.qml` | the themes in `World.qml` |
-| `Modern/utilities/overview/workspaces.json` | the overview | save from the overview |
+| `quickshell/Modern/overview/workspaces.json` | the overview | save from the overview |
 
 </details>
 
@@ -400,12 +408,12 @@ So a bind has to fit on one line to show up, and that's why `binds.lua` spells o
 <summary><b>Things that aren't where you'd think</b></summary>
 
 - `notifications` is the notification host, so it's always running. Home isn't, so a notification can't depend on it
-- Each style runs its own `qs`, and that's the notification server, so switching styles kills it. `NotifsShared.qml` keeps history and dnd in `$XDG_RUNTIME_DIR/notifications.json` and loads them back on start. Notifications that come back from the file have lost their action buttons, the app on the other end is gone from the server's point of view. They last until you log out
+- The shell is the notification server, so switching styles kills it. `NotifsShared.qml` keeps history and dnd in `$XDG_RUNTIME_DIR/notifications.json` and loads them back on start. Notifications that come back from the file have lost their action buttons, the app on the other end is gone from the server's point of view. They last until you log out
 - Popups are bottom left and hide while the home screen is open
 - Wallpapers live in `~/wallpapers/library`, only favorites are in this repo. The pre-commit hook copies them in from `favorites.txt`
 - Spotify always opens through `spotify.sh`
 - Lock keeps its gear menu settings in `~/.local/state`
-- `hypr-settings.py` gets the boot and cursor defaults by asking the running Hyprland for `require("machine").defaults`, so changing what `machine.lua` returns can break it even though no lua file complains
+- `hypr-settings.py` gets the boot and cursor defaults by asking the running Hyprland for `require("machine").defaults`, so changing what `machine/<variant>.lua` returns can break it even though no lua file complains
 
 </details>
 
@@ -479,7 +487,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 
 ## Every file
 
-All 372 of them. `→` means it's a symlink, the real file is in that `shared/` folder.
+All 259 of them.
 
 <details>
 <summary><b>hypr/ (root)</b></summary>
@@ -556,82 +564,89 @@ utilities/
 </details>
 
 <details>
-<summary><b>shared/</b></summary>
+<summary><b>quickshell/ and shared/</b></summary>
 
 ```text
-shared/
-├─ capture/
-│  ├─ capture.sh                     screenshots and recordings by region, window or screen
-│  ├─ cast.py                        casts to tvs: wifi direct, miracast, chromecast, dlna
-│  └─ share.sh                       xdph's custom picker, hands off to the capture menu
-├─ core/
-│  ├─ HyprShared.qml                 paths, which screen has focus or the cursor, dispatch
-│  ├─ MotionShared.js                animation presets and curves for both settings pages
-│  ├─ SchemaShared.js                every settings page and option, one line per setting
-│  ├─ StoreShared.qml                settings state, batches writes to hypr-settings.py
-│  ├─ ThemeBaseShared.qml            palette, rounding, gaps, timing. each Theme.qml extends this
-│  └─ WatchedShared.qml              FileView that rereads when the file changes
-├─ machine/
-│  ├─ machine-desktop.lua            desktop monitors, boot and cursor defaults
-│  └─ machine-laptop.lua             laptop monitors, boot and cursor defaults
-├─ menus/
-│  ├─ BluetoothListShared.qml        bluetooth devices and their rows, pair and connect
-│  ├─ CardShared.qml                 Tile with padding for menu content
-│  ├─ NetworkShared.qml              wifi and bluetooth side by side
-│  ├─ NotificationsShared.qml        notification history, dnd and clear
-│  ├─ OopsShared.qml                 inline error text
-│  ├─ SoundShared.qml                speakers, mics, volume rows and device picking
-│  ├─ ToggleShared.qml               label and switch row
-│  ├─ UpdateMenuShared.qml           pending updates, update now or check again
-│  ├─ WifiShared.qml                 wifi list and connect
-│  └─ WifiEditorShared.qml           edit a saved connection: ip, dns, security, with its fields
-├─ media/
-│  ├─ AudioShared.qml                default speaker and mic, volume and mute
-│  ├─ cava.conf                      base cava config, CavaFeed swaps in bars and framerate
-│  ├─ CavaShared.qml                 one cava feed for every visualizer
-│  ├─ CavaFeedShared.qml             runs cava with its own bar count
-│  ├─ CoverShared.qml                album art that slides the way you skipped
-│  ├─ MediaShared.qml                picks the player, skip and play controls
-│  ├─ MiniWaveShared.qml             small bar visualizer
-│  ├─ NowPlayingShared.qml           track info, covers spotify's blank music videos
-│  ├─ PlayButtonShared.qml           accent circle with the play/pause morph
-│  ├─ PlayPauseShared.qml            shape that morphs between play and pause
-│  ├─ SeekShared.qml                 smooth progress bar
-│  ├─ SkipButtonShared.qml           prev/next that kicks when it skips
-│  └─ spotify.sh                     opens spotify's scratchpad, or a normal window without pypr
-├─ system/
+quickshell/
+├─ shared/
+│  ├─ capture/
+│  │  ├─ capture.sh                    screenshots and recordings by region, window or screen
+│  │  ├─ cast.py                       casts to tvs: wifi direct, miracast, chromecast, dlna
+│  │  └─ share.sh                      xdph's custom picker, hands off to the capture menu
 │  ├─ pam/
-│  │  └─ password.conf               the lock's pam file, so it doesn't need hyprlock's
-│  ├─ BrightnessShared.qml           screen brightness state
-│  ├─ NotificationCardShared.qml     one notification card
-│  ├─ NotificationPopupsShared.qml   popups, bottom left
-│  ├─ NotifsShared.qml               the notification daemon, keeps history and dnd
-│  ├─ OsdShared.qml                  osd pill and media card
-│  ├─ OsdStateShared.qml             what the osd does, caps lock tracking
-│  ├─ net.sh                         nmcli calls for the wifi menus
-│  ├─ PowerShared.qml                session actions and battery
-│  ├─ stats.sh                       system info from /proc and /sys, read by both home screens
-│  └─ UpdatesShared.qml              pending pacman and aur count, every 30 min
-├─ ui/
-│  ├─ CurvePlotShared.qml            draggable bezier graph
-│  ├─ FadeShared.qml                 one island tab, fades and rises in when on
-│  ├─ HoverShared.qml                MouseArea with hover and the hand cursor
-│  ├─ IconButtonShared.qml           clickable icon that lights up on hover
-│  ├─ LabelShared.qml                Text in the theme font and color
-│  ├─ MorphShared.qml                the grow out of a dot open and close
-│  ├─ SettingBezierShared.qml        full curve editor with preview and randomize
-│  ├─ SettleShared.qml               NumberAnimation on hyprland's window curve
-│  ├─ SwapTextShared.qml             text that slides out and types back in
-│  └─ TourShared.qml                 first run tour, each style gives it steps and spots
-└─ widgets/
-   ├─ CalendarShared.qml             calendar and todo list
-   ├─ CaptureTabShared.qml           screenshot, record, cast and share tab
-   ├─ ColorTabShared.qml             color picker tab, shares waybar's history
-   ├─ CountdownShared.qml            focus timer logic, lives in the shell
-   ├─ ForecastShared.qml             wttr.in weather data, refreshes every 30 min
-   ├─ TimerTabShared.qml             drag ring timer ui
-   ├─ TodosShared.qml                todo storage in state/todos.json
-   └─ WeatherTabShared.qml           weather tab with graph
+│  │  └─ password.conf                 the lock's pam file, so it doesn't need hyprlock's
+│  ├─ AudioShared.qml                  default speaker and mic, volume and mute
+│  ├─ BluetoothListShared.qml          bluetooth devices and their rows, pair and connect
+│  ├─ BrightnessShared.qml             screen brightness state
+│  ├─ CalendarShared.qml               calendar and todo list
+│  ├─ CaptureTabShared.qml             screenshot, record, cast and share tab
+│  ├─ CardShared.qml                   Tile with padding for menu content
+│  ├─ cava.conf                        base cava config, CavaFeed swaps in bars and framerate
+│  ├─ CavaFeedShared.qml               runs cava with its own bar count
+│  ├─ CavaShared.qml                   one cava feed for every visualizer
+│  ├─ ColorTabShared.qml               color picker tab, shares waybar's history
+│  ├─ CountdownShared.qml              focus timer logic, lives in the shell
+│  ├─ CoverShared.qml                  album art that slides the way you skipped
+│  ├─ CurvePlotShared.qml              draggable bezier graph
+│  ├─ FadeShared.qml                   one island tab, fades and rises in when on
+│  ├─ ForecastShared.qml               wttr.in weather data, refreshes every 30 min
+│  ├─ HoverShared.qml                  MouseArea with hover and the hand cursor
+│  ├─ HyprShared.qml                   paths, which screen has focus or the cursor, dispatch
+│  ├─ IconButtonShared.qml             clickable icon that lights up on hover
+│  ├─ LabelShared.qml                  Text in the theme font and color
+│  ├─ MediaShared.qml                  picks the player, skip and play controls
+│  ├─ MiniWaveShared.qml               small bar visualizer
+│  ├─ MorphShared.qml                  the grow out of a dot open and close
+│  ├─ MotionShared.js                  animation presets and curves for both settings pages
+│  ├─ net.sh                           nmcli calls for the wifi menus
+│  ├─ NetworkShared.qml                wifi and bluetooth side by side
+│  ├─ NotificationCardShared.qml       one notification card
+│  ├─ NotificationPopupsShared.qml     popups, bottom left
+│  ├─ NotificationsShared.qml          notification history, dnd and clear
+│  ├─ NotifsShared.qml                 the notification daemon, keeps history and dnd
+│  ├─ NowPlayingShared.qml             track info, covers spotify's blank music videos
+│  ├─ OopsShared.qml                   inline error text
+│  ├─ OsdShared.qml                    osd pill and media card
+│  ├─ OsdStateShared.qml               what the osd does, caps lock tracking
+│  ├─ PlayButtonShared.qml             accent circle with the play/pause morph
+│  ├─ PlayPauseShared.qml              shape that morphs between play and pause
+│  ├─ PowerShared.qml                  session actions and battery
+│  ├─ SchemaShared.js                  every settings page and option, one line per setting
+│  ├─ SeekShared.qml                   smooth progress bar
+│  ├─ SettingBezierShared.qml          full curve editor with preview and randomize
+│  ├─ SettleShared.qml                 NumberAnimation on hyprland's window curve
+│  ├─ SkipButtonShared.qml             prev/next that kicks when it skips
+│  ├─ SoundShared.qml                  speakers, mics, volume rows and device picking
+│  ├─ spotify.sh                       opens spotify's scratchpad, or a normal window without pypr
+│  ├─ stats.sh                         system info from /proc and /sys, read by both home screens
+│  ├─ StoreShared.qml                  settings state, batches writes to hypr-settings.py
+│  ├─ SwapTextShared.qml               text that slides out and types back in
+│  ├─ ThemeBaseShared.qml              palette, rounding, gaps, timing. each Theme.qml extends this
+│  ├─ TimerTabShared.qml               drag ring timer ui
+│  ├─ TodosShared.qml                  todo storage in state/todos.json
+│  ├─ ToggleShared.qml                 label and switch row
+│  ├─ TourShared.qml                   first run tour, each style gives it steps and spots
+│  ├─ UpdateMenuShared.qml             pending updates, update now or check again
+│  ├─ UpdatesShared.qml                pending pacman and aur count, every 30 min
+│  ├─ WatchedShared.qml                FileView that rereads when the file changes
+│  ├─ WeatherTabShared.qml             weather tab with graph
+│  ├─ WifiEditorShared.qml             edit a saved connection: ip, dns, security, with its fields
+│  └─ WifiShared.qml                   wifi list and connect
+├─ boot.qml                            starts boot from the running style
+├─ lock.qml                            starts lock from the running style
+├─ shell.qml                           starts the running style's Shell.qml
+└─ style                               link to Modern or Space, gitignored
+```
+
+</details>
+
+<details>
+<summary><b>machine/</b></summary>
+
+```text
+machine/
+├─ desktop.lua  desktop monitors, boot and cursor defaults
+└─ laptop.lua   laptop monitors, boot and cursor defaults
 ```
 
 </details>
@@ -646,10 +661,6 @@ Modern/
 │  ├─ shortcuts.lua       Modern's keybinds. the launcher parses this file too
 │  ├─ startup.lua         runs the boot animation
 │  └─ style.lua           hyprland look: gaps, blur, curves, window and layer rules
-├─ desktop/
-│  └─ machine.lua         → machine: desktop monitors, boot and cursor defaults
-├─ laptop/
-│  └─ machine.lua         → machine: laptop monitors, boot and cursor defaults
 ├─ quickshellbar/
 │  ├─ attached/
 │  │  ├─ config.json      pills hang from the top edge
@@ -698,37 +709,24 @@ Modern/
 </details>
 
 <details>
-<summary><b>Modern/utilities/bar/</b></summary>
+<summary><b>quickshell/Modern/bar/</b></summary>
 
 ```text
-Modern/utilities/bar/
+quickshell/Modern/bar/
 ├─ island/
-│  ├─ CountdownShared.qml       → widgets: focus timer logic, lives in the shell
-│  ├─ ForecastShared.qml        → widgets: wttr.in weather data, refreshes every 30 min
 │  └─ MediaTab.qml              island's media tab, with its button and empty state
 ├─ menus/
-│  ├─ BluetoothListShared.qml   → menus: bluetooth devices and their rows, pair and connect
-│  ├─ CardShared.qml            → menus: Tile with padding for menu content
 │  ├─ Chips.qml                 row of pickable chips
 │  ├─ Entry.qml                 menu row base, wiggles while connecting
 │  ├─ Group.qml                 titled group, clips rows to its corners
 │  ├─ Header.qml                card header with title and icon
-│  ├─ NetworkShared.qml         → menus: wifi and bluetooth side by side
-│  ├─ NotificationsShared.qml   → menus: notification history, dnd and clear
-│  ├─ OopsShared.qml            → menus: inline error text
 │  ├─ Round.qml                 small round icon button
 │  ├─ Session.qml               power menu, the scary ones need a second press
-│  ├─ SoundShared.qml           → menus: speakers, mics, volume rows and device picking
-│  ├─ ToggleShared.qml          → menus: label and switch row
-│  ├─ Tray.qml                  system tray with its menus
-│  ├─ UpdateMenuShared.qml      → menus: pending updates, update now or check again
-│  ├─ WifiShared.qml            → menus: wifi list and connect
-│  └─ WifiEditorShared.qml      → menus: edit a saved connection: ip, dns, security, with its fields
+│  └─ Tray.qml                  system tray with its menus
 ├─ alarm.ogg                    the alarm sound
 ├─ Alarm.qml                    rings out of the bar when the focus timer ends
 ├─ Island.qml                   the media and clock card with its tabs
 ├─ Module.qml                   every bar module in one file
-├─ net.sh                       → system: nmcli calls for the wifi menus
 ├─ Pill.qml                     one pill. grows into a card on hover
 ├─ procs.sh                     per pid: cmdline, cwd and running program, for saving workspaces
 ├─ shell.qml                    bar windows per monitor, `bar` ipc, picks the style
@@ -739,75 +737,37 @@ Modern/utilities/bar/
 </details>
 
 <details>
-<summary><b>Modern/utilities/common/</b></summary>
+<summary><b>quickshell/Modern/common/</b></summary>
 
 ```text
-Modern/utilities/common/
-├─ AudioShared.qml                → media: default speaker and mic, volume and mute
+quickshell/Modern/common/
 ├─ Backdrop.qml                   blurred dark wallpaper behind home, overview and lock
-├─ BrightnessShared.qml           → system: screen brightness state
 ├─ Button.qml                     text button
-├─ CalendarShared.qml             → widgets: calendar and todo list
-├─ CaptureTabShared.qml           → widgets: screenshot, record, cast and share tab
-├─ cava.conf                      → media: base cava config, CavaFeed swaps in bars and framerate
-├─ CavaShared.qml                 → media: one cava feed for every visualizer
-├─ CavaFeedShared.qml             → media: runs cava with its own bar count
-├─ ColorTabShared.qml             → widgets: color picker tab, shares waybar's history
-├─ CoverShared.qml                → media: album art that slides the way you skipped
-├─ FadeShared.qml                 → ui: one island tab, fades and rises in when on
 ├─ Field.qml                      text input
-├─ HoverShared.qml                → ui: MouseArea with hover and the hand cursor
-├─ HyprShared.qml                 → core: paths, which screen has focus or the cursor, dispatch
-├─ IconButtonShared.qml           → ui: clickable icon that lights up on hover
-├─ LabelShared.qml                → ui: Text in the theme font and color
-├─ MediaShared.qml                → media: picks the player, skip and play controls
 ├─ MediaView.qml                  tells the osd a media screen is up
-├─ MiniWaveShared.qml             → media: small bar visualizer
-├─ MorphShared.qml                → ui: the grow out of a dot open and close
-├─ NotificationCardShared.qml     → system: one notification card
-├─ NotificationPopupsShared.qml   → system: popups, bottom left
-├─ NotifsShared.qml               → system: the notification daemon, keeps history and dnd
-├─ NowPlayingShared.qml           → media: track info, covers spotify's blank music videos
-├─ OsdShared.qml                  → system: osd pill and media card
-├─ OsdStateShared.qml             → system: what the osd does, caps lock tracking
 ├─ Panel.qml                      Morph plus screen hop and keep warm
-├─ PlayButtonShared.qml           → media: accent circle with the play/pause morph
-├─ PlayPauseShared.qml            → media: shape that morphs between play and pause
 ├─ Pop.qml                        quick bounce on a rename
 ├─ Say.qml                        the tour's text, plain in Modern
-├─ PowerShared.qml                → system: session actions and battery
+├─ Schema.js                      Modern's settings pages, all of them
 ├─ Rise.qml                       staggered fade and pop in
-├─ SeekShared.qml                 → media: smooth progress bar
-├─ SettleShared.qml               → ui: NumberAnimation on hyprland's window curve
-├─ SkipButtonShared.qml           → media: prev/next that kicks when it skips
 ├─ Slider.qml                     slider
-├─ spotify.sh                     → media: opens spotify's scratchpad, or a normal window without pypr
-├─ SwapTextShared.qml             → ui: text that slides out and types back in
 ├─ Switch.qml                     toggle that stretches when it flips
 ├─ Tabs.qml                       icon tabs with a sliding accent pill
 ├─ Theme.qml                      Modern's theme, just ThemeBase
-├─ ThemeBaseShared.qml            → core: palette, rounding, gaps, timing. each Theme.qml extends this
-├─ Tile.qml                       the faint panel behind menu rows
-├─ TourShared.qml                 → ui: first run tour, each style gives it steps and spots
-├─ TimerTabShared.qml             → widgets: drag ring timer ui
-├─ TodosShared.qml                → widgets: todo storage in state/todos.json
-├─ UpdatesShared.qml              → system: pending pacman and aur count, every 30 min
-├─ WatchedShared.qml              → core: FileView that rereads when the file changes
-└─ WeatherTabShared.qml           → widgets: weather tab with graph
+└─ Tile.qml                       the faint panel behind menu rows
 ```
 
 </details>
 
 <details>
-<summary><b>Modern/utilities/ everything else</b></summary>
+<summary><b>quickshell/Modern/ everything else</b></summary>
 
 ```text
-Modern/utilities/
+quickshell/Modern/
 ├─ boot/
 │  └─ BootShell.qml                      boot animation, runs alone
 ├─ home/
 │  ├─ Home.qml                           home screen. clock, music, stats, notifications
-│  ├─ home-stats.sh                      → system: system info from /proc and /sys, read by both home screens
 │  ├─ home-wall.sh                       prints a screen sized wallpaper copy per monitor
 │  └─ shell.qml                          loads Home when it opens, drops it when it closes
 ├─ launcher/
@@ -831,22 +791,18 @@ Modern/utilities/
 ├─ notifications/
 │  └─ shell.qml                          the always on part: daemon, popups, dnd and clear calls
 ├─ osd/
-│  └─ shell.qml                          `osd` ipc, the real osd is shared/system/OsdShared.qml
+│  └─ shell.qml                          `osd` ipc, the real osd is quickshell/shared/OsdShared.qml
 ├─ overview/
 │  ├─ shell.qml                          big workspace overview, tiles come from bar/Workspaces.qml
 │  └─ workspaces.json                    my saved workspaces. tracked so git syncs them
 ├─ profiles/
 │  └─ shell.qml                          profile wheel on the right edge
 ├─ settings/
-│  ├─ CurvePlotShared.qml                → ui: draggable bezier graph
 │  ├─ Dropdown.qml                       dropdown control
-│  ├─ MotionShared.js                    → core: animation presets and curves for both settings pages
-│  ├─ Schema.js                          → core: every settings page and option, one line per setting
 │  ├─ ResetArea.qml                      right click that resets an option
 │  ├─ Segmented.qml                      segmented control
 │  ├─ SettingAnimpreset.qml              animation preset picker
 │  ├─ SettingBar.qml                     waybar or quickshell picker
-│  ├─ SettingBezier.qml                  → ui: full curve editor with preview and randomize
 │  ├─ SettingChoice.qml                  choice control tied to a key, pills under 5 options, dropdown otherwise
 │  ├─ SettingColor.qml                   color control with swatches and alpha
 │  ├─ SettingCursors.qml                 cursor theme picker
@@ -856,7 +812,6 @@ Modern/utilities/
 │  ├─ SettingToggle.qml                  switch control tied to a key
 │  ├─ SettingWaybar.qml                  bar style picker with preview
 │  ├─ shell.qml                          settings sheet window
-│  ├─ StoreShared.qml                    → core: settings state, batches writes to hypr-settings.py
 │  └─ Themes.qml                         colors page, the fake terminal
 ├─ wallpaper-picker/
 │  ├─ blur.frag                          blur shader source
@@ -864,9 +819,7 @@ Modern/utilities/
 │  └─ shell.qml                          full screen wallpaper picker
 ├─ welcome/
 │  └─ shell.qml                          Modern's tour steps
-├─ boot.qml                              wrapper so boot can reach common/
-├─ lock.qml                              wrapper so lock can reach common/
-└─ shell.qml                             the shell. loads every */shell.qml
+└─ Shell.qml                             the shell. loads every */shell.qml
 ```
 
 </details>
@@ -881,10 +834,6 @@ Space/
 │  ├─ shortcuts.lua      Space's keybinds, most go through `shells.sh space toggle`
 │  ├─ startup.lua        only pulls in session.lua
 │  └─ style.lua          hyprland look for the hud
-├─ desktop/
-│  └─ machine.lua        → machine: desktop monitors, boot and cursor defaults
-├─ laptop/
-│  └─ machine.lua        → machine: laptop monitors, boot and cursor defaults
 └─ tweaks/
    ├─ saved/
    │  └─ desktop/
@@ -896,111 +845,56 @@ Space/
 </details>
 
 <details>
-<summary><b>Space/utilities/common/</b></summary>
+<summary><b>quickshell/Space/common/</b></summary>
 
 ```text
-Space/utilities/common/
-├─ AudioShared.qml                → media: default speaker and mic, volume and mute
-├─ BrightnessShared.qml           → system: screen brightness state
+quickshell/Space/common/
 ├─ Button.qml                     Modern's Button api, drawn the space way
-├─ CalendarShared.qml             → widgets: calendar and todo list
-├─ CaptureTabShared.qml           → widgets: screenshot, record, cast and share tab
-├─ cava.conf                      → media: base cava config, CavaFeed swaps in bars and framerate
-├─ CavaShared.qml                 → media: one cava feed for every visualizer
-├─ CavaFeedShared.qml             → media: runs cava with its own bar count
-├─ ColorTabShared.qml             → widgets: color picker tab, shares waybar's history
 ├─ Controls.qml                   small hud controls every menu uses
-├─ CountdownShared.qml            → widgets: focus timer logic, lives in the shell
-├─ CoverShared.qml                → media: album art that slides the way you skipped
 ├─ decode.js                      the text scramble effect
 ├─ DecodeText.qml                 the one text style, decodes on change
-├─ FadeShared.qml                 → ui: one island tab, fades and rises in when on
 ├─ Field.qml                      Modern's Field api, space look
-├─ ForecastShared.qml             → widgets: wttr.in weather data, refreshes every 30 min
-├─ HoverShared.qml                → ui: MouseArea with hover and the hand cursor
-├─ HyprShared.qml                 → core: paths, which screen has focus or the cursor, dispatch
-├─ IconButtonShared.qml           → ui: clickable icon that lights up on hover
-├─ LabelShared.qml                → ui: Text in the theme font and color
-├─ MediaShared.qml                → media: picks the player, skip and play controls
 ├─ MediaTab.qml                   now playing for the island, home screen and widgets
-├─ MiniWaveShared.qml             → media: small bar visualizer
-├─ MorphShared.qml                → ui: the grow out of a dot open and close
-├─ MotionShared.js                → core: animation presets and curves for both settings pages
-├─ NotificationCardShared.qml     → system: one notification card
-├─ NotificationPopupsShared.qml   → system: popups, bottom left
-├─ NotifsShared.qml               → system: the notification daemon, keeps history and dnd
-├─ NowPlayingShared.qml           → media: track info, covers spotify's blank music videos
 ├─ orb.frag                       ball of light shader
 ├─ orb.frag.qsb                   compiled, this is what runs
 ├─ Orb.qml                        glowing ball, bar dots and stars
-├─ OsdShared.qml                  → system: osd pill and media card
-├─ OsdStateShared.qml             → system: what the osd does, caps lock tracking
-├─ PlayButtonShared.qml           → media: accent circle with the play/pause morph
-├─ PlayPauseShared.qml            → media: shape that morphs between play and pause
-├─ PowerShared.qml                → system: session actions and battery
 ├─ RenderScale.qml                lowers the terrain's resolution while moving if frames get slow
 ├─ Say.qml                        the tour's text, scrambles in Space
 ├─ Schema.js                      which shared pages Space shows, plus its own keys
-├─ SchemaBase.js                  → core: every settings page and option, one line per setting
-├─ SeekShared.qml                 → media: smooth progress bar
-├─ SettleShared.qml               → ui: NumberAnimation on hyprland's window curve
-├─ SkipButtonShared.qml           → media: prev/next that kicks when it skips
 ├─ Slider.qml                     segmented slider, Controls.Slide uses it too
-├─ spotify.sh                     → media: opens spotify's scratchpad, or a normal window without pypr
-├─ StoreShared.qml                → core: settings state, batches writes to hypr-settings.py
-├─ SwapTextShared.qml             → ui: text that slides out and types back in
 ├─ Switch.qml                     Controls toggle for the shared menus
 ├─ SystemStats.qml                cpu, ram and link from /proc, no processes
 ├─ Theme.qml                      ThemeBase, square, Space's font, accent outlines
-├─ ThemeBaseShared.qml            → core: palette, rounding, gaps, timing. each Theme.qml extends this
 ├─ Tile.qml                       outlined panel behind menu rows
-├─ TimerTabShared.qml             → widgets: drag ring timer ui
 ├─ TimerForecast.qml              one timer and forecast for every monitor
-├─ TodosShared.qml                → widgets: todo storage in state/todos.json
-├─ TourShared.qml                 → ui: first run tour, each style gives it steps and spots
 ├─ Ui.qml                         what's open, so windows can react to each other
-├─ UpdatesShared.qml              → system: pending pacman and aur count, every 30 min
-├─ WatchedShared.qml              → core: FileView that rereads when the file changes
-├─ WeatherTabShared.qml           → widgets: weather tab with graph
 └─ World.qml                      planet hue, seeds, star positions, writes space.json
 ```
 
 </details>
 
 <details>
-<summary><b>Space/utilities/ everything else</b></summary>
+<summary><b>quickshell/Space/ everything else</b></summary>
 
 ```text
-Space/utilities/
+quickshell/Space/
 ├─ bar/
 │  ├─ Bar.qml                      bar window, two pills and input regions
 │  ├─ menus/
-│  │  ├─ BluetoothListShared.qml   → menus: bluetooth devices and their rows, pair and connect
 │  │  ├─ Calendar.qml              big clock, calendar and todos
-│  │  ├─ CardShared.qml            → menus: Tile with padding for menu content
 │  │  ├─ Chips.qml                 row of pickable chips, made of Buttons
 │  │  ├─ Entry.qml                 menu row, a Controls line with a gear
 │  │  ├─ Group.qml                 titled group of rows that scrolls
 │  │  ├─ Header.qml                Controls title for the shared menus
 │  │  ├─ Island.qml                shared island tabs under the media module
-│  │  ├─ NetworkShared.qml         → menus: wifi and bluetooth side by side
-│  │  ├─ NotificationsShared.qml   → menus: notification history, dnd and clear
-│  │  ├─ OopsShared.qml            → menus: inline error text
 │  │  ├─ Round.qml                 small Button with a glyph
 │  │  ├─ Session.qml               battery, brightness and session
-│  │  ├─ SoundShared.qml           → menus: speakers, mics, volume rows and device picking
-│  │  ├─ ToggleShared.qml          → menus: label and switch row
-│  │  ├─ Tray.qml                  tray apps as lines
-│  │  ├─ UpdateMenuShared.qml      → menus: pending updates, update now or check again
-│  │  ├─ WifiEditorShared.qml      → menus: edit a saved connection: ip, dns, security, with its fields
-│  │  └─ WifiShared.qml            → menus: wifi list and connect
+│  │  └─ Tray.qml                  tray apps as lines
 │  ├─ Module.qml                   readout that opens a menu
-│  ├─ net.sh                       → system: nmcli calls for the wifi menus
 │  ├─ Pill.qml                     glass pill with corner brackets, loads the open menu
 │  └─ Workspaces.qml               workspace dots as orbs
 ├─ home/
-│  ├─ Home.qml                     alt tab visor with system readouts
-│  └─ home-stats.sh                → system: system info from /proc and /sys, read by both home screens
+│  └─ Home.qml                     alt tab visor with system readouts
 ├─ launcher/
 │  └─ Launcher.qml                 little terminal under the bar
 ├─ overview/
@@ -1009,9 +903,6 @@ Space/utilities/
 │  ├─ overview.frag.qsb            compiled, this is what runs
 │  └─ Overview.qml                 3d star map. workspaces are stars, windows are planets
 ├─ settings/
-│  ├─ CurvePlotShared.qml          → ui: draggable bezier graph
-│  ├─ MotionShared.js              → core: animation presets and curves for both settings pages
-│  ├─ SettingBezierShared.qml      → ui: full curve editor with preview and randomize
 │  └─ Settings.qml                 hud settings sheet from the bottom
 ├─ wallpaper/
 │  ├─ terrain.frag                 sky, moon, hills and pines. no image files
@@ -1026,12 +917,12 @@ Space/utilities/
 │  ├─ Widgets.qml                  desktop widgets with snapping
 │  ├─ WidgetsEdit.qml              edit mode overlay
 │  └─ WidgetsModel.qml             one monitor's widgets, saved per monitor shape
-├─ lock.qml                        lock and its screen, own process with the land behind it
-└─ shell.qml                       the whole shell. overlays load lazily and drop on close
+├─ lock/
+│  └─ LockShell.qml                lock and its screen, own process with the land behind it
+└─ Shell.qml                       the whole shell. overlays load lazily and drop on close
 ```
 
 </details>
-
 ## Outside hypr/
 
 | Path | What it is |

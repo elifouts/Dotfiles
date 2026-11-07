@@ -55,7 +55,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/how-it-all-fits-together-v2.svg" alt="How It All Fits Together" align="absmiddle"></picture></summary>
 
   - **Style**: the whole look. Right now I only have `Modern` and `Space`.
-  - **Variant**: `desktop` or `laptop`. Just the stuff that changes per machine like monitors and mouse. Hyprland loads both straight out of `.config/hypr/Modern/`, so that is the config you edit.
+  - **Variant**: `desktop` or `laptop`. Just the stuff that changes per machine like monitors and mouse. Hyprland loads them straight out of `.config/hypr/`, so that is the config you edit.
   - **Profile**: your tweaks on top, picked in the settings panel. **Glass** and **Zen** are mine. Saving a profile also saves your colors, bar and wallpaper.
 
   Detailed Documentation is in [`.config/hypr/readme.md`](.config/hypr/readme.md).
@@ -208,7 +208,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   ### *How To Install*
   1. **Install [Quickshell](https://quickshell.org/)** and `hypridle`
-  2. Copy `Dotfiles/.config/hypr/Modern/utilities` to `~/.config/hypr/Modern/utilities` (lock needs `common` and `lock.qml` next to it), plus `utilities/session/lock.sh`, `utilities/paths.sh` and `hypridle.conf`
+  2. Copy `Dotfiles/.config/hypr/quickshell` to `~/.config/hypr/quickshell`, run `ln -s Modern ~/.config/hypr/quickshell/style`, then copy `utilities/session/lock.sh`, `utilities/paths.sh` and `hypridle.conf`
 </details>
 
 <details>

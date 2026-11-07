@@ -112,7 +112,7 @@ setup_space() {
     section "Space Theme"
     local qsb=/usr/lib/qt6/bin/qsb f
     [[ -x $qsb ]] || { warn "qsb not found (qt6-shadertools), using the precompiled shaders."; return 0; }
-    for f in "$DOTFILES_DIR"/.config/hypr/*/utilities/*.frag "$DOTFILES_DIR"/.config/hypr/*/utilities/*/*.frag; do
+    for f in "$DOTFILES_DIR"/.config/hypr/quickshell/*/*/*.frag; do
         [[ -f $f ]] && "$qsb" --qt6 -o "$f.qsb" "$f"
     done
     success "Shaders compiled."

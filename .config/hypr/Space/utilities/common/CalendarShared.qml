@@ -1,1 +1,0 @@
-../../../shared/widgets/CalendarShared.qml

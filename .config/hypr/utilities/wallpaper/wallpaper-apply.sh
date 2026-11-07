@@ -9,6 +9,6 @@ selected_wallpaper="${1:?usage: wallpaper-apply.sh <image> [output,output...]}"
 
 mkdir -p ~/.cache/wallpaper-picker && printf "%s\n" "$selected_wallpaper" > ~/.cache/wallpaper-picker/current
 cp -r "$selected_wallpaper" "$HOME/wallpapers/pywallpaper.jpg"
-"$QS/home/home-wall.sh" >/dev/null 2>&1 &
+"$QS/style/home/home-wall.sh" >/dev/null 2>&1 &
 
 [ -n "${HYPR_SETTINGS_NO_RECORD:-}" ] || python3 "$UTIL/settings/hypr-settings.py" set "wallpaper.path=$(python3 -c 'import json,sys; print(json.dumps(sys.argv[1]))' "$selected_wallpaper")" >/dev/null 2>&1 || true

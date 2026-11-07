@@ -5,7 +5,7 @@ set -euo pipefail
 source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/common.sh"
 NAME="dotfiles-bar"
 DEST="$HOME/.config/quickshell/$NAME"
-UTIL="$REPO/.config/hypr/Modern/utilities"
+UTIL="$REPO/.config/hypr/quickshell"
 STYLE_FILE=""
 
 PACKAGES=(
@@ -42,12 +42,13 @@ install_config() {
         warn "Moved the old $DEST to $backup"
     fi
     rm -rf "$DEST"
-    mkdir -p "$DEST/styles"
+    mkdir -p "$DEST/styles" "$DEST/style"
 
     cp "$UTIL/shell.qml" "$DEST/shell.qml"
-    cp -aL "$UTIL/bar" "$UTIL/common" "$UTIL/overview" "$DEST/"
+    cp -a "$UTIL/shared" "$DEST/"
+    cp -a "$UTIL/Modern/Shell.qml" "$UTIL/Modern/bar" "$UTIL/Modern/common" "$UTIL/Modern/overview" "$DEST/style/"
     cp "$REPO/.config/waybar/scripts/colorpicker.sh" "$DEST/colorpicker.sh"
-    chmod +x "$DEST/colorpicker.sh" "$DEST/common/spotify.sh" "$DEST/bar/procs.sh" "$DEST/bar/net.sh"
+    chmod +x "$DEST/colorpicker.sh" "$DEST/shared/spotify.sh" "$DEST/shared/net.sh" "$DEST/style/bar/procs.sh"
 
     local f
     for f in "$REPO"/.config/hypr/*/quickshellbar/*/config.json; do
@@ -122,7 +123,7 @@ Restart:  qs kill -c $NAME; qs -c $NAME --daemonize
 Style:    cp $dir/styles/<name>.json $dir/style.json   (applies live)
 Colors:   ~/.cache/wal/colors.json (run 'wal -i <image>' to recolor from a wallpaper)
 EOF
-    [[ ! -e "$HOME/.config/hypr/Modern/utilities/bar" ]] ||
+    [[ ! -e "$HOME/.config/hypr/quickshell/Modern/bar" ]] ||
         { echo; warn "The full dotfiles install is present and already has this bar (bar.sh apply quickshell); running both gives two bars."; }
 }
 

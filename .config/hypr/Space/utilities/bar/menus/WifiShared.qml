@@ -1,1 +1,0 @@
-../../../../shared/menus/WifiShared.qml

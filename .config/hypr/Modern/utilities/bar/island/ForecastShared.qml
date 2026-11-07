@@ -1,1 +1,0 @@
-../../../../shared/widgets/ForecastShared.qml

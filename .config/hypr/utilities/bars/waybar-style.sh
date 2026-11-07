@@ -8,16 +8,18 @@ dir="$STYLE/waybar"
 case "${1:-}" in
     list)
         for d in "$dir"/*/; do
-            [ -f "$d/config" ] && basename "$d"
+            [ -f "$d/style.css" ] && basename "$d"
         done
         ;;
     apply)
         name="${2:?name}"
-        [ -f "$dir/$name/config" ] && [ -f "$dir/$name/style.css" ] || {
+        config="$dir/$name/config"
+        [ -f "$config" ] || config="$dir/default/config"
+        [ -f "$config" ] && [ -f "$dir/$name/style.css" ] || {
             echo "No waybar style '$name' for ${STYLE##*/}" >&2
             exit 1
         }
-        cp "$dir/$name/config" "$WAYBAR/config"
+        cp "$config" "$WAYBAR/config"
         cp "$dir/$name/style.css" "$WAYBAR/style.css"
         if [ "$("$UTIL/bars/bar.sh" current)" = waybar ]; then
             pkill -x waybar 2>/dev/null || true

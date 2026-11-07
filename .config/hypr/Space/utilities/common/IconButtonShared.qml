@@ -1,1 +1,0 @@
-../../../shared/ui/IconButtonShared.qml

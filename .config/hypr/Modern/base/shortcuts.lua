@@ -11,4 +11,4 @@ hl.bind(mainMod .. " + TAB", hl.dsp.exec_cmd("~/.config/hypr/utilities/session/s
 hl.bind("ALT + S", hl.dsp.exec_cmd("~/.config/hypr/utilities/session/shells.sh settings"))
 hl.bind("ALT + RETURN", hl.dsp.exec_cmd("~/.config/hypr/utilities/session/shells.sh music"))
 hl.bind(mainMod .. " + M", hl.dsp.exit())
-hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("~/.config/hypr/Modern/utilities/common/spotify.sh toggle"))
+hl.bind(mainMod .. " + ESCAPE", hl.dsp.exec_cmd("~/.config/hypr/quickshell/shared/spotify.sh toggle"))

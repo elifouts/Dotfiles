@@ -221,11 +221,8 @@ def dig(tree, dotted):
 def profiles():
     found = {}
     for style in sorted(HYPR.iterdir()):
-        if not (style / "utilities").is_dir():
-            continue
-        variants = sorted(v.name for v in style.iterdir() if (v / "machine.lua").is_file())
-        if variants:
-            found[style.name] = variants
+        if (style / "base/style.lua").is_file():
+            found[style.name] = sorted(m.stem for m in (HYPR / "machine").glob("*.lua"))
     active = PROFILE_FILE.read_text().strip() if PROFILE_FILE.exists() else ""
     style, _, variant = active.partition("/")
     return found, {"style": style, "variant": variant}
@@ -264,7 +261,7 @@ def bar_styles(folder, marker):
 
 
 def waybar():
-    styles, live, base = bar_styles("waybar", "config"), HOME / ".config/waybar", style_dir() / "waybar"
+    styles, live, base = bar_styles("waybar", "style.css"), HOME / ".config/waybar", style_dir() / "waybar"
     same = lambda s: all((base / s["id"] / f).read_bytes() == (live / f).read_bytes()
                          for f in ("config", "style.css") if (base / s["id"] / f).is_file() and (live / f).is_file())
     return {"styles": styles, "active": next((s["id"] for s in styles if same(s)), "")}

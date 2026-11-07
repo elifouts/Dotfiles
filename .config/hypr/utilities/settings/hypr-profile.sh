@@ -5,12 +5,12 @@ set -euo pipefail
 
 list() {
     local style variant
-    for style in "$HYPR"/*/; do
-        style="${style%/}"
-        [ -d "$style/utilities" ] || continue
-        for variant in "$style"/*/; do
-            variant="${variant%/}"
-            [ -f "$variant/machine.lua" ] && printf '%s/%s\n' "${style##*/}" "${variant##*/}"
+    for style in "$QS"/*/; do
+        style="$(basename "$style")"
+        [ -f "$HYPR/$style/base/style.lua" ] || continue
+        for variant in "$HYPR"/machine/*.lua; do
+            variant="$(basename "$variant" .lua)"
+            printf '%s/%s\n' "$style" "$variant"
         done
     done
 }
@@ -18,7 +18,7 @@ list() {
 apply() {
     local style="${1:?style}" variant="${2:?variant}" offline="${3:-}"
 
-    [ -f "$HYPR/$style/$variant/machine.lua" ] && [ -f "$HYPR/$style/base/style.lua" ] && [ -d "$HYPR/$style/utilities" ] || {
+    [ -f "$HYPR/machine/$variant.lua" ] && [ -f "$HYPR/$style/base/style.lua" ] && [ -d "$QS/$style" ] || {
         echo "Profile not found: $style/$variant" >&2
         exit 1
     }
@@ -32,17 +32,19 @@ apply() {
 
     mkdir -p "$HYPR/state"
     printf '%s/%s\n' "$style" "$variant" > "$HYPR/state/profile"
+    ln -sfn "$style" "$QS/style"
 
     python3 "$UTIL/settings/hypr-settings.py" sync
 
     [ "$offline" = "--offline" ] && return 0
 
+    wait "$stopping" || true
     hyprctl reload >/dev/null 2>&1 || true
     python3 "$UTIL/settings/hypr-settings.py" cursor &
     python3 "$UTIL/settings/hypr-settings.py" colors &
     coloring=$!
     "$UTIL/session/session.sh" start
-    wait "$coloring" "$stopping" || true
+    wait "$coloring" || true
     COLORS_DONE=1 HYPR_SETTINGS_WAIT=1 WALLPAPER_TRANSITION=none python3 "$UTIL/settings/hypr-settings.py" appearance
     "$UTIL/session/transition.sh" reveal
     trap - EXIT

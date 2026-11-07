@@ -15,5 +15,8 @@ end
 local f = io.open(hypr .. "state/profile")
 local profile = f and f:read("l") or "Modern/desktop"
 if f then f:close() end
-package.path = hypr .. profile .. "/?.lua;" .. hypr .. profile:match("[^/]+") .. "/base/?.lua;" .. hypr .. "state/?.lua;" .. package.path
-for _, name in ipairs({ "machine", "startup", "style", "shortcuts", "overrides" }) do require(name) end
+local style, variant = profile:match("([^/]+)/(.+)")
+os.execute("cd '" .. hypr .. "quickshell' && [ \"$(readlink style)\" = " .. style .. " ] || ln -sfn " .. style .. " style")
+package.path = hypr .. style .. "/base/?.lua;" .. hypr .. "state/?.lua;" .. package.path
+package.loaded.machine = dofile(hypr .. "machine/" .. variant .. ".lua")
+for _, name in ipairs({ "startup", "style", "shortcuts", "overrides" }) do require(name) end

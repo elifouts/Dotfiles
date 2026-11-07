@@ -18,7 +18,7 @@ select_style() {
     local styles=() labels=() d
     for d in "$REPO"/.config/hypr/*/waybar/*/; do
         d="${d%/}"
-        [[ -f "$d/config" && -f "$d/style.css" ]] || continue
+        [[ -f "$d/style.css" ]] || continue
         styles+=("$d") labels+=("$(basename "${d%/waybar/*}") / ${d##*/}")
     done
     ((${#styles[@]})) || { error "No waybar styles found under $REPO/.config/hypr/."; exit 1; }
@@ -42,7 +42,7 @@ install_config() {
     fi
 
     mkdir -p "$DEST/scripts"
-    cp "$STYLE_DIR/config" "$DEST/config"
+    [[ -f "$STYLE_DIR/config" ]] && cp "$STYLE_DIR/config" "$DEST/config" || cp "${STYLE_DIR%/*}/default/config" "$DEST/config"
     cp "$STYLE_DIR/style.css" "$DEST/style.css"
     cp -a "$REPO/.config/waybar/scripts/." "$DEST/scripts/"
     chmod +x "$DEST"/scripts/*.sh

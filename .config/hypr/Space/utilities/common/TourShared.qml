@@ -1,1 +1,0 @@
-../../../shared/ui/TourShared.qml

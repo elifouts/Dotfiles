@@ -7,3 +7,4 @@ __pycache__/
 .config/cava/config
 .config/kitty/current-theme.conf
 .config/wal/colorschemes/dark/space.json
+.config/hypr/quickshell/style
