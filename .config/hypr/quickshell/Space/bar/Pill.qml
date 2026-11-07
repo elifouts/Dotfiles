@@ -25,7 +25,7 @@ Item {
     default property alias content: inner.data
 
     readonly property real natW: inner.implicitWidth + padL + padR
-    readonly property real panelW: Math.max(natW, ({ media: 480, net: 672, audio: 672 })[kind] ?? 360)
+    readonly property real panelW: Math.max(natW, ({ media: 480, net: 420, audio: 420 })[kind] ?? 360)
     readonly property string live: dropped ? Ui.panel : ""
     property string kind: ""
     onLiveChanged: if (live !== "") { kind = live }
