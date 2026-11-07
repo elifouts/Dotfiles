@@ -5,8 +5,8 @@ Item {
     id: control
 
     property var def
-    readonly property var styleNames: Object.keys(Store.styles).sort()
-    readonly property var variants: Store.styles[Store.active.style] || []
+    readonly property var styleNames: Object.keys(StoreShared.styles).sort()
+    readonly property var variants: StoreShared.styles[StoreShared.active.style] || []
 
     function title(name) {
         return name.charAt(0).toUpperCase() + name.slice(1)
@@ -26,11 +26,11 @@ Item {
             width: parent.width
             label: "Style"
             options: control.options(control.styleNames)
-            current: Store.active.style
+            current: StoreShared.active.style
             onPicked: v => {
-                if (v === Store.active.style) return
-                const list = Store.styles[v] || []
-                Store.applyProfile(v, list.indexOf(Store.active.variant) >= 0 ? Store.active.variant : list[0])
+                if (v === StoreShared.active.style) return
+                const list = StoreShared.styles[v] || []
+                StoreShared.applyProfile(v, list.indexOf(StoreShared.active.variant) >= 0 ? StoreShared.active.variant : list[0])
             }
         }
 
@@ -40,8 +40,8 @@ Item {
             width: parent.width
             label: "Variant"
             options: control.options(control.variants)
-            current: Store.active.variant
-            onPicked: v => { if (v !== Store.active.variant) Store.applyProfile(Store.active.style, v) }
+            current: StoreShared.active.variant
+            onPicked: v => { if (v !== StoreShared.active.variant) StoreShared.applyProfile(StoreShared.active.style, v) }
         }
     }
 }

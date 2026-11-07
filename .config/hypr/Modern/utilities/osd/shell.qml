@@ -4,10 +4,10 @@ import Quickshell.Io
 import "../common"
 
 ShellRoot {
-    Osd {}
+    OsdShared {}
     IpcHandler {
         target: "osd"
-        function act(action: string): void { OsdState.act(action) }
-        function brightness(value: real): void { OsdState.brightness(value) }
+        function act(action: string): void { OsdStateShared.act(action) }
+        function brightness(value: real): void { OsdStateShared.brightness(value) }
     }
 }

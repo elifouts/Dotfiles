@@ -49,13 +49,13 @@ Item {
         closeDelay.stop()
         openDelay.stop()
         if (p === "") { close(); return }
-        const card = Media.card && p === "island"
+        const card = MediaShared.card && p === "island"
         const music = ctx.musicInTheWay(self, p)
         if (!open && self.t === 0 && (music || card)) {
             pending = p
             pendingTray = t ?? null
             if (music) { tucked = true; ctx.musicCall("tuck") }
-            if (card) Media.dropCard()
+            if (card) MediaShared.dropCard()
             tuckWait.restart()
             return
         }
@@ -133,7 +133,7 @@ Item {
 
     readonly property real rawW: row.implicitWidth + 8
     property real slack: 0
-    Behavior on slack { Settle { duration: Theme.fast } }
+    Behavior on slack { SettleShared { duration: Theme.fast } }
     onRawWChanged: settleWait.restart()
     Timer { id: settleWait; interval: Theme.move + 80; onTriggered: self.slack = 2 * Math.ceil(self.rawW / 2) - self.rawW }
     Component.onCompleted: settleWait.restart()
@@ -142,8 +142,8 @@ Item {
     property real bodyW: targetW
     readonly property bool ownHeight: !!front.item && !!front.item.ownHeight
     property real bodyH: front.item ? (ownHeight ? front.item.implicitHeight : Math.ceil(front.item.implicitHeight)) + 6 + pad : 0
-    Behavior on bodyW { enabled: self.t === 1; Settle { duration: Theme.move } }
-    Behavior on bodyH { enabled: self.t === 1 && !self.ownHeight; Settle { duration: Theme.move } }
+    Behavior on bodyW { enabled: self.t === 1; SettleShared { duration: Theme.move } }
+    Behavior on bodyH { enabled: self.t === 1 && !self.ownHeight; SettleShared { duration: Theme.move } }
 
     property real t: open ? 1 : 0
     Behavior on t {
@@ -283,7 +283,7 @@ Item {
         property var tray: null
         property bool front: false
         property real f: front ? 1 : 0
-        Behavior on f { Settle { duration: Theme.move } }
+        Behavior on f { SettleShared { duration: Theme.move } }
 
         readonly property real cardLeft: self.x + card.x
         x: self.align === "left" ? self.pad : self.align === "right" ? card.width - width - self.pad
@@ -308,12 +308,12 @@ Item {
 
     Component { id: workspacesC; Workspaces.Page { expose: self.ctx.expose; screen: self.screen; onPicked: self.close(); onOverview: self.ctx.toggleOverview() } }
     Component { id: islandC; Island { ctx: self.ctx; pill: self } }
-    Component { id: networkC; Menus.Network { open: self.open; onRun: c => self.ctx.run(c) } }
-    Component { id: updatesC; Menus.UpdateMenu { onDone: self.close() } }
-    Component { id: notificationsC; Menus.Notifications {} }
-    Component { id: audioC; Menus.Sound { open: self.open; onRun: c => self.ctx.run(c); onDone: self.close() } }
+    Component { id: networkC; Menus.NetworkShared { open: self.open; onRun: c => self.ctx.run(c) } }
+    Component { id: updatesC; Menus.UpdateMenuShared { onDone: self.close() } }
+    Component { id: notificationsC; Menus.NotificationsShared {} }
+    Component { id: audioC; Menus.SoundShared { open: self.open; onRun: c => self.ctx.run(c); onDone: self.close() } }
     Component { id: powerC; Menus.Session { open: self.open; standalone: self.ctx.standalone; onRun: c => self.ctx.run(c); onDone: self.close() } }
-    Component { id: calendarC; Calendar { open: self.open && self.page === "calendar" } }
+    Component { id: calendarC; CalendarShared { open: self.open && self.page === "calendar" } }
     Component { id: alarmC; Alarm { open: self.open && self.page === "alarm"; length: self.ctx.timer.words(self.ctx.timer.total); onDone: self.close() } }
     Component { id: trayC; Menus.Tray { open: self.open; item: parent ? parent.tray : null; onRun: c => self.ctx.run(c); onDone: self.close() } }
 }

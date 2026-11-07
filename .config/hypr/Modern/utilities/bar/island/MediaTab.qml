@@ -15,13 +15,13 @@ Item {
         anchors.centerIn: parent
         spacing: 10
 
-        Label {
+        LabelShared {
             anchors.horizontalCenter: parent.horizontalCenter
             text: n.glyph
             font.pixelSize: 38
             color: Theme.alpha(Theme.fg, 0.35)
         }
-        Label {
+        LabelShared {
             anchors.horizontalCenter: parent.horizontalCenter
             text: n.text
             font.pixelSize: 14
@@ -45,7 +45,7 @@ Item {
         font.pixelSize: 15
         color: !ok ? Theme.alpha(Theme.fg, 0.2) : on ? Theme.accent : bArea.containsMouse ? Theme.bright : Theme.fg
         Behavior on color { ColorAnimation { duration: Theme.fast } }
-        Hover {
+        HoverShared {
             id: bArea
             anchors.fill: parent
             anchors.margins: -8
@@ -66,7 +66,7 @@ Item {
 
 
     function openApp() {
-        if (!player || Media.isSpotify(player)) Media.openSpotify()
+        if (!player || MediaShared.isSpotify(player)) MediaShared.openSpotify()
         else if (player.canRaise) player.raise()
     }
 
@@ -83,7 +83,7 @@ Item {
         glyph: "󰝚"
         text: "Nothing playing"
         action: "\uf1bc  Open Spotify"
-        onPressed: Media.openSpotify()
+        onPressed: MediaShared.openSpotify()
     }
 
     Item {
@@ -99,7 +99,7 @@ Item {
             scale: artArea.containsMouse ? 1.03 : 1
             Behavior on scale { NumberAnimation { duration: Theme.fast } }
 
-            Cover {
+            CoverShared {
                 anchors.fill: parent
                 radius: art.radius
                 fill: "transparent"
@@ -112,7 +112,7 @@ Item {
                 color: Theme.alpha(Theme.bg, 0.45)
                 opacity: artArea.containsMouse ? 1 : 0
                 Behavior on opacity { NumberAnimation { duration: Theme.fast } }
-                Label {
+                LabelShared {
                     anchors.centerIn: parent
                     text: "󰏌"
                     font.pixelSize: 20
@@ -141,13 +141,13 @@ Item {
                     id: chipRow
                     anchors.centerIn: parent
                     spacing: 6
-                    Label {
+                    LabelShared {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: Media.isSpotify(page.player) ? "" : "󰝚"
+                        text: MediaShared.isSpotify(page.player) ? "" : "󰝚"
                         font.pixelSize: 11
                         color: Theme.ok
                     }
-                    Label {
+                    LabelShared {
                         anchors.verticalCenter: parent.verticalCenter
                         text: (page.player ? page.player.identity : "") + (page.playerCount > 1 ? "  " : "")
                         font.pixelSize: 10
@@ -168,7 +168,7 @@ Item {
                 width: parent.width
                 spacing: 2
 
-                SwapText {
+                SwapTextShared {
                     width: parent.width
                     value: page.player ? (page.track.title || "Unknown title") : ""
                     elide: Text.ElideRight
@@ -177,7 +177,7 @@ Item {
                     font.bold: true
                     color: Theme.bright
                 }
-                SwapText {
+                SwapTextShared {
                     width: parent.width
                     value: page.track?.artist ?? ""
                     elide: Text.ElideRight
@@ -185,7 +185,7 @@ Item {
                     font.pixelSize: 12
                     color: Theme.fg
                 }
-                SwapText {
+                SwapTextShared {
                     width: parent.width
                     visible: value !== ""
                     value: page.track?.album ?? ""
@@ -196,7 +196,7 @@ Item {
                 }
             }
 
-            Seek {
+            SeekShared {
                 id: progress
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 38
@@ -216,7 +216,7 @@ Item {
             radius: Math.min(Theme.rounding, 8)
             color: Theme.alpha(Theme.fg, popArea.containsMouse ? 0.14 : 0.06)
             Behavior on color { ColorAnimation { duration: Theme.fast } }
-            Label {
+            LabelShared {
                 anchors.centerIn: parent
                 text: "󰏌"
                 font.pixelSize: 13
@@ -236,11 +236,11 @@ Item {
                 on: ok && page.player.shuffle
                 onPressed: page.player.shuffle = !page.player.shuffle
             }
-            SkipButton { anchors.verticalCenter: parent.verticalCenter; player: page.player; dir: -1; size: 28; glyphSize: 15 }
+            SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: page.player; dir: -1; size: 28; glyphSize: 15 }
 
-            PlayButton { anchors.verticalCenter: parent.verticalCenter; player: page.player; size: 40 }
+            PlayButtonShared { anchors.verticalCenter: parent.verticalCenter; player: page.player; size: 40 }
 
-            SkipButton { anchors.verticalCenter: parent.verticalCenter; player: page.player; dir: 1; size: 28; glyphSize: 15 }
+            SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: page.player; dir: 1; size: 28; glyphSize: 15 }
             MediaButton {
                 text: page.player && page.player.loopState === MprisLoopState.Track ? "󰑘" : "󰑖"
                 ok: !!page.player && page.player.loopSupported

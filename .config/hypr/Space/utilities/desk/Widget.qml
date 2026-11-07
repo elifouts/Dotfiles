@@ -14,20 +14,20 @@ Item {
     readonly property real s: live || (d.s ?? 1)
     readonly property real pad: d.style === "frame" ? 14 * s : 0
     readonly property color ink: d.style === "glow" ? Theme.accent : Theme.fg
-    readonly property var player: d.type === "media" || d.type === "viz" ? Media.pickPlayer("") : null
+    readonly property var player: d.type === "media" || d.type === "viz" ? MediaShared.pickPlayer("") : null
     implicitWidth: body.width + pad * 2
     implicitHeight: body.height + pad * 2
     visible: editing || (d.type !== "media" && d.type !== "viz") || !!player
 
     SystemClock { id: clock; precision: d.type === "clock" ? SystemClock.Minutes : SystemClock.Hours }
-    readonly property bool h24: Store.values["space.clock24"] !== false
+    readonly property bool h24: StoreShared.values["space.clock24"] !== false
 
     readonly property var lines: {
         const day = Qt.formatDate(clock.date, "ddd · dd MMM")
         switch (d.type) {
         case "clock": return [[Qt.formatTime(clock.date, h24 ? "HH:mm" : "h:mm"), 64, 1], [day, 12, 0.6]]
         case "stats": return [["cpu " + Math.round(Sys.cpu * 100) + "%  ·  ram " + Math.round(Sys.ram * 100) + "%", 13, 1],
-                              [Sys.net + (Power.hasBattery ? "  ·  bat " + Math.round(Power.charge * 100) + "%" : ""), 11, 0.6]]
+                              [Sys.net + (PowerShared.hasBattery ? "  ·  bat " + Math.round(PowerShared.charge * 100) + "%" : ""), 11, 0.6]]
         }
         return []
     }
@@ -91,13 +91,13 @@ Item {
             ink: w.ink
         }
 
-        MiniWave {
+        MiniWaveShared {
             visible: w.d.type === "viz"
             bars: 32
             barWidth: 4 * w.s
             reach: 56 * w.s
             height: (56 + 8) * w.s
-            playing: visible && Media.playing(w.player)
+            playing: visible && MediaShared.playing(w.player)
         }
 
         Loader {
@@ -107,7 +107,7 @@ Item {
                 width: cal.width * w.s
                 height: cal.implicitHeight * w.s
                                 readonly property string here: QsWindow.window?.screen?.name ?? ""
-                Calendar {
+                CalendarShared {
                     id: cal
                     width: 300
                     open: true

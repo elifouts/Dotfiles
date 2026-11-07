@@ -2,8 +2,8 @@ pragma Singleton
 
 import QtQuick
 
-ThemeBase {
-    readonly property string font: Store.values["space.font"] || "JetBrainsMono Nerd Font"
+ThemeBaseShared {
+    readonly property string font: StoreShared.values["space.font"] || "JetBrainsMono Nerd Font"
     sans: font
     frozen: Ui.holdTheme
     rounding: 0
@@ -25,5 +25,5 @@ ThemeBase {
     readonly property color glass: panel
     readonly property color void_: Qt.darker(bg, 2.2)
 
-    Connections { target: Store; function onThemeApplied() { reload() } }
+    Connections { target: StoreShared; function onThemeApplied() { reload() } }
 }

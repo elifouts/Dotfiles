@@ -1,1 +1,1 @@
-../../../../shared/menus/Sound.qml
+../../../../shared/menus/SoundShared.qml

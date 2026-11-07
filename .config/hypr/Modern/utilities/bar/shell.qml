@@ -10,11 +10,11 @@ import "island"
 ShellRoot {
     id: shell
 
-    Watched {
+    WatchedShared {
         id: kindFile
-        path: Hypr.state + "/bar"
+        path: HyprShared.state + "/bar"
     }
-    Watched {
+    WatchedShared {
         id: ownStyle
         path: Quickshell.shellDir + "/style.json"
     }
@@ -40,8 +40,8 @@ ShellRoot {
         Scope {
             id: root
 
-            Watched { id: nameFile; path: Hypr.state + "/bar-style" }
-            Watched {
+            WatchedShared { id: nameFile; path: HyprShared.state + "/bar-style" }
+            WatchedShared {
                 id: lookFile
                 path: shell.standalone ? ownStyle.path : Quickshell.shellPath("../quickshellbar/" + (nameFile.text().trim() || "default") + "/config.json")
             }
@@ -60,7 +60,7 @@ ShellRoot {
                 : look.shape === "capsule" ? pillH / 2 : Math.min(Theme.rounding, pillH / 2)
             readonly property int reserve: pillH + edge * (attached ? 1 : 2)
 
-            function run(cmd) { Hypr.run(cmd) }
+            function run(cmd) { HyprShared.run(cmd) }
 
             function pillFor(page) {
                 const w = windows[Hyprland.focusedMonitor?.name ?? ""]
@@ -83,7 +83,7 @@ ShellRoot {
             }
             readonly property date now: clock.date
 
-            Countdown {
+            CountdownShared {
                 id: countdown
                 onFinished: {
                     const p = root.pillFor("alarm")
@@ -94,17 +94,17 @@ ShellRoot {
             }
             readonly property alias timer: countdown
 
-            Forecast { id: forecast }
+            ForecastShared { id: forecast }
             readonly property alias weather: forecast
 
-            readonly property int updates: Updates.count
+            readonly property int updates: UpdatesShared.count
 
-            readonly property var players: Media.players
+            readonly property var players: MediaShared.players
             property string pinned: ""
-            readonly property var player: Media.pickPlayer(pinned)
-            NowPlaying { id: nowPlaying; player: root.player }
+            readonly property var player: MediaShared.pickPlayer(pinned)
+            NowPlayingShared { id: nowPlaying; player: root.player }
             readonly property alias track: nowPlaying
-            readonly property bool playing: Media.playing(player)
+            readonly property bool playing: MediaShared.playing(player)
             property bool hasMedia: false
             onPlayingChanged: {
                 if (playing) { stopped.stop(); hasMedia = true }
@@ -113,10 +113,10 @@ ShellRoot {
             onPlayerChanged: if (!player) { stopped.stop(); hasMedia = false }
             Component.onCompleted: hasMedia = playing
             Timer { id: stopped; interval: 3000; onTriggered: root.hasMedia = root.playing }
-            Binding { target: Media; property: "side"; value: (root.look.left || []).includes("media") ? "left" : (root.look.right || []).includes("media") ? "right" : "center" }
+            Binding { target: MediaShared; property: "side"; value: (root.look.left || []).includes("media") ? "left" : (root.look.right || []).includes("media") ? "right" : "center" }
             Connections {
-                target: Media
-                function onCardChanged() { if (!Media.card && !root.playing) { stopped.stop(); root.hasMedia = false } }
+                target: MediaShared
+                function onCardChanged() { if (!MediaShared.card && !root.playing) { stopped.stop(); root.hasMedia = false } }
             }
 
             function cyclePlayer() {
@@ -125,7 +125,7 @@ ShellRoot {
                 pinned = ps[(ps.indexOf(player) + 1) % ps.length].dbusName
             }
 
-            Watched {
+            WatchedShared {
                 id: musicFile
                 path: Quickshell.env("XDG_RUNTIME_DIR") + "/music-player.json"
             }
@@ -139,7 +139,7 @@ ShellRoot {
             }
             function showMedia(pill) {
                 return hasMedia && !mediaAway(pill) && !(pill.page === "island" && !pill.onRow)
-                    && !(Media.card && !pill.open)
+                    && !(MediaShared.card && !pill.open)
             }
 
             function musicInTheWay(pill, page) {
@@ -152,7 +152,7 @@ ShellRoot {
                 return m.x < x + w && m.x + side > x && my < p.y + pillH + 460 && my + side > p.y
             }
 
-            function musicCall(call) { if (!standalone) run(Hypr.util + "/session/shells.sh music " + call) }
+            function musicCall(call) { if (!standalone) run(HyprShared.util + "/session/shells.sh music " + call) }
 
             function toggleOverview() {
                 Quickshell.execDetached(["qs", "-p", Quickshell.shellDir, "ipc", "call", "overview", "toggle"])

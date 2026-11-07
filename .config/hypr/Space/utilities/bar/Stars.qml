@@ -7,8 +7,8 @@ Item {
 
     readonly property int focused: Hyprland.focusedWorkspace?.id ?? 1
     readonly property var onScreen: Hyprland.monitors.values.map(m => m.activeWorkspace?.id ?? -1)
-    readonly property var existing: Hypr.workspaces
-    readonly property var ids: Hypr.workspaceIds
+    readonly property var existing: HyprShared.workspaces
+    readonly property var ids: HyprShared.workspaceIds
     function count(id) { return existing.find(w => w.id === id)?.toplevels.values.length ?? 0 }
     function go(id) { if (id !== focused) Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })") }
     function cx(id) { return Math.max(0, ids.indexOf(id)) * Theme.starGap + Theme.starGap / 2 }
@@ -37,7 +37,7 @@ Item {
                 core: star.lit ? 0.36 : 0.24
                 glow: star.lit ? 1 : 0.5
                 opacity: star.lit ? 1 : 0.75
-                Behavior on core { Settle { duration: Theme.quick } }
+                Behavior on core { SettleShared { duration: Theme.quick } }
             }
             Rectangle {
                 visible: !star.lit && !star.shown
@@ -94,7 +94,7 @@ Item {
     }
     ParallelAnimation {
         id: shoot
-        Settle { id: headAnim; target: stars; property: "head"; duration: Theme.ms(360) }
+        SettleShared { id: headAnim; target: stars; property: "head"; duration: Theme.ms(360) }
         NumberAnimation { id: tailAnim; target: stars; property: "tail"; duration: Theme.ms(360); easing.type: Easing.InQuad }
     }
     Rectangle {

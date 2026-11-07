@@ -17,7 +17,7 @@ Rectangle {
     Behavior on color { ColorAnimation { duration: Theme.fast } }
     Behavior on scale { NumberAnimation { duration: Theme.ms(120) } }
 
-    Label {
+    LabelShared {
         id: caption
         anchors.centerIn: parent
         text: b.label
@@ -25,7 +25,7 @@ Rectangle {
         color: b.primary ? Theme.ink : b.tone
     }
 
-    Hover {
+    HoverShared {
         id: area
         anchors.fill: parent
         onClicked: b.pressed()

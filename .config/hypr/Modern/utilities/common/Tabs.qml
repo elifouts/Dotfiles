@@ -39,7 +39,7 @@ Item {
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
             }
 
-            Label {
+            LabelShared {
                 anchors.centerIn: parent
                 text: tab.modelData.icon
                 font.pixelSize: 15
@@ -49,7 +49,7 @@ Item {
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
             }
 
-            Hover {
+            HoverShared {
                 id: tabArea
                 anchors.fill: parent
                 onClicked: tabs.picked(tab.index)

@@ -4,3 +4,4 @@ catppuccin/cat-10.png
 gruvbox/gru-01.jpg
 nature/nat-09.jpg
 gruvbox/gru-04.jpg
+catppuccin/cat-05.jpg

@@ -29,7 +29,7 @@ Picker {
             onPicked: v => pick.picked(v)
         }
 
-        Label {
+        LabelShared {
             visible: !pick.many
             x: Theme.pad
             y: pick.inline ? (pick.height - height) / 2 : 12
@@ -50,7 +50,7 @@ Picker {
     }
 
     property var def
-    readonly property var raw: Store.values[def.key]
+    readonly property var raw: StoreShared.values[def.key]
 
     label: def.label
     options: def.options.map(o => o.stops
@@ -64,12 +64,7 @@ Picker {
         }
         return raw
     }
-    onPicked: v => Store.set(def.key, v)
+    onPicked: v => StoreShared.set(def.key, v)
 
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.RightButton
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Store.reset(def.key)
-    }
+    ResetArea { key: def.key }
 }

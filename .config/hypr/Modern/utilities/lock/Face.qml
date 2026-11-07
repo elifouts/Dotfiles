@@ -24,7 +24,7 @@ Item {
 
         spacing: 2 * u
 
-        CavaFeed { id: feed; running: wave.playing; bars: wave.bars; framerate: 60 }
+        CavaFeedShared { id: feed; running: wave.playing; bars: wave.bars; framerate: 60 }
 
         Repeater {
             model: wave.bars
@@ -60,7 +60,7 @@ Item {
         width: size
         height: size
         scale: area.pressed ? 0.9 : area.containsMouse ? 1.06 : 1
-        Behavior on scale { Settle { duration: Theme.ms(220) } }
+        Behavior on scale { SettleShared { duration: Theme.ms(220) } }
 
         Card {
             anchors.fill: parent
@@ -76,7 +76,7 @@ Item {
             Behavior on color { ColorAnimation { duration: Theme.ms(160) } }
         }
 
-        Label {
+        LabelShared {
             anchors.centerIn: parent
             text: b.glyph
             font.pixelSize: b.size * 0.4
@@ -84,7 +84,7 @@ Item {
             Behavior on color { ColorAnimation { duration: Theme.ms(160) } }
         }
 
-        Hover {
+        HoverShared {
             id: area
             anchors.fill: parent
             onClicked: b.clicked()
@@ -99,9 +99,9 @@ Item {
         property real u: 1
         default property alias content: body.data
 
-        readonly property real p: Lock.seg(delay)
+        readonly property real p: Theme.seg(Lock.t, delay)
         property real shown: on ? 1 : 0
-        Behavior on shown { Settle { duration: Theme.ms(420) } }
+        Behavior on shown { SettleShared { duration: Theme.ms(420) } }
 
         implicitWidth: body.childrenRect.width
         implicitHeight: body.childrenRect.height * shown
@@ -132,7 +132,7 @@ Item {
 
         TextMetrics { id: cell; font: label.font; text: "0" }
 
-        Label {
+        LabelShared {
             id: label
             anchors.horizontalCenter: parent.horizontalCenter
             y: 0
@@ -152,7 +152,7 @@ Item {
             }
             ScriptAction { script: { d.cur = d.value; label.y = d.size * 0.22 } }
             ParallelAnimation {
-                Settle { target: label; property: "y"; to: 0; duration: Theme.ms(420) }
+                SettleShared { target: label; property: "y"; to: 0; duration: Theme.ms(420) }
                 NumberAnimation { target: label; property: "opacity"; to: 1; duration: Theme.ms(300) }
             }
         }
@@ -244,7 +244,7 @@ Item {
         delay: 0.1
         on: face.main && Lock.cfg.greeter && face.awake
         u: face.u
-        Label {
+        LabelShared {
             text: "Hello, <b>" + Lock.user + "</b>"
             textFormat: Text.StyledText
             font.pixelSize: 22 * face.u
@@ -273,7 +273,7 @@ Item {
 
                     Digit { value: clockRow.hh[0]; size: clockRow.size }
                     Digit { value: clockRow.hh[1]; size: clockRow.size }
-                    Label {
+                    LabelShared {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.verticalCenterOffset: -clockRow.size * 0.06
                         text: ":"
@@ -292,7 +292,7 @@ Item {
                         Digit { value: parent.ss[1]; size: clockRow.size * 0.26; color: Theme.accent2; weight: Font.Normal }
                     }
                 }
-                Label {
+                LabelShared {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Qt.formatDate(clock.date, "dddd, d MMMM")
                     font.pixelSize: 24 * face.u
@@ -315,7 +315,7 @@ Item {
                 readonly property bool typing: Lock.password !== ""
                 width: typing ? dots.width + h + 22 * face.u : h
                 height: h
-                Behavior on width { Settle { duration: Theme.ms(300) } }
+                Behavior on width { SettleShared { duration: Theme.ms(300) } }
 
                 transform: Translate { id: shakeX }
                 SequentialAnimation {
@@ -346,7 +346,7 @@ Item {
                     Behavior on border.color { ColorAnimation { duration: Theme.ms(200) } }
                 }
 
-                Label {
+                LabelShared {
                     x: (field.h - width) / 2
                     anchors.verticalCenter: parent.verticalCenter
                     text: ""
@@ -396,7 +396,7 @@ Item {
             Item {
                 width: capsText.implicitWidth
                 height: capsText.implicitHeight + 16 * face.u
-                Label {
+                LabelShared {
                     id: capsText
                     y: 16 * face.u
                     text: "\u{f0a5b}  Caps Lock"
@@ -422,7 +422,7 @@ Item {
 
             Card { anchors.fill: parent; u: face.u }
 
-            Cover {
+            CoverShared {
                 id: art
                 x: 18 * face.u
                 anchors.verticalCenter: parent.verticalCenter
@@ -447,7 +447,7 @@ Item {
                 Row {
                     height: 16 * face.u
                     spacing: 8 * face.u
-                    Label {
+                    LabelShared {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Now Playing"
                         font.pixelSize: 12 * face.u
@@ -459,14 +459,14 @@ Item {
                         playing: face.main && face.awake && Lock.cfg.music && !!card.p && card.p.isPlaying && Lock.t > 0 && !Lock.leaving
                     }
                 }
-                SwapText {
+                SwapTextShared {
                     width: parent.width
                     value: card.p ? Lock.track.title || "Unknown" : ""
                     elide: Text.ElideRight
                     font.pixelSize: 17 * face.u
                     color: "#ffffff"
                 }
-                SwapText {
+                SwapTextShared {
                     width: parent.width
                     value: Lock.track.artist
                     elide: Text.ElideRight
@@ -476,7 +476,7 @@ Item {
 
                 Item { width: 1; height: 6 * face.u }
 
-                Seek {
+                SeekShared {
                     width: parent.width
                     player: card.p
                     u: face.u * 0.8
@@ -487,9 +487,9 @@ Item {
 
                 Row {
                     spacing: 8 * face.u
-                    SkipButton { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: -1; size: 34 * face.u; tint: "#ffffff" }
-                    PlayButton { anchors.verticalCenter: parent.verticalCenter; player: card.p; size: 34 * face.u }
-                    SkipButton { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: 1; size: 34 * face.u; tint: "#ffffff" }
+                    SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: -1; size: 34 * face.u; tint: "#ffffff" }
+                    PlayButtonShared { anchors.verticalCenter: parent.verticalCenter; player: card.p; size: 34 * face.u }
+                    SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: 1; size: 34 * face.u; tint: "#ffffff" }
                 }
             }
         }
@@ -499,23 +499,23 @@ Item {
         x: face.width - width - face.margin
         y: face.margin
         delay: 0.28
-        on: face.main && face.awake && ((Lock.cfg.battery && Power.hasBattery) || Lock.cfg.power)
+        on: face.main && face.awake && ((Lock.cfg.battery && PowerShared.hasBattery) || Lock.cfg.power)
         u: face.u
 
         Row {
             spacing: 8 * face.u
 
             Item {
-                visible: Lock.cfg.battery && Power.hasBattery
+                visible: Lock.cfg.battery && PowerShared.hasBattery
                 width: batText.implicitWidth + 30 * face.u
                 height: 40 * face.u
                 Card { anchors.fill: parent; radius: Lock.corner(parent.height, face.u) }
-                Label {
+                LabelShared {
                     id: batText
                     anchors.centerIn: parent
-                    readonly property bool low: !Lock.charging && Power.charge < 0.2
-                    text: (Lock.charging ? "\u{f0084}" : ["\u{f007b}", "\u{f007c}", "\u{f007e}", "\u{f0080}", "\u{f0082}", "\u{f0079}"][Math.min(5, Math.floor(Power.charge * 6))])
-                        + "  " + Math.round(Power.charge * 100) + "%"
+                    readonly property bool low: !Lock.charging && PowerShared.charge < 0.2
+                    text: (Lock.charging ? "\u{f0084}" : ["\u{f007b}", "\u{f007c}", "\u{f007e}", "\u{f0080}", "\u{f0082}", "\u{f0079}"][Math.min(5, Math.floor(PowerShared.charge * 6))])
+                        + "  " + Math.round(PowerShared.charge * 100) + "%"
                     font.pixelSize: 13 * face.u
                     color: low ? Theme.warn : "#ffffff"
                 }
@@ -537,9 +537,9 @@ Item {
                     armed: armedNow
                     Timer { id: disarm; interval: 3000; onTriggered: pb.armedNow = false }
                     onClicked: {
-                        if (Power.confirm(modelData.id) && !armedNow) { armedNow = true; disarm.restart(); return }
+                        if (PowerShared.confirm(modelData.id) && !armedNow) { armedNow = true; disarm.restart(); return }
                         armedNow = false
-                        if (!Lock.preview) Power.act(modelData.id)
+                        if (!Lock.preview) PowerShared.act(modelData.id)
                     }
                 }
             }
@@ -559,7 +559,7 @@ Item {
             size: 40 * face.u
             glyph: ""
             rotation: Lock.menuOpen ? 90 : 0
-            Behavior on rotation { Settle { duration: Theme.ms(420) } }
+            Behavior on rotation { SettleShared { duration: Theme.ms(420) } }
             onClicked: Lock.menuOpen = !Lock.menuOpen
         }
     }
@@ -567,7 +567,7 @@ Item {
     Item {
         id: menu
         property real p: Lock.menuOpen && face.main && !Lock.leaving ? 1 : 0
-        Behavior on p { Settle { duration: Theme.ms(320) } }
+        Behavior on p { SettleShared { duration: Theme.ms(320) } }
 
         x: face.margin
         y: gearReveal.y - height - 10 * face.u
@@ -589,7 +589,7 @@ Item {
             width: parent.width - 24 * face.u
             spacing: 2 * face.u
 
-            Label {
+            LabelShared {
                 leftPadding: 8 * face.u
                 bottomPadding: 6 * face.u
                 text: "Lock screen"
@@ -609,7 +609,7 @@ Item {
         }
     }
 
-    Label {
+    LabelShared {
         visible: Lock.preview
         anchors.horizontalCenter: parent.horizontalCenter
         y: 12 * face.u

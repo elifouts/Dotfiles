@@ -2,7 +2,7 @@
 set -uo pipefail
 
 . "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../paths.sh"
-QML="$UTIL/session/transition.qml"
+QML="$UTIL/session/TransitionShared.qml"
 OLD="${XDG_RUNTIME_DIR:-/tmp}/style-transition.json"
 HOLD="${XDG_RUNTIME_DIR:-/tmp}/style-transition.lua"
 

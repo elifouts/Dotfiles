@@ -49,7 +49,7 @@ Rectangle {
         }
     }
 
-    Label {
+    LabelShared {
         id: eye
         visible: field.secret
         anchors.right: parent.right

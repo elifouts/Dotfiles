@@ -7,7 +7,7 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string uiPath: Hypr.home + "/.local/state/music-player/ui.json"
+    readonly property string uiPath: HyprShared.home + "/.local/state/music-player/ui.json"
 
     property alias active: morph.active
     property alias leaving: morph.leaving
@@ -15,7 +15,7 @@ ShellRoot {
     property alias t: morph.t
     property alias targetScreen: morph.screen
 
-    readonly property real u: Hypr.scaleFor(win.screen)
+    readonly property real u: HyprShared.scaleFor(win.screen)
     readonly property real screenH: win.screen ? win.screen.height : 1080
     readonly property real defaultSide: Math.round(380 * u)
     readonly property real minSide: Math.round(300 * u)
@@ -24,7 +24,7 @@ ShellRoot {
     property real dragSide: defaultSide
     property bool dragging: false
     readonly property real shown: Math.max(minSide, Math.min(maxSide, dragging ? dragSide : side))
-    Behavior on side { enabled: !root.dragging; Settle { duration: Theme.move } }
+    Behavior on side { enabled: !root.dragging; SettleShared { duration: Theme.move } }
 
     readonly property real k: shown / 380
     function px(v) { return Math.round(v * k) }
@@ -44,8 +44,8 @@ ShellRoot {
     property real offX: 0
     property real offY: 0
     property bool moving: false
-    Behavior on offX { enabled: !root.moving; Settle { duration: Theme.move } }
-    Behavior on offY { enabled: !root.moving; Settle { duration: Theme.move } }
+    Behavior on offX { enabled: !root.moving; SettleShared { duration: Theme.move } }
+    Behavior on offY { enabled: !root.moving; SettleShared { duration: Theme.move } }
     readonly property real homeX: (win.width - shown) / 2
     readonly property real baseX: Math.max(8, Math.min(win.width - shown - 8, homeX + offX))
     readonly property real baseY: Math.max(topGap, Math.min(win.height - shown - 8, topGap + offY))
@@ -75,13 +75,13 @@ ShellRoot {
                                  uiPath, JSON.stringify({ side: v / u })])
     }
 
-    readonly property var players: Media.players
+    readonly property var players: MediaShared.players
     property string pinned: ""
-    readonly property var player: Media.pickPlayer(pinned)
-    NowPlaying { id: now; player: root.player }
+    readonly property var player: MediaShared.pickPlayer(pinned)
+    NowPlayingShared { id: now; player: root.player }
     MediaView { on: root.active && !root.leaving }
-    readonly property bool spotify: Media.isSpotify(player)
-    readonly property bool playing: Media.playing(player)
+    readonly property bool spotify: MediaShared.isSpotify(player)
+    readonly property bool playing: MediaShared.playing(player)
 
     function cyclePlayer() {
         const ps = players
@@ -90,20 +90,20 @@ ShellRoot {
         pinned = ps[(i + 1) % ps.length].dbusName
     }
 
-    function next() { Media.skip(player, 1) }
-    function previous() { Media.skip(player, -1) }
-    function toggle() { Media.toggle(player) }
+    function next() { MediaShared.skip(player, 1) }
+    function previous() { MediaShared.skip(player, -1) }
+    function toggle() { MediaShared.toggle(player) }
     function seekBy(s) {
         if (!player || !player.canSeek) return
         player.position = Math.max(0, Math.min(player.length, player.position + s))
     }
 
     function openSpotify() {
-        Media.openSpotify()
+        MediaShared.openSpotify()
         close()
     }
 
-    readonly property color volTint: Audio.muted ? Theme.along([Theme.bg, Theme.fg], 0.5) : Theme.info
+    readonly property color volTint: AudioShared.muted ? Theme.along([Theme.bg, Theme.fg], 0.5) : Theme.info
 
     property real vizIntro: 0
 
@@ -138,7 +138,7 @@ ShellRoot {
             if (!s) return
             const x = Math.round(s.x + root.baseX + root.shown / 2)
             const y = Math.round(s.y + s.height - win.height + root.baseY + root.shown / 2)
-            Hypr.dispatch("hl.dsp.cursor.move({ x = " + x + ", y = " + y + " })", "movecursor " + x + " " + y)
+            HyprShared.dispatch("hl.dsp.cursor.move({ x = " + x + ", y = " + y + " })", "movecursor " + x + " " + y)
         }
     }
 
@@ -232,9 +232,9 @@ ShellRoot {
                         else if (k === Qt.Key_Space || k === Qt.Key_K) root.toggle()
                         else if (k === Qt.Key_Left || k === Qt.Key_H) root.seekBy(-5)
                         else if (k === Qt.Key_Right || k === Qt.Key_L) root.seekBy(5)
-                        else if (k === Qt.Key_Up) Audio.setVolume(Audio.volume + 0.05)
-                        else if (k === Qt.Key_Down) Audio.setVolume(Audio.volume - 0.05)
-                        else if (k === Qt.Key_M) Audio.toggleMute()
+                        else if (k === Qt.Key_Up) AudioShared.setVolume(AudioShared.volume + 0.05)
+                        else if (k === Qt.Key_Down) AudioShared.setVolume(AudioShared.volume - 0.05)
+                        else if (k === Qt.Key_M) AudioShared.toggleMute()
                         else if (k === Qt.Key_N || k === Qt.Key_Period) root.next()
                         else if (k === Qt.Key_P || k === Qt.Key_Comma) root.previous()
                         else { event.accepted = false; return }
@@ -307,7 +307,7 @@ ShellRoot {
                                     radius: height / 2
                                     color: Theme.alpha(Theme.fg, chipArea.containsMouse && root.players.length > 1 ? 0.12 : 0.06)
                                     Behavior on color { ColorAnimation { duration: Theme.fast } }
-                                    Behavior on width { Settle { duration: Theme.move } }
+                                    Behavior on width { SettleShared { duration: Theme.move } }
 
                                     Row {
                                         id: chipRow
@@ -330,13 +330,13 @@ ShellRoot {
                                                 NumberAnimation { to: 1; duration: 900; easing.type: Easing.InOutSine }
                                             }
                                         }
-                                        Label {
+                                        LabelShared {
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: root.player ? (root.player.identity || "Player") : ""
                                             font.pixelSize: root.px(11)
                                             color: Theme.fg
                                         }
-                                        Label {
+                                        LabelShared {
                                             visible: root.players.length > 1
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: ""
@@ -381,7 +381,7 @@ ShellRoot {
                                 opacity: morph.stage(0.6)
                                 transform: Translate { y: 10 * (1 - morph.stage(0.55)) }
 
-                                Cover {
+                                CoverShared {
                                     id: art
                                     width: parent.height
                                     height: parent.height
@@ -403,14 +403,14 @@ ShellRoot {
                                         width: parent.width
                                         spacing: root.px(4)
 
-                                        SwapText {
+                                        SwapTextShared {
                                             width: parent.width
                                             value: root.player ? (now.title || "Unknown track") : "Nothing playing"
                                             elide: Text.ElideRight
                                             font.pixelSize: root.px(17)
                                             color: Theme.bright
                                         }
-                                        SwapText {
+                                        SwapTextShared {
                                             width: parent.width
                                             visible: value !== ""
                                             value: root.player ? now.artist : "Open Spotify to start"
@@ -418,7 +418,7 @@ ShellRoot {
                                             font.pixelSize: root.px(13)
                                             color: Theme.fg
                                         }
-                                        SwapText {
+                                        SwapTextShared {
                                             width: parent.width
                                             visible: value !== ""
                                             value: root.player ? now.album : ""
@@ -450,7 +450,7 @@ ShellRoot {
                                 transform: Translate { y: 8 * (1 - morph.stage(0.62)) }
                                 enabled: !!root.player
 
-                                SkipButton {
+                                SkipButtonShared {
                                     anchors.verticalCenter: parent.verticalCenter
                                     anchors.right: playButton.left
                                     anchors.rightMargin: root.px(26)
@@ -460,14 +460,14 @@ ShellRoot {
                                     glyphSize: root.px(16)
                                 }
 
-                                PlayButton {
+                                PlayButtonShared {
                                     id: playButton
                                     anchors.centerIn: parent
                                     player: root.player
                                     size: root.px(56)
                                 }
 
-                                SkipButton {
+                                SkipButtonShared {
                                     anchors.verticalCenter: parent.verticalCenter
                                     anchors.left: playButton.right
                                     anchors.leftMargin: root.px(26)
@@ -478,7 +478,7 @@ ShellRoot {
                                 }
                             }
 
-                            Seek {
+                            SeekShared {
                                 player: root.player
                                 u: root.k
                                 active: root.active
@@ -579,10 +579,10 @@ ShellRoot {
             opacity: area.containsMouse && !btn.dimmed ? 1 : 0
             scale: area.containsMouse ? 1 : 0.7
             Behavior on opacity { NumberAnimation { duration: Theme.fast } }
-            Behavior on scale { Settle { duration: Theme.move } }
+            Behavior on scale { SettleShared { duration: Theme.move } }
         }
 
-        Label {
+        LabelShared {
             anchors.centerIn: parent
             text: btn.glyph
             font.pixelSize: btn.glyphSize
@@ -609,7 +609,7 @@ ShellRoot {
     component Volume: Item {
         id: vb
         height: root.px(24)
-        readonly property real level: Audio.muted ? 0 : Audio.volume
+        readonly property real level: AudioShared.muted ? 0 : AudioShared.volume
 
         Rectangle {
             anchors.fill: parent
@@ -628,36 +628,36 @@ ShellRoot {
             }
         }
 
-        Label {
+        LabelShared {
             x: root.px(8)
             anchors.verticalCenter: parent.verticalCenter
-            text: Audio.muted || Audio.volume === 0 ? "\uf026" : "\uf028"
+            text: AudioShared.muted || AudioShared.volume === 0 ? "\uf026" : "\uf028"
             font.pixelSize: root.px(12)
             color: Theme.on(root.volTint)
         }
 
-        Label {
+        LabelShared {
             anchors.right: parent.right
             anchors.rightMargin: root.px(9)
             anchors.verticalCenter: parent.verticalCenter
-            text: Audio.muted ? "Muted" : Math.round(Audio.volume * 100) + "%"
+            text: AudioShared.muted ? "Muted" : Math.round(AudioShared.volume * 100) + "%"
             font.pixelSize: root.px(10)
             color: vb.level > 0.8 ? Theme.on(root.volTint) : Theme.fg
         }
 
-        Hover {
+        HoverShared {
             id: volDrag
             anchors.fill: parent
             preventStealing: true
-            onPressed: mouse => Audio.setVolume(mouse.x / width)
-            onPositionChanged: mouse => { if (pressed) Audio.setVolume(mouse.x / width) }
-            onWheel: wheel => Audio.setVolume(Audio.volume + wheel.angleDelta.y / 120 * 0.03)
+            onPressed: mouse => AudioShared.setVolume(mouse.x / width)
+            onPositionChanged: mouse => { if (pressed) AudioShared.setVolume(mouse.x / width) }
+            onWheel: wheel => AudioShared.setVolume(AudioShared.volume + wheel.angleDelta.y / 120 * 0.03)
         }
         MouseArea {
             width: parent.height
             height: parent.height
             cursorShape: Qt.PointingHandCursor
-            onClicked: Audio.toggleMute()
+            onClicked: AudioShared.toggleMute()
         }
     }
 }

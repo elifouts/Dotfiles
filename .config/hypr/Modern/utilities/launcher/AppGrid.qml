@@ -115,8 +115,8 @@ Flickable {
             scale: 0.92 + 0.08 * present
             transform: Translate { y: 10 * (1 - tile.rise) }
 
-            Behavior on x { id: moveX; Settle { duration: Theme.ms(420) } }
-            Behavior on y { id: moveY; Settle { duration: Theme.ms(420) } }
+            Behavior on x { id: moveX; SettleShared { duration: Theme.ms(420) } }
+            Behavior on y { id: moveY; SettleShared { duration: Theme.ms(420) } }
 
             function jumpTo(nx, ny) {
                 moveX.enabled = false
@@ -148,7 +148,7 @@ Flickable {
                 Behavior on scale { NumberAnimation { duration: Theme.ms(220); easing.type: Easing.OutCubic } }
             }
 
-            Label {
+            LabelShared {
                 anchors.centerIn: parent
                 visible: !icon.visible
                 text: tile.modelData.name.charAt(0).toUpperCase()
@@ -156,7 +156,7 @@ Flickable {
                 color: Theme.accent
             }
 
-            Hover {
+            HoverShared {
                 id: hit
                 anchors.fill: parent
                 enabled: tile.slot >= 0
@@ -175,13 +175,13 @@ Flickable {
         visible: opacity > 0.01
         Behavior on opacity { NumberAnimation { duration: Theme.ms(240) } }
 
-        Label {
+        LabelShared {
             anchors.horizontalCenter: parent.horizontalCenter
             text: ""
             font.pixelSize: 26
             color: Theme.alpha(Theme.fg, 0.25)
         }
-        Label {
+        LabelShared {
             anchors.horizontalCenter: parent.horizontalCenter
             width: grid.width - 40
             horizontalAlignment: Text.AlignHCenter

@@ -1,22 +1,17 @@
 import QtQuick
-import "Motion.js" as Motion
+import "MotionShared.js" as Motion
 
 Dropdown {
     id: control
 
     property var def
-    readonly property var curve: Store.values["animation.curve"] || Motion.CURVE
+    readonly property var curve: StoreShared.values["animation.curve"] || Motion.CURVE
 
     label: "Preset"
-    current: Store.values["animation.preset"] || "theme"
+    current: StoreShared.values["animation.preset"] || "theme"
     options: Motion.PRESET_OPTIONS
 
-    onPicked: v => Motion.pick(Store, v, control.curve)
+    onPicked: v => Motion.pick(StoreShared, v, control.curve)
 
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.RightButton
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Store.reset("animation")
-    }
+    ResetArea { key: "animation" }
 }

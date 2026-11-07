@@ -5,7 +5,7 @@ Item {
     id: control
 
     property var def
-    readonly property var raw: Store.values[def.key]
+    readonly property var raw: StoreShared.values[def.key]
     readonly property bool ready: raw !== undefined && raw !== null
     readonly property string hex: ready ? (Number(raw) >>> 0).toString(16).padStart(8, "0") : "ffffff00"
     readonly property string alphaHex: hex.slice(6)
@@ -18,7 +18,7 @@ Item {
     enabled: ready
 
     function commit(rgb, alpha) {
-        Store.set(def.key, parseInt(rgb + alpha, 16))
+        StoreShared.set(def.key, parseInt(rgb + alpha, 16))
     }
 
     function commitText(text) {
@@ -26,7 +26,7 @@ Item {
         if (m) commit(m[1].toLowerCase(), (m[2] || alphaHex).toLowerCase())
     }
 
-    Label {
+    LabelShared {
         x: Theme.pad
         y: 12
         text: control.def.label
@@ -105,7 +105,7 @@ Item {
                 scale: chipArea.containsMouse ? 1.15 : 1
                 Behavior on scale { NumberAnimation { duration: Theme.fast } }
 
-                Hover {
+                HoverShared {
                     id: chipArea
                     anchors.fill: parent
                     onClicked: control.commit(String(chip.modelData).slice(1).toLowerCase(),
@@ -115,11 +115,5 @@ Item {
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        z: -1
-        acceptedButtons: Qt.RightButton
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Store.reset(control.def.key)
-    }
+    ResetArea { z: -1; key: control.def.key }
 }

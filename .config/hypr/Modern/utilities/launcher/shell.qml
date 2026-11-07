@@ -7,9 +7,9 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string helper: Hypr.util + "/launcher.py"
+    readonly property string helper: HyprShared.util + "/launcher.py"
     readonly property string terminal: "kitty"
-    readonly property string cacheDir: Hypr.home + "/.cache/launcher"
+    readonly property string cacheDir: HyprShared.home + "/.cache/launcher"
     readonly property string appCache: cacheDir + "/apps"
     readonly property string homeCache: cacheDir + "/commands"
     readonly property string shellCache: cacheDir + "/shell"
@@ -35,7 +35,7 @@ ShellRoot {
     property real introHome: 0
     property real introBinds: 0
 
-    readonly property real u: Hypr.scaleFor(win.screen)
+    readonly property real u: HyprShared.scaleFor(win.screen)
     readonly property int cols: 4
     readonly property real cell: Math.round(70 * u)
     readonly property real gap: Math.round(26 * u)
@@ -79,7 +79,7 @@ ShellRoot {
     readonly property var music: {
         try { return JSON.parse(musicFile.text()) } catch (e) { return { open: false } }
     }
-    Watched {
+    WatchedShared {
         id: musicFile
         path: Quickshell.env("XDG_RUNTIME_DIR") + "/music-player.json"
     }
@@ -95,7 +95,7 @@ ShellRoot {
         }
     }
 
-    Watched {
+    WatchedShared {
         id: appCacheFile
         path: root.appCache
         onLoaded: root.appUses = root.counts(text())
@@ -199,15 +199,15 @@ ShellRoot {
     }
 
 
-    Watched {
+    WatchedShared {
         id: homeCacheFile
         path: root.homeCache
     }
-    Watched {
+    WatchedShared {
         id: shellCacheFile
         path: root.shellCache
     }
-    Watched {
+    WatchedShared {
         id: bindCacheFile
         path: root.bindCache
     }
@@ -236,7 +236,7 @@ ShellRoot {
     function runHome(id, cmd, afterClose) {
         bump(homeCache, id)
         close()
-        Hypr.run((afterClose ? "sleep 0.3; " : "") + cmd)
+        HyprShared.run((afterClose ? "sleep 0.3; " : "") + cmd)
     }
 
     function runShell(cmd, key, background) {
@@ -477,7 +477,7 @@ ShellRoot {
                                     keyHandler: event => root.handleKey(event)
                                 }
 
-                                Label {
+                                LabelShared {
                                     id: title
                                     anchors.left: parent.left
                                     anchors.leftMargin: header.height + 12
@@ -500,7 +500,7 @@ ShellRoot {
                                     }
                                 }
 
-                                Label {
+                                LabelShared {
                                     anchors.right: parent.right
                                     anchors.left: title.right
                                     anchors.leftMargin: 12
@@ -598,7 +598,7 @@ ShellRoot {
                                     radius: Theme.r(9)
                                     x: root.tab * (tabBar.cellW + tabBar.gapW)
                                     color: Theme.soft(Theme.accent)
-                                    Behavior on x { Settle { duration: Theme.move } }
+                                    Behavior on x { SettleShared { duration: Theme.move } }
                                 }
 
                                 Repeater {
@@ -617,14 +617,14 @@ ShellRoot {
                                             anchors.centerIn: parent
                                             spacing: 6
 
-                                            Label {
+                                            LabelShared {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: tabItem.modelData.icon
                                                 font.pixelSize: 13
                                                 color: tabItem.on ? Theme.ink : tabArea.containsMouse ? Theme.bright : Theme.dim
                                                 Behavior on color { ColorAnimation { duration: Theme.fast } }
                                             }
-                                            Label {
+                                            LabelShared {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: tabItem.modelData.label
                                                 font.pixelSize: 11
@@ -633,7 +633,7 @@ ShellRoot {
                                             }
                                         }
 
-                                        Hover {
+                                        HoverShared {
                                             id: tabArea
                                             anchors.fill: parent
                                             onClicked: root.setTab(tabItem.index)
@@ -659,7 +659,7 @@ ShellRoot {
         opacity: on ? 1 : 0
         property real slide: on ? 0 : (index < root.tab ? -1 : 1) * 28
         Behavior on opacity { NumberAnimation { duration: Theme.ms(220); easing.type: Easing.OutCubic } }
-        Behavior on slide { Settle { duration: Theme.move } }
+        Behavior on slide { SettleShared { duration: Theme.move } }
         transform: Translate { x: slide }
     }
 }

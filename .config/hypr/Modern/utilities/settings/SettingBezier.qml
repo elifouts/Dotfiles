@@ -1,1 +1,1 @@
-../../../shared/ui/SettingBezier.qml
+../../../shared/ui/SettingBezierShared.qml

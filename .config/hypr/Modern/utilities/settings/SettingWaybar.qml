@@ -6,9 +6,9 @@ Column {
 
     property var def
 
-    readonly property bool qs: Store.bar === "quickshell"
-    readonly property var styles: (qs ? Store.quickshell : Store.waybar).styles || []
-    readonly property string active: qs ? Store.quickshellActive : Store.waybarActive
+    readonly property bool qs: StoreShared.bar === "quickshell"
+    readonly property var styles: (qs ? StoreShared.quickshell : StoreShared.waybar).styles || []
+    readonly property string active: qs ? StoreShared.quickshellActive : StoreShared.waybarActive
     readonly property var shown: styles.find(s => s.id === active) ?? null
 
     Dropdown {
@@ -17,7 +17,7 @@ Column {
         label: "Style"
         options: control.styles.map(s => ({ v: s.id, l: s.name, preview: s.image !== "" ? "file://" + s.image : "" }))
         current: control.active
-        onPicked: v => { if (v !== control.active) control.qs ? Store.applyQuickshell(v) : Store.applyWaybar(v) }
+        onPicked: v => { if (v !== control.active) control.qs ? StoreShared.applyQuickshell(v) : StoreShared.applyWaybar(v) }
     }
 
     Item {

@@ -21,7 +21,7 @@ PanelWindow {
 
     Connections {
         target: land.Window.window
-        enabled: win.moving && win.screen === Hypr.moonScreen
+        enabled: win.moving && win.screen === HyprShared.moonScreen
         function onFrameSwapped() { Pace.frame() }
     }
 
@@ -31,7 +31,7 @@ PanelWindow {
         ws: win.ws
         screenX: win.screen?.x ?? 0
         asTheme: true
-        moonless: win.screen === Hypr.moonScreen ? 0 : 1
+        moonless: win.screen === HyprShared.moonScreen ? 0 : 1
         fade: World.hopBusy || Ui.overview ? 0 : Theme.ms(900)
         drift: World.hopBusy ? World.hopTravel - (World.hopSwapped ? 1.2 : 0) : 0
         lift: World.hopBusy && World.hopSwapped ? 0.9 * Math.pow(1 - World.hopAfter, 3) : 0

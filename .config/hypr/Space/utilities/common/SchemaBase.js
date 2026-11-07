@@ -1,1 +1,1 @@
-../../../shared/core/Schema.js
+../../../shared/core/SchemaShared.js

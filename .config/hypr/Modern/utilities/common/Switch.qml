@@ -17,8 +17,8 @@ Rectangle {
     readonly property real trail: Theme.ms(360)
     property real l: checked ? width - 19 : 3
     property real r: checked ? width - 3 : 19
-    Behavior on l { Settle { duration: sw.checked ? sw.trail : sw.lead } }
-    Behavior on r { Settle { duration: sw.checked ? sw.lead : sw.trail } }
+    Behavior on l { SettleShared { duration: sw.checked ? sw.trail : sw.lead } }
+    Behavior on r { SettleShared { duration: sw.checked ? sw.lead : sw.trail } }
 
     Rectangle {
         y: 3
@@ -30,7 +30,7 @@ Rectangle {
         Behavior on color { ColorAnimation { duration: sw.lead } }
     }
 
-    Hover {
+    HoverShared {
         id: area
         anchors.fill: parent
         onClicked: sw.toggled()

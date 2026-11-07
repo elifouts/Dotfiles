@@ -29,7 +29,7 @@ Item {
             width: parent.width - 50
             height: parent.height
 
-            Fade {
+            FadeShared {
                 on: page.current === "media"
                 maxW: Infinity
                 MediaTab {
@@ -45,23 +45,23 @@ Item {
                     onBringBack: { page.pill.close(); page.ctx.musicCall("close") }
                 }
             }
-            Fade {
+            FadeShared {
                 on: page.current === "timer"
-                TimerTab {
+                TimerTabShared {
                     anchors.fill: parent
                     timer: page.ctx.timer
                 }
             }
-            Fade {
+            FadeShared {
                 on: page.current === "color"
-                ColorTab {
+                ColorTabShared {
                     anchors.fill: parent
                     onDone: page.pill.close()
                 }
             }
-            Fade {
+            FadeShared {
                 on: page.current === "capture"
-                CaptureTab {
+                CaptureTabShared {
                     id: captureTab
                     anchors.fill: parent
                     active: page.pill.open && parent.visible
@@ -69,9 +69,9 @@ Item {
                     onDone: page.pill.close()
                 }
             }
-            Fade {
+            FadeShared {
                 on: page.current === "weather"
-                WeatherTab {
+                WeatherTabShared {
                     anchors.fill: parent
                     weather: page.ctx.weather
                 }
@@ -96,14 +96,14 @@ Item {
                     color: on ? Theme.soft(Theme.accent) : Theme.alpha(Theme.fg, tabArea.containsMouse ? 0.1 : 0.04)
                     Behavior on color { ColorAnimation { duration: Theme.fast } }
 
-                    Label {
+                    LabelShared {
                         anchors.centerIn: parent
                         text: tab.modelData.glyph
                         font.pixelSize: 14
                         color: tab.on ? Theme.ink : tabArea.containsMouse ? Theme.bright : Theme.fg
                     }
 
-                    Hover {
+                    HoverShared {
                         id: tabArea
                         anchors.fill: parent
                         onContainsMouseChanged: if (containsMouse) page.pill.tab = tab.modelData.id

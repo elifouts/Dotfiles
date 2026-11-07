@@ -50,6 +50,46 @@ def miracasts():
     return list(found.values())
 
 
+def nm(*a):
+    return sh(["busctl", "--json=short", *a])
+
+
+NM = "org.freedesktop.NetworkManager"
+P2P = NM + ".Device.WifiP2P"
+SOURCE_IES = "00:00:06:00:90:1c:44:00:c8"
+LINK = "cast-direct"
+
+
+def p2p_iface():
+    for line in sh(["nmcli", "-t", "-f", "DEVICE,TYPE", "device"]).splitlines():
+        if line.endswith(":wifi-p2p"):
+            return line.split(":")[0]
+    return ""
+
+
+def directs():
+    iface = p2p_iface()
+    if not iface:
+        return []
+    try:
+        path = json.loads(nm("call", NM, "/org/freedesktop/NetworkManager", NM, "GetDeviceByIpIface", "s", iface))["data"][0]
+        nm("call", NM, path, P2P, "StartFind", "a{sv}", "1", "timeout", "i", "6")
+        time.sleep(4)
+        peers = json.loads(nm("get-property", NM, path, P2P, "Peers"))["data"]
+    except (ValueError, KeyError, IndexError):
+        return []
+    out = []
+    for p in peers:
+        try:
+            prop = lambda k: json.loads(nm("get-property", NM, p, NM + ".WifiP2PPeer", k))["data"]
+            ies = prop("WfdIEs")
+            if len(ies) >= 5 and ies[4] & 3 in (1, 3):
+                out.append({"kind": "direct", "target": prop("HwAddress"), "name": prop("Name")})
+        except (ValueError, KeyError):
+            pass
+    return out
+
+
 def describe(loc):
     root = ET.fromstring(urllib.request.urlopen(loc, timeout=2).read())
     for e in root.iter():
@@ -100,16 +140,15 @@ def renderers():
 def scan():
     res = {}
     jobs = [threading.Thread(target=lambda k=k, f=f: res.__setitem__(k, f()))
-            for k, f in (("cast", chromecasts), ("dlna", renderers), ("miracast", miracasts))]
+            for k, f in (("cast", chromecasts), ("dlna", renderers), ("miracast", miracasts), ("direct", directs))]
     for j in jobs:
         j.start()
     for j in jobs:
         j.join()
-    cast = res.get("cast", [])
-    names = {c["name"] for c in cast}
-    tvs = cast + [d for d in res.get("dlna", []) if d["name"] not in names]
-    names |= {d["name"] for d in tvs}
-    tvs += [m for m in res.get("miracast", []) if m["name"] not in names]
+    tvs, names = [], set()
+    for k in ("direct", "miracast", "cast", "dlna"):
+        tvs += [t for t in res.get(k, []) if t["name"] not in names]
+        names = {t["name"] for t in tvs}
     print(json.dumps(sorted(tvs, key=lambda t: t["name"].lower())))
 
 
@@ -128,9 +167,23 @@ def area(mode):
     return ["-g", g.strip()] if g.strip() else None
 
 
-def capture(args, vf="scale=-2:1080", audio=True, extra=()):
-    cmd = ["wf-recorder", "-y", *args, "-c", "libx264", "-x", "yuv420p", "-r", "30", "-F", vf,
-           "-p", "preset=ultrafast", "-p", "tune=zerolatency", "-p", "g=15", *extra, "-m", "mpegts", "-f", "pipe:1"]
+X264 = ["-c", "libx264", "-r", "30", "-p", "preset=ultrafast", "-p", "tune=zerolatency", "-p", "g=15"]
+COLOR = ["-p", "colorspace=bt709", "-p", "color_primaries=bt709", "-p", "color_trc=bt709", "-p", "color_range=tv"]
+RATE = 16000000
+PACE = 1344 * 8 / (RATE * 2.5)
+
+
+def mirror_codec(fps, high):
+    if os.path.exists("/dev/nvidiactl") and "h264_nvenc" in sh(["ffmpeg", "-hide_banner", "-encoders"]):
+        return ["-c", "h264_nvenc", "-r", str(fps), "-p", "preset=p3", "-p", "tune=ull", "-p", "rc=cbr", "-p", f"b={RATE}",
+                "-p", f"maxrate={RATE}", "-p", f"bufsize={RATE // 8}", "-p", "bf=0", "-p", f"g={fps // 2}",
+                "-p", "profile=" + ("high" if high else "baseline"), *COLOR]
+    return ["-c", "libx264", "-r", str(fps), "-p", "preset=veryfast", "-p", "tune=zerolatency", "-p", "profile=baseline",
+            "-p", f"g={fps // 2}", "-p", f"b={RATE // 2}", "-p", f"maxrate={RATE // 2}", "-p", f"bufsize={RATE // 16}", *COLOR]
+
+
+def capture(args, vf="scale=-2:1080", audio=True, codec=X264):
+    cmd = ["wf-recorder", "-y", *args, *codec, "-x", "yuv420p", "-F", vf, "-m", "mpegts", "-f", "pipe:1"]
     sink = sh(["pactl", "get-default-sink"]).strip()
     if sink and audio:
         cmd[2:2] = [f"--audio={sink}.monitor", "-C", "aac"]
@@ -319,27 +372,45 @@ def mice(cmd, name, sid, port=0):
     return struct.pack(">HBB", len(body) + 4, 1, cmd) + body
 
 
-CEA = {7: (1920, 1080), 5: (1280, 720), 0: (640, 480)}
+CEA = {8: (1920, 1080, 60), 7: (1920, 1080, 30), 6: (1280, 720, 60), 5: (1280, 720, 30), 0: (640, 480, 60)}
+
+
+def link_down():
+    sh(["nmcli", "connection", "delete", LINK])
+
+
+def link_up(mac):
+    link_down()
+    sh(["nmcli", "connection", "add", "type", "wifi-p2p", "con-name", LINK, "ifname", p2p_iface(), "save", "no",
+        "connection.autoconnect", "no", "wifi-p2p.peer", mac, "wifi-p2p.wfd-ies", SOURCE_IES, "ipv6.method", "disabled"])
+    return subprocess.Popen(["sh", "-c", f"for i in 1 2 3 4 5; do nmcli -w 11 connection up {LINK} && exit 0; sleep 1; done; exit 1"],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 class Miracast:
-    def __init__(self, target, args, procs):
+    def __init__(self, target, args, procs, direct=False):
         self.args, self.procs = args, procs
         self.sid, self.name, self.seq, self.buf = os.urandom(16), socket.gethostname(), 0, b""
-        self.c = self.ctl = None
+        self.c = self.ctl = self.link = None
         try:
             self.ls = socket.create_server(("0.0.0.0", RTSP))
         except OSError:
             self.ls = socket.create_server(("0.0.0.0", 0))
-        host, port = target.rsplit(":", 1)
-        self.ctl = socket.create_connection((host, int(port)), timeout=10)
-        self.ctl.sendall(mice(1, self.name, self.sid, self.ls.getsockname()[1]))
-        self.ls.settimeout(30)
+        if not direct:
+            host, port = target.rsplit(":", 1)
+            self.ctl = socket.create_connection((host, int(port)), timeout=10)
+            self.ctl.sendall(mice(1, self.name, self.sid, self.ls.getsockname()[1]))
+        else:
+            self.link = link_up(target)
+        self.ls.settimeout(60 if direct else 30)
         try:
             self.c = self.ls.accept()[0]
         except socket.timeout:
+            if self.link and self.link.poll():
+                raise RuntimeError("tv refused the wifi direct link, accept it on the tv and try again") from None
             raise TimeoutError("tv never called back, a firewall is probably blocking 7236. InstallScripts/apply.sh opens it") from None
         self.c.settimeout(20)
+        self.c.setsockopt(socket.IPPROTO_TCP, socket.TCP_USER_TIMEOUT, 30000)
         self.host, self.me = self.c.getpeername()[0], self.c.getsockname()[0]
 
     def more(self):
@@ -372,10 +443,17 @@ class Miracast:
         self.c.sendall(f"RTSP/1.0 200 OK\r\nCSeq: {h.get('cseq', '0')}\r\n{extra}\r\n".encode())
 
     def formats(self, caps):
-        f = caps.get("wfd_video_formats", "").split(", ")[0].split()
-        prof, level, cea = int(f[2], 16), f[3], int(f[4], 16)
+        modes = caps.get("wfd_video_formats", "").split(", ")
+        first = modes[0].split()
+        native = int(first[0], 16)
+        rows = [first[2:5]] + [m.split()[:3] for m in modes[1:]]
+        row = next((r for r in rows if int(r[0], 16) & 2), rows[0])
+        prof, level, cea = int(row[0], 16), row[1], int(row[2], 16)
+        if not native & 7:
+            cea |= 1 << (native >> 3)
         bit = next((b for b in CEA if cea >> b & 1), 0)
         self.size = CEA[bit]
+        self.high = bool(prof & 2)
         self.audio = "AAC" in caps.get("wfd_audio_codecs", "")
         self.port = int(re.search(r"unicast (\d+)", caps.get("wfd_client_rtp_ports", "")).group(1))
         lines = [f"wfd_video_formats: {bit << 3:02x} 00 {(prof & -prof):02x} {level} {1 << bit:08x} 00000000 00000000 00 0000 0000 00 none none",
@@ -386,18 +464,27 @@ class Miracast:
         return "\r\n".join(lines) + "\r\n"
 
     def stream(self):
-        w, h = self.size
-        rec = capture(self.args, f"scale={w}:{h}:force_original_aspect_ratio=decrease:force_divisible_by=2,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
-                      self.audio, ["-p", "crf=23", "-p", "maxrate=8000000", "-p", "bufsize=2000000"])
-        mux = subprocess.Popen(["ffmpeg", "-loglevel", "error", "-fflags", "nobuffer", "-probesize", "32768", "-analyzeduration", "0", "-i", "pipe:0", "-map", "0", "-c", "copy", "-streamid", "0:0x1011",
-                                "-streamid", "1:0x1100", "-mpegts_pmt_start_pid", "0x100", "-muxdelay", "0", "-flush_packets", "1",
+        w, h, fps = self.size
+        vf = (f"scale={w}:{h}:force_original_aspect_ratio=decrease:force_divisible_by=2:out_color_matrix=bt709:out_range=tv,"
+              f"pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,format=yuv420p")
+        rec = capture(self.args, vf, self.audio, mirror_codec(fps, self.high))
+        mux = subprocess.Popen(["ffmpeg", "-loglevel", "error", "-fflags", "nobuffer", "-probesize", "500000", "-analyzeduration", "200000", "-i", "pipe:0",
+                                "-map", "0:v", "-map", "0:a?", "-c", "copy", "-streamid", "0:0x1011", "-streamid", "1:0x1100", "-mpegts_pmt_start_pid", "0x100",
+                                "-muxdelay", "0", "-muxpreload", "0", "-flush_packets", "1", "-pcr_period", "20", "-pat_period", "0.1",
                                 "-f", "mpegts", "pipe:1"], stdin=rec.stdout, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         rec.stdout.close()
         self.procs += [rec, mux]
         def send():
             s, seq, ssrc, t0 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM), 0, struct.unpack(">I", os.urandom(4))[0], time.monotonic()
+            s.setsockopt(socket.IPPROTO_IP, socket.IP_TOS, 0xA0)
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1 << 21)
+            due = time.monotonic()
             while len(chunk := mux.stdout.read(1316)) == 1316:
-                ts = int((time.monotonic() - t0) * 90000) & 0xFFFFFFFF
+                now = time.monotonic()
+                if due > now:
+                    time.sleep(due - now)
+                due = max(due, now) + PACE
+                ts = int((now - t0) * 90000) & 0xFFFFFFFF
                 try:
                     s.sendto(struct.pack(">BBHII", 0x80, 33, seq, ts, ssrc) + chunk, (self.host, self.port))
                 except OSError:
@@ -444,7 +531,7 @@ class Miracast:
 
     def close(self):
         for f in (lambda: self.ask("SET_PARAMETER", body="wfd_trigger_method: TEARDOWN\r\n"),
-                  lambda: self.ctl.sendall(mice(2, self.name, self.sid))):
+                  lambda: self.ctl and self.ctl.sendall(mice(2, self.name, self.sid))):
             try:
                 f()
             except Exception:
@@ -452,6 +539,9 @@ class Miracast:
         for sk in (self.c, self.ctl, self.ls):
             if sk:
                 sk.close()
+        if self.link:
+            self.link.kill()
+            link_down()
 
 
 def soap(url, action, args=""):
@@ -537,6 +627,7 @@ def stop():
             if d.startswith("cast-") and d != "cast-state" and not d.startswith("cast-state."):
                 shutil.rmtree(os.path.join(RUN, d), ignore_errors=True)
         unspeak()
+        link_down()
         state(None)
 
 
@@ -562,13 +653,15 @@ def start(kind, target, name, mode):
     d = tempfile.mkdtemp(prefix="cast-", dir=RUN)
     srv = Server(d, args)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
-    host = target.rsplit(":", 1)[0] if kind == "cast" else urllib.parse.urlparse(target).hostname
-    base = f"http://{local_ip(host)}:{srv.server_address[1]}" if kind in ("cast", "dlna") else ""
+    base = ""
+    if kind in ("cast", "dlna"):
+        host = target.rsplit(":", 1)[0] if kind == "cast" else urllib.parse.urlparse(target).hostname
+        base = f"http://{local_ip(host)}:{srv.server_address[1]}"
     cc = session = mc = spk = None
     try:
         spk = Speaker(name)
-        if kind == "miracast":
-            mc = Miracast(target, args, srv.procs)
+        if kind in ("miracast", "direct"):
+            mc = Miracast(target, args, srv.procs, kind == "direct")
             mc.run(live)
         elif kind == "cast":
             rec = capture(args)
@@ -626,4 +719,4 @@ if __name__ == "__main__":
     elif a[:1] == ["stop"]:
         stop()
     else:
-        sys.exit("usage: cast.py scan | start cast|dlna|miracast <target> <name> region|window|screen | stop")
+        sys.exit("usage: cast.py scan | start cast|dlna|miracast|direct <target> <name> region|window|screen | stop")

@@ -4,11 +4,11 @@ import Quickshell.Io
 import "../common"
 
 ShellRoot {
-    NotificationPopups { hidden: Notifs.quiet }
+    NotificationPopupsShared { hidden: NotifsShared.quiet }
 
     IpcHandler {
         target: "notifications"
-        function clear(): void { Notifs.clearAll() }
-        function toggleDnd(): void { Notifs.dnd = !Notifs.dnd }
+        function clear(): void { NotifsShared.clearAll() }
+        function toggleDnd(): void { NotifsShared.dnd = !NotifsShared.dnd }
     }
 }

@@ -10,10 +10,10 @@ Column {
     SystemClock { id: clock; precision: SystemClock.Minutes }
     Hud {
         caps: false
-        text: Qt.formatTime(clock.date, Store.values["space.clock24"] === false ? "h:mm" : "HH:mm")
+        text: Qt.formatTime(clock.date, StoreShared.values["space.clock24"] === false ? "h:mm" : "HH:mm")
         font.pixelSize: 34
         font.weight: Font.ExtraLight
         color: Theme.fg
     }
-    Calendar { id: cal; width: parent.width; open: Ui.panel === "time" }
+    CalendarShared { id: cal; width: parent.width; open: Ui.panel === "time" }
 }

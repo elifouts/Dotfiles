@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell.Hyprland
 import "../common"
 
-Tour {
+TourShared {
     id: tour
 
     steps: [
@@ -32,21 +32,20 @@ Tour {
     onLandingChanged: if (!landing && cur.where === "overview" && step === shown) go(1)
 
     property int home: 1
-    function focusWs(id) { Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })") }
     onPanel: (name, call) => {
         if (name === "world" && call === "open") World.hop()
         if (name !== "workspaces") return
         if (call === "close") {
             back.stop()
-            return focusWs(home)
+            return HyprShared.focusWs(home)
         }
         home = Hyprland.monitorFor(screen)?.activeWorkspace?.id ?? 1
         const taken = Hyprland.workspaces.values.map(w => w.id)
         let free = home + 1
         while (taken.includes(free)) free++
-        focusWs(home)
-        focusWs(free)
+        HyprShared.focusWs(home)
+        HyprShared.focusWs(free)
         back.restart()
     }
-    Timer { id: back; interval: 2500; onTriggered: tour.focusWs(tour.home) }
+    Timer { id: back; interval: 2500; onTriggered: HyprShared.focusWs(tour.home) }
 }

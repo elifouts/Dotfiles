@@ -1,1 +1,0 @@
-../../../shared/system/OsdState.qml

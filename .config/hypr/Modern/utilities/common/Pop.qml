@@ -7,5 +7,5 @@ SequentialAnimation {
     property string last
     onLabelChanged: { if (last !== "" && label !== "") restart(); last = label }
     NumberAnimation { target: pop.target; property: "scale"; to: 1.06; duration: Theme.fast; easing.type: Easing.OutCubic }
-    Settle { target: pop.target; property: "scale"; to: 1; duration: Theme.move }
+    SettleShared { target: pop.target; property: "scale"; to: 1; duration: Theme.move }
 }

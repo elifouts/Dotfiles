@@ -1,1 +1,0 @@
-../../../shared/media/MiniWave.qml

@@ -20,13 +20,12 @@ Singleton {
         const p = walPath.text().trim()
         return p ? "file://" + encodeURI(p) : ""
     }
-    FileView { id: walPath; path: Hypr.home + "/.cache/wal/wal"; printErrors: false }
+    FileView { id: walPath; path: HyprShared.home + "/.cache/wal/wal"; printErrors: false }
 
     function corner(h, u) { return Math.min(h / 2, Theme.rounding * u) }
 
 
     property real t: 0
-    function seg(delay) { return Math.max(0, Math.min(1, (t - delay) / (1 - delay))) }
     NumberAnimation { id: tween; target: root; property: "t"; to: 1; duration: Theme.ms(750); easing.type: Easing.OutCubic }
     function enter() { if (!leaving && !tween.running && t < 1) tween.start() }
 
@@ -55,7 +54,7 @@ Singleton {
         ["clock", "Clock"], ["greeter", "Greeter"], ["music", "Music"], ["battery", "Battery"],
         ["power", "Power buttons"], ["idleHide", "Fade on idle"]
     ]
-    readonly property string statePath: Hypr.home + "/.local/state/quickshell-lock.json"
+    readonly property string statePath: HyprShared.home + "/.local/state/quickshell-lock.json"
     FileView { id: stateFile; path: root.statePath; printErrors: false; blockLoading: true }
     property var cfg: {
         let saved = {}
@@ -66,7 +65,7 @@ Singleton {
         const c = Object.assign({}, cfg)
         c[key] = value
         cfg = c
-        Quickshell.execDetached(["mkdir", "-p", Hypr.home + "/.local/state"])
+        Quickshell.execDetached(["mkdir", "-p", HyprShared.home + "/.local/state"])
         stateFile.setText(JSON.stringify(c, null, 2))
     }
     property bool menuOpen: false
@@ -86,7 +85,7 @@ Singleton {
 
     PamContext {
         id: pam
-        configDirectory: Hypr.dir + "/shared/system/pam"
+        configDirectory: HyprShared.dir + "/shared/system/pam"
         config: "password.conf"
         user: root.user
         onPamMessage: if (responseRequired) respond(root.password)
@@ -130,12 +129,12 @@ Singleton {
     }
 
 
-    readonly property var player: Media.pickPlayer("")
-    NowPlaying { id: nowPlaying; player: root.player }
+    readonly property var player: MediaShared.pickPlayer("")
+    NowPlayingShared { id: nowPlaying; player: root.player }
     MediaView { on: root.t > 0 && root.cfg.music }
     readonly property alias track: nowPlaying
 
-    readonly property bool charging: Power.charging || Power.full
+    readonly property bool charging: PowerShared.charging || PowerShared.full
 
     readonly property string mainScreen: Hyprland.focusedMonitor ? Hyprland.focusedMonitor.name : ""
     property string lockedOn: ""

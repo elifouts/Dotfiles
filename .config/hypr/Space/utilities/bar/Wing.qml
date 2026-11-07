@@ -30,8 +30,8 @@ Item {
     onLiveChanged: if (live !== "") { kind = live }
     property real extraW: dropped ? panelW - natW : 0
     property real drop: dropped ? body.height + 22 : 0
-    Behavior on extraW { Settle { duration: Theme.open } }
-    Behavior on drop { Settle { duration: Theme.open } }
+    Behavior on extraW { SettleShared { duration: Theme.open } }
+    Behavior on drop { SettleShared { duration: Theme.open } }
 
     width: natW + extraW
     height: 28 + drop
@@ -39,7 +39,7 @@ Item {
     transform: Translate { y: -(1 - wing.intro) * 12 }
     SequentialAnimation on intro {
         PauseAnimation { duration: wing.introDelay }
-        Settle { to: 1; duration: Theme.open }
+        SettleShared { to: 1; duration: Theme.open }
     }
 
     function fx(v) { return lean > 0 ? v : width - v }
@@ -76,7 +76,7 @@ Item {
     Connections {
         target: body.item
         ignoreUnknownSignals: true
-        function onRun(cmd) { Hypr.run(cmd) }
+        function onRun(cmd) { HyprShared.run(cmd) }
         function onDone() { Ui.panel = "" }
     }
     Timer { interval: 260; running: wing.dropped && !hh.hovered && !body.item?.holdOpen; onTriggered: Ui.panel = "" }
@@ -93,7 +93,7 @@ Item {
             y: 11 + Math.min(0, parent.height - height - 22)
             width: wing.panelW - 24
             opacity: wing.dropped ? 1 : 0
-            Behavior on opacity { Settle { duration: Theme.open } }
+            Behavior on opacity { SettleShared { duration: Theme.open } }
             source: wing.kind ? "panels/Panel" + wing.kind[0].toUpperCase() + wing.kind.slice(1) + ".qml" : ""
             onLoaded: if ("open" in item) item.open = Qt.binding(() => wing.dropped)
         }

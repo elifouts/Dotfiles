@@ -22,10 +22,6 @@ ShellRoot {
     }
     NumberAnimation { id: tween; target: root; property: "t" }
 
-    function seg(delay) {
-        return Math.max(0, Math.min(1, (t - delay) / (1 - delay)))
-    }
-
     Workspaces {
         id: ex
         active: root.open || root.t > 0
@@ -62,7 +58,7 @@ ShellRoot {
             width: mini.cw
             height: mini.ch
             scale: hov.hovered ? 1.03 : 1
-            Behavior on scale { Settle { duration: Theme.fast } }
+            Behavior on scale { SettleShared { duration: Theme.fast } }
             HoverHandler { id: hov }
 
             ClippingRectangle {
@@ -88,7 +84,7 @@ ShellRoot {
                 drag.onActiveChanged: if (mini.dragEntry && mini.ghost) drag.active ? mini.ghost.dragging = true : mini.ghost.end()
                 onClicked: mini.picked()
             }
-            IconButton {
+            IconButtonShared {
                 id: closeX
                 anchors.right: parent.right
                 anchors.top: parent.top
@@ -101,7 +97,7 @@ ShellRoot {
                 idle: Theme.bright
                 onClicked: mini.removed()
             }
-            IconButton {
+            IconButtonShared {
                 visible: mini.renamable
                 anchors.right: closeX.left
                 anchors.rightMargin: 10
@@ -120,7 +116,7 @@ ShellRoot {
             }
         }
 
-        Label {
+        LabelShared {
             visible: !mini.editing
             width: mini.cw
             elide: Text.ElideRight
@@ -152,7 +148,7 @@ ShellRoot {
         }
     }
 
-    component Heading: Label {
+    component Heading: LabelShared {
         font.pixelSize: 15
         font.bold: true
         color: Theme.bright
@@ -166,7 +162,7 @@ ShellRoot {
     }
 
     function special() {
-        Hypr.dispatch("hl.dsp.workspace.toggle_special(\"magic\")", "togglespecialworkspace magic")
+        HyprShared.dispatch("hl.dsp.workspace.toggle_special(\"magic\")", "togglespecialworkspace magic")
         open = false
     }
 
@@ -289,9 +285,9 @@ ShellRoot {
                 anchors.fill: parent
                 visible: root.t > 0
 
-                Label {
+                LabelShared {
                     id: hint
-                    readonly property real p: root.seg(0.02)
+                    readonly property real p: Theme.seg(root.t, 0.02)
                     opacity: p
                     transform: Translate { y: (1 - hint.p) * -24 }
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -321,7 +317,7 @@ ShellRoot {
                             readonly property int wsId: isNew ? ov.spaces.next : modelData
                             readonly property var windows: ex.windowsOn(wsId)
                             spacing: 10
-                            readonly property real p: root.seg(Math.min(0.3, 0.06 + index * 0.04))
+                            readonly property real p: Theme.seg(root.t, Math.min(0.3, 0.06 + index * 0.04))
                             opacity: p
                             scale: 0.94 + 0.06 * p
                             transform: Translate { y: (1 - cell.p) * 44 }
@@ -364,7 +360,7 @@ ShellRoot {
 
                 Row {
                     id: extras
-                    readonly property real p: root.seg(0.2)
+                    readonly property real p: Theme.seg(root.t, 0.2)
                     opacity: p
                     scale: 0.94 + 0.06 * p
                     transform: Translate { y: (1 - extras.p) * 44 }
@@ -415,8 +411,8 @@ ShellRoot {
                         Flow {
                             width: 272
                             spacing: 12
-                            add: Transition { Settle { property: "opacity"; from: 0; to: 1; duration: Theme.move } }
-                            move: Transition { Settle { properties: "x,y"; duration: Theme.move } }
+                            add: Transition { SettleShared { property: "opacity"; from: 0; to: 1; duration: Theme.move } }
+                            move: Transition { SettleShared { properties: "x,y"; duration: Theme.move } }
                             Repeater {
                                 model: ScriptModel { values: ov.pads }
                                 Mini {
@@ -452,8 +448,8 @@ ShellRoot {
                         Flow {
                             width: 312
                             spacing: 12
-                            add: Transition { Settle { property: "opacity"; from: 0; to: 1; duration: Theme.move } }
-                            move: Transition { Settle { properties: "x,y"; duration: Theme.move } }
+                            add: Transition { SettleShared { property: "opacity"; from: 0; to: 1; duration: Theme.move } }
+                            move: Transition { SettleShared { properties: "x,y"; duration: Theme.move } }
                             Repeater {
                                 model: ScriptModel { values: ex.saved.map(e => e.key) }
                                 Mini {

@@ -35,10 +35,10 @@ Scope {
     property real cpu: 0
 
     Component.onCompleted: { poll.running = true; opening.start() }
-    Settle { id: opening; target: scan; property: "t"; to: 1; duration: Theme.slow }
+    SettleShared { id: opening; target: scan; property: "t"; to: 1; duration: Theme.slow }
     SequentialAnimation {
         id: closing
-        Settle { target: scan; property: "t"; to: 0; duration: Theme.quick; easing.bezierCurve: Theme.leave }
+        SettleShared { target: scan; property: "t"; to: 0; duration: Theme.quick; easing.bezierCurve: Theme.leave }
         ScriptAction { script: scan.done() }
     }
     function close() { if (!closing.running) { opening.stop(); closing.start() } }
@@ -111,7 +111,7 @@ Scope {
     component Meter: Kit.Slide {
         property real target: 0
         value: target
-        Behavior on value { Settle { duration: Theme.ms(400) } }
+        Behavior on value { SettleShared { duration: Theme.ms(400) } }
         MouseArea { anchors.fill: parent }
     }
 
@@ -163,7 +163,7 @@ Scope {
                         caps: false
                         decode: false
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: Qt.formatTime(clock.date, Store.values["space.clock24"] === false ? "h:mm:ss" : "HH:mm:ss")
+                        text: Qt.formatTime(clock.date, StoreShared.values["space.clock24"] === false ? "h:mm:ss" : "HH:mm:ss")
                         font.pixelSize: 34
                         font.weight: Font.ExtraLight
                         font.letterSpacing: 4
@@ -216,20 +216,20 @@ Scope {
                         Read { k: "network"; v: Sys.net }
 
                         Kit.Slide {
-                            glyph: Audio.muted ? "󰝟" : Audio.volume <= 0.5 ? "󰖀" : "󰕾"
-                            value: Audio.volume
+                            glyph: AudioShared.muted ? "󰝟" : AudioShared.volume <= 0.5 ? "󰖀" : "󰕾"
+                            value: AudioShared.volume
 
-                            onMoved: v => Audio.setVolume(v)
+                            onMoved: v => AudioShared.setVolume(v)
                         }
 
                         Meter {
-                            glyph: Power.charging ? "󰂄" : "󰁹"
-                            visible: Power.hasBattery
-                            target: Power.charge
+                            glyph: PowerShared.charging ? "󰂄" : "󰁹"
+                            visible: PowerShared.hasBattery
+                            target: PowerShared.charge
                         }
                     }
                     Block {
-                        visible: !!Media.pickPlayer("")
+                        visible: !!MediaShared.pickPlayer("")
                         side: 1; order: 2; glyph: "󰎈"; title: "now playing"
                         MediaCtl { width: parent.width }
                     }

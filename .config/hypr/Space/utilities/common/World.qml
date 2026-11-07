@@ -101,7 +101,7 @@ Singleton {
 
     FileView {
         id: file
-        path: Hypr.home + "/.config/space/world.json"
+        path: HyprShared.home + "/.config/space/world.json"
         atomicWrites: true
         printErrors: false
         watchChanges: true
@@ -136,7 +136,7 @@ Singleton {
         file.setText(written)
     }
     function commit() {
-        Store.set("space.world", { theme: curTheme, hue: hue, random: random, palette: palette(hue) })
+        StoreShared.set("space.world", { theme: curTheme, hue: hue, random: random, palette: palette(hue) })
     }
 
     function offers() {
@@ -260,12 +260,12 @@ Singleton {
 
     FileView {
         id: scheme
-        path: Hypr.home + "/.config/wal/colorschemes/dark/space.json"
+        path: HyprShared.home + "/.config/wal/colorschemes/dark/space.json"
         atomicWrites: true
         printErrors: false
         onSaved: {
             root.heldReload = Ui.holdTheme
-            Store.applyTheme("dark/space", Ui.holdTheme)
+            StoreShared.applyTheme("dark/space", Ui.holdTheme)
         }
     }
 }

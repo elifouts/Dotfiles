@@ -80,12 +80,12 @@ ShellRoot {
     readonly property real closeT: 1 - exit
     readonly property real closeOpacity: Math.max(0.001, Math.min(1, closeT * 2.5))
 
-    Watched { id: wallFile; path: Hypr.home + "/.cache/wal/wal" }
-    Watched { id: configFile; path: Quickshell.shellPath("../base/startup.lua") }
-    Watched { id: modernConfigFile; path: Quickshell.shellPath("../base/shortcuts.lua") }
-    Watched { id: styleFile; path: Quickshell.shellPath("../base/style.lua") }
-    Watched { id: waybarFile; path: Hypr.home + "/.config/waybar/config" }
-    Watched { id: bootFile; path: Quickshell.shellPath("boot/BootShell.qml") }
+    WatchedShared { id: wallFile; path: HyprShared.home + "/.cache/wal/wal" }
+    WatchedShared { id: configFile; path: Quickshell.shellPath("../base/startup.lua") }
+    WatchedShared { id: modernConfigFile; path: Quickshell.shellPath("../base/shortcuts.lua") }
+    WatchedShared { id: styleFile; path: Quickshell.shellPath("../base/style.lua") }
+    WatchedShared { id: waybarFile; path: HyprShared.home + "/.config/waybar/config" }
+    WatchedShared { id: bootFile; path: Quickshell.shellPath("boot/BootShell.qml") }
 
     readonly property string wallPath: wallFile.text().trim()
     function phase(start, length) {
@@ -223,38 +223,12 @@ ShellRoot {
             WlrLayershell.namespace: "boot-sequence"
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-            Item {
+            Backdrop {
                 anchors.fill: parent
                 opacity: root.reveal * root.closeOpacity
-
-                Image {
-                    id: wallpaper
-                    anchors.fill: parent
-                    visible: false
-                    source: root.wallPath === "" ? "" : "file://" + root.wallPath
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    cache: false
-                    sourceSize.width: parent.width
-                    sourceSize.height: parent.height
-                }
-
-                MultiEffect {
-                    anchors.fill: parent
-                    source: wallpaper
-                    scale: 1 + 0.035 * root.closeT + 0.025 * (1 - root.reveal) * root.closeT
-                    blurEnabled: true
-                    blurMax: 64
-                    blur: 1
-                    brightness: -0.1
-                    saturation: 0.12
-                }
-
-                Rectangle {
-                    anchors.fill: parent
-                    color: "#000000"
-                    opacity: 0.22 * root.closeT
-                }
+                zoom: 0.035 * root.closeT + 0.025 * (1 - root.reveal) * root.closeT
+                dim: 0.22 * root.closeT
+                source: root.wallPath === "" ? "" : "file://" + root.wallPath
             }
 
             Rectangle {

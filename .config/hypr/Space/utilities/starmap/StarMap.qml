@@ -456,7 +456,6 @@ Scope {
     property bool settled: false
     property real landHue: -1
     property real landSeed: World.landSeed
-    function focusWs(id) { Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })") }
     function openSpecial(sp) {
         if (Hyprland.focusedMonitor?.lastIpcObject?.specialWorkspace?.name !== "special:" + sp)
             Hyprland.dispatch("hl.dsp.workspace.toggle_special(\"" + sp + "\")")
@@ -470,7 +469,7 @@ Scope {
             World.place(id, l.pos, l.hue)
             landWs = id
             landHue = l.hue
-            focusWs(id)
+            HyprShared.focusWs(id)
         } else if (l.kind === "planet") {
             const a = String(l.window.address || "")
             if (!a) return false
@@ -479,7 +478,7 @@ Scope {
             Hyprland.dispatch("hl.dsp.focus({ window = \"address:" + (a.startsWith("0x") ? a : "0x" + a) + "\" })")
         } else {
             landWs = l.special ? current : l.id
-            if (l.id !== current && !l.special) focusWs(l.id)
+            if (l.id !== current && !l.special) HyprShared.focusWs(l.id)
             const sp = landing.special ?? l.special
             if (sp?.startsWith("S-")) Quickshell.execDetached(["pypr", "toggle", sp.slice(2)])
             else if (sp) openSpecial(sp)
@@ -704,7 +703,7 @@ Scope {
                     Orb {
                         id: sb
                         property real boost: u.picked ? 1.7 : 1
-                        Behavior on boost { Settle { duration: Theme.ms(500) } }
+                        Behavior on boost { SettleShared { duration: Theme.ms(500) } }
                         visible: !!u.p && u.p.z > 3
                         width: map.starSize(u.p?.s ?? 0) * boost
                         height: width
@@ -895,7 +894,7 @@ Scope {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottomMargin: 26
                 opacity: map.ui * (map.idle ? 0 : 1)
-                Behavior on opacity { Settle { duration: Theme.ms(600) } }
+                Behavior on opacity { SettleShared { duration: Theme.ms(600) } }
                 decode: false
                 text: "mouse  look    wasd  fly    shift  fast    q e  turn    tab  next system    space  home    click  select    esc  land"
                 color: Theme.alpha(Theme.fg, 0.45)
@@ -920,7 +919,7 @@ Scope {
                 orbit: win.main ? 1 : 0
                 endR: map.endR
                 sun: map.sunDir(map.transitLight?.[0], map.transitLight?.[1])
-                moonless: win.modelData === Hypr.moonScreen ? 0 : 1
+                moonless: win.modelData === HyprShared.moonScreen ? 0 : 1
                 moonEnd: win.main && !moonless ? map.moonEnd : Qt.vector4d(0, 0, 0, 0)
             }
 

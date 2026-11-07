@@ -14,7 +14,7 @@ SequentialAnimation {
     PropertyAction { target: rise.target; property: "scale"; value: 0.97 }
     PauseAnimation { duration: Theme.ms(Math.min(rise.index, 8) * 30) }
     ParallelAnimation {
-        Settle { target: rise.target; property: "opacity"; to: 1; duration: Theme.move }
-        Settle { target: rise.target; property: "scale"; to: 1; duration: Theme.move }
+        SettleShared { target: rise.target; property: "opacity"; to: 1; duration: Theme.move }
+        SettleShared { target: rise.target; property: "scale"; to: 1; duration: Theme.move }
     }
 }

@@ -16,11 +16,11 @@ Item {
     readonly property bool open: Ui.panel === panel && Ui.panelScreen === wing?.scr && (tab === "" || Ui.tab === tab)
 
     property real reveal: show ? 1 : 0
-    Behavior on reveal { Settle { duration: Theme.ms(260) } }
+    Behavior on reveal { SettleShared { duration: Theme.ms(260) } }
     visible: reveal > 0.001
     opacity: reveal
     property real natW: row.width + 14 + room
-    Behavior on natW { Settle { id: resize; duration: Theme.open } }
+    Behavior on natW { SettleShared { id: resize; duration: Theme.open } }
     clip: reveal < 0.999 || resize.running
     width: natW * reveal
     height: 28
@@ -66,7 +66,7 @@ Item {
         width: chip.open ? row.width + chip.room : 0
         x: (row.width + chip.room - width) / 2
         color: Theme.accent
-        Behavior on width { Settle { duration: Theme.ms(200) } }
+        Behavior on width { SettleShared { duration: Theme.ms(200) } }
     }
     MouseArea {
         id: area

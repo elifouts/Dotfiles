@@ -15,7 +15,7 @@ import "welcome"
 ShellRoot {
     id: shell
 
-    Component.onCompleted: Store.refresh()
+    Component.onCompleted: StoreShared.refresh()
 
     Variants {
         model: Quickshell.screens
@@ -29,15 +29,15 @@ ShellRoot {
         }
     }
 
-    Osd {}
-    NotificationPopups {}
-    Binding { target: Media; property: "side"; value: "left" }
+    OsdShared {}
+    NotificationPopupsShared {}
+    Binding { target: MediaShared; property: "side"; value: "left" }
 
     component Overlay: LazyLoader {
         function toggle(scr) {
             if (active) return item?.toggle ? item.toggle() : item?.close()
             Ui.panel = ""
-            Ui.target = scr ?? Hypr.focusedScreen()
+            Ui.target = scr ?? HyprShared.focusedScreen()
             active = true
         }
     }
@@ -68,10 +68,10 @@ ShellRoot {
         case "settings": return sheet("core")
         case "colors": return sheet("colors")
         case "motion": return sheet("animations")
-        case "desk": return Ui.editing = Ui.editing ? "" : Hypr.focusedScreen()?.name ?? ""
+        case "desk": return Ui.editing = Ui.editing ? "" : HyprShared.focusedScreen()?.name ?? ""
         case "bar": return Ui.bar = !Ui.bar
         case "world": return World.hop()
-        case "capture": return Ui.openPanel("media", Hypr.focusedScreen(), "capture")
+        case "capture": return Ui.openPanel("media", HyprShared.focusedScreen(), "capture")
         }
     }
     Connections { target: Ui; function onRequest(what) { shell.run(what) } }
@@ -83,7 +83,7 @@ ShellRoot {
     }
     IpcHandler {
         target: "osd"
-        function act(action: string): void { OsdState.act(action) }
-        function brightness(value: real): void { OsdState.brightness(value) }
+        function act(action: string): void { OsdStateShared.act(action) }
+        function brightness(value: real): void { OsdStateShared.brightness(value) }
     }
 }

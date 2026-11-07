@@ -123,7 +123,7 @@ Item {
         width: parent.width
         spacing: 4
 
-        Label {
+        LabelShared {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
@@ -135,7 +135,7 @@ Item {
             font.pixelSize: 12
             color: Theme.fg
         }
-        Label {
+        LabelShared {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             text: "↵ run in kitty    ⇧↵ run in background"

@@ -1,1 +1,0 @@
-../../../shared/core/Hypr.qml

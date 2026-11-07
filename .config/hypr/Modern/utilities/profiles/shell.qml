@@ -9,7 +9,7 @@ import "../common"
 ShellRoot {
     id: root
 
-    readonly property string py: Hypr.util + "/settings/hypr-settings.py"
+    readonly property string py: HyprShared.util + "/settings/hypr-settings.py"
     property var entries: []
     property string live: ""
     readonly property int n: entries.length
@@ -25,19 +25,19 @@ ShellRoot {
 
     readonly property real dot: 52
     readonly property real fan: morph.stage(0.5)
-    Morph { id: morph; sideways: true }
+    MorphShared { id: morph; sideways: true }
 
     function mod(i) { return n ? ((i % n) + n) % n : 0 }
     function wrap(x) { return n ? mod(x + n / 2) - n / 2 : 0 }
 
     onCurChanged: { settle.stop(); settle.to = cur; settle.start(); p = 1; play.restart() }
-    Settle { id: settle; target: root; property: "pos"; duration: Theme.ms(420) }
+    SettleShared { id: settle; target: root; property: "pos"; duration: Theme.ms(420) }
 
     function show() {
         if (active && !leaving) return
         Theme.refresh()
         list.running = true
-        Hypr.locate(s => {
+        HyprShared.locate(s => {
             targetScreen = s
             morph.open()
             warp.restart()
@@ -92,7 +92,7 @@ ShellRoot {
             if (!s) return
             const x = Math.round(s.x + s.width - content.width / 2)
             const y = Math.round(s.y + s.height / 2)
-            Hypr.dispatch("hl.dsp.cursor.move({ x = " + x + ", y = " + y + " })", "movecursor " + x + " " + y)
+            HyprShared.dispatch("hl.dsp.cursor.move({ x = " + x + ", y = " + y + " })", "movecursor " + x + " " + y)
         }
     }
 
@@ -175,12 +175,12 @@ ShellRoot {
                     y: 14
                     spacing: 2
                     opacity: 1 - 0.7 * Math.min(1, Math.abs(root.pos - root.cur))
-                    Label {
+                    LabelShared {
                         text: root.picked ? root.picked.name : ""
                         font.pixelSize: 15
                         color: root.picked && root.picked.id === root.live ? Theme.accent : Theme.bright
                     }
-                    Label {
+                    LabelShared {
                         text: root.picked ? root.picked.bar : ""
                         font.pixelSize: 11
                         color: Theme.dim

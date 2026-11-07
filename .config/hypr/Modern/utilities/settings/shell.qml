@@ -26,7 +26,7 @@ ShellRoot {
 
     FileView {
         id: uiFile
-        path: Hypr.home + "/.local/state/hypr-settings/ui.json"
+        path: HyprShared.home + "/.local/state/hypr-settings/ui.json"
         blockLoading: true
     }
 
@@ -37,8 +37,8 @@ ShellRoot {
             if (ui.page && Schema.PAGES.some(p => p.id === ui.page)) page = ui.page
         } catch (e) {}
         dragFrac = frac
-        targetScreen = usableScreen(Hypr.focusedScreen())
-        Store.refresh()
+        targetScreen = usableScreen(HyprShared.focusedScreen())
+        StoreShared.refresh()
     }
 
     function landscape(scr) {
@@ -70,12 +70,12 @@ ShellRoot {
         interval: 200
         repeat: true
         running: root.active && !root.leaving
-        onTriggered: if (Hypr.located.length === 0) Hypr.locate(root.followCursor)
+        onTriggered: if (HyprShared.located.length === 0) HyprShared.locate(root.followCursor)
     }
 
     function begin() {
         morph.open()
-        Store.opened++
+        StoreShared.opened++
         ld.item?.forceActiveFocus()
     }
 
@@ -87,7 +87,7 @@ ShellRoot {
     }
 
     function moveSelection(d) {
-        if (Store.picker) { Store.picker.step(d); return }
+        if (StoreShared.picker) { StoreShared.picker.step(d); return }
         if (!ld.item) return
         const s = ld.item.pScrollAnim, scroller = ld.item.pScroller
         s.stop()
@@ -105,18 +105,18 @@ ShellRoot {
         const to = Schema.PAGES.findIndex(p => p.id === id)
         pageDir = to >= from ? 1 : -1
         page = id
-        if (!peek) Store.saveUi("page", id)
+        if (!peek) StoreShared.saveUi("page", id)
         ld.item?.forceActiveFocus()
     }
 
-    Panel { id: morph; jumps: true; openMs: 380; closeMs: 240; onOpened: Store.refresh(); onBegin: root.begin() }
+    Panel { id: morph; jumps: true; openMs: 380; closeMs: 240; onOpened: StoreShared.refresh(); onBegin: root.begin() }
 
     IpcHandler {
         target: "settings"
-        function toggle(): void { Hypr.locate(root.toggleOn) }
-        function open(): void { Hypr.locate(root.showOn) }
+        function toggle(): void { HyprShared.locate(root.toggleOn) }
+        function open(): void { HyprShared.locate(root.showOn) }
         function close(): void { root.close() }
-        function page(id: string): void { root.selectPage(id); root.showOn(Hypr.focusedScreen()) }
+        function page(id: string): void { root.selectPage(id); root.showOn(HyprShared.focusedScreen()) }
         function peek(id: string): void {
             if (!root.flippedFrom) root.flippedFrom = root.page
             root.selectPage(id, true)
@@ -125,7 +125,7 @@ ShellRoot {
     }
 
     function controlShown(c, values, caps, waybar) {
-        if (c.type === "waybar" && ((Store.bar === "quickshell" ? Store.quickshell : waybar).styles || []).length === 0) return false
+        if (c.type === "waybar" && ((StoreShared.bar === "quickshell" ? StoreShared.quickshell : waybar).styles || []).length === 0) return false
         return Schema.shown(c, values, caps)
     }
 
@@ -202,7 +202,7 @@ ShellRoot {
                         else if (k === Qt.Key_Right || k === Qt.Key_L || k === Qt.Key_Tab) root.stepPage(1)
                         else if (k === Qt.Key_Down || k === Qt.Key_J) root.moveSelection(1)
                         else if (k === Qt.Key_Up || k === Qt.Key_K) root.moveSelection(-1)
-                        else if ((k === Qt.Key_Return || k === Qt.Key_Enter || k === Qt.Key_Space) && Store.picker) Store.picker.pick()
+                        else if ((k === Qt.Key_Return || k === Qt.Key_Enter || k === Qt.Key_Space) && StoreShared.picker) StoreShared.picker.pick()
                         else { event.accepted = false; return }
                         event.accepted = true
                     }
@@ -222,7 +222,7 @@ ShellRoot {
                         MouseArea { anchors.fill: parent }
 
                         Rectangle {
-                            readonly property real rounding: Store.values["config.decoration.rounding"] ?? 10
+                            readonly property real rounding: StoreShared.values["config.decoration.rounding"] ?? 10
                             x: -(rounding + 2)
                             width: parent.width + rounding + 2
                             height: parent.height
@@ -237,7 +237,7 @@ ShellRoot {
                             anchors.leftMargin: 16
                             anchors.rightMargin: 18
 
-                            Label {
+                            LabelShared {
                                 id: title
                                 y: 16
                                 text: root.current.label
@@ -258,7 +258,7 @@ ShellRoot {
                                 }
                             }
 
-                            Label {
+                            LabelShared {
                                 anchors.right: parent.right
                                 anchors.verticalCenter: title.verticalCenter
                                 text: "Hyprland · Alt+S"
@@ -308,13 +308,13 @@ ShellRoot {
                                             id: sec
                                             required property var modelData
                                             required property int index
-                                            visible: root.sectionVisible(modelData, Store.values, Store.caps, Store.waybar)
+                                            visible: root.sectionVisible(modelData, StoreShared.values, StoreShared.caps, StoreShared.waybar)
                                             width: body.width
                                             spacing: 6
 
-                                            Rise { target: sec; index: sec.index; replay: Store.opened }
+                                            Rise { target: sec; index: sec.index; replay: StoreShared.opened }
 
-                                            Label {
+                                            LabelShared {
                                                 x: 4
                                                 text: sec.modelData.label.toUpperCase()
                                                 font.pixelSize: 10
@@ -339,8 +339,8 @@ ShellRoot {
                                                             id: row
                                                             required property var modelData
                                                             required property int index
-                                                            readonly property bool on: root.controlShown(modelData, Store.values, Store.caps, Store.waybar)
-                                                            readonly property int lead: root.firstShown(sec.modelData.controls, Store.values, Store.caps, Store.waybar)
+                                                            readonly property bool on: root.controlShown(modelData, StoreShared.values, StoreShared.caps, StoreShared.waybar)
+                                                            readonly property int lead: root.firstShown(sec.modelData.controls, StoreShared.values, StoreShared.caps, StoreShared.waybar)
                                                             property real reveal: on ? 1 : 0
                                                             Behavior on reveal { NumberAnimation { duration: Theme.ms(220); easing.type: Easing.OutCubic } }
 
@@ -442,7 +442,7 @@ ShellRoot {
                                     let next = Math.max(root.minFrac, f)
                                     if (Math.abs(next - root.defaultFrac) * root.screenW < 14) next = root.defaultFrac
                                     root.frac = next
-                                    Store.saveUi("wfrac", next)
+                                    StoreShared.saveUi("wfrac", next)
                                 }
                             }
                         }

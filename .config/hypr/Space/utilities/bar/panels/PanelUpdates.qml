@@ -1,1 +1,1 @@
-../../../../shared/menus/UpdateMenu.qml
+../../../../shared/menus/UpdateMenuShared.qml

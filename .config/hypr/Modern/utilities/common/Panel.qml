@@ -1,6 +1,6 @@
 import QtQuick
 
-Morph {
+MorphShared {
     id: p
 
     property var screen: null
@@ -12,7 +12,7 @@ Morph {
     signal moved()
 
     function show(scr) {
-        scr = scr ?? Hypr.focusedScreen()
+        scr = scr ?? HyprShared.focusedScreen()
         if (scr !== screen && (!active || jumps)) {
             reset()
             screen = scr
@@ -23,7 +23,7 @@ Morph {
         begin()
     }
 
-    Component.onCompleted: if (!screen) screen = Hypr.focusedScreen()
+    Component.onCompleted: if (!screen) screen = HyprShared.focusedScreen()
     onActiveChanged: {
         if (active) { warm = true; cool.stop() }
         else cool.restart()

@@ -27,7 +27,7 @@ Item {
         glide.to = Math.round(pos) + d
         glide.start()
     }
-    Settle { id: glide; target: ring; property: "pos"; duration: Theme.ms(320) }
+    SettleShared { id: glide; target: ring; property: "pos"; duration: Theme.ms(320) }
 
     function local(i) {
         const s = 0.35
@@ -98,7 +98,7 @@ Item {
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
             }
 
-            Label {
+            LabelShared {
                 anchors.centerIn: parent
                 text: b.modelData.icon
                 font.pixelSize: Math.round(ring.btn * 0.36)
@@ -108,7 +108,7 @@ Item {
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
             }
 
-            Hover {
+            HoverShared {
                 id: area
                 anchors.fill: parent
                 onEntered: if (ring.moved) ring.picked(b.index)

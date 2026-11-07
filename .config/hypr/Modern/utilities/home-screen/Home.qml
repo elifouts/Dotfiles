@@ -58,10 +58,10 @@ Scope {
     property real gpuMemTotal: 1
     property real gpuTemp: 0
 
-    readonly property bool dnd: Notifs.dnd
-    readonly property var notifs: Notifs.notifs
-    readonly property int notifCount: Notifs.count
-    Binding { target: Notifs; property: "quiet"; value: root.shown }
+    readonly property bool dnd: NotifsShared.dnd
+    readonly property var notifs: NotifsShared.notifs
+    readonly property int notifCount: NotifsShared.count
+    Binding { target: NotifsShared; property: "quiet"; value: root.shown }
 
     property int calY: new Date().getFullYear()
     property int calM: new Date().getMonth()
@@ -78,15 +78,11 @@ Scope {
     }
 
     readonly property var player: {
-        const list = Media.players
+        const list = MediaShared.players
         return list.find(p => p.isPlaying) ?? list[0] ?? null
     }
-    NowPlaying { id: track; player: root.player }
+    NowPlayingShared { id: track; player: root.player }
     MediaView { on: root.shown && !root.closing }
-
-    function seg(delay) {
-        return Math.max(0, Math.min(1, (t - delay) / (1 - delay)))
-    }
 
     function animateTo(target) {
         tween.stop()
@@ -116,7 +112,7 @@ Scope {
         }
         if (locating) return
         locating = true
-        Hypr.locate(open)
+        HyprShared.locate(open)
     }
 
     property bool locating: false
@@ -124,7 +120,7 @@ Scope {
         locating = false
         if (shown) return
         t = 0
-        Notifs.popups = []
+        NotifsShared.popups = []
         const now = new Date()
         calY = now.getFullYear()
         calM = now.getMonth()
@@ -173,7 +169,7 @@ Scope {
         onTriggered: {
             const c = root.pendingCmd
             root.pendingCmd = ""
-            if (c !== "") Hypr.run(c)
+            if (c !== "") HyprShared.run(c)
             root.done()
         }
     }
@@ -183,7 +179,7 @@ Scope {
         close()
     }
 
-    function clearAll() { Notifs.clearAll() }
+    function clearAll() { NotifsShared.clearAll() }
 
     function fmtUptime(s) {
         const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60)
@@ -272,7 +268,7 @@ Scope {
         property string title: ""
         property real delay: 0
         default property alias content: body.data
-        readonly property real p: root.seg(delay)
+        readonly property real p: Theme.seg(root.t, delay)
 
         opacity: p
         scale: 0.94 + 0.06 * p
@@ -284,7 +280,7 @@ Scope {
             color: root.glass
         }
 
-        Label {
+        LabelShared {
             x: 24 * root.u
             y: 18 * root.u
             text: g.title
@@ -310,7 +306,7 @@ Scope {
         height: size
         scale: ima.pressed ? 0.85 : (ima.containsMouse ? 1.12 : 1)
         Behavior on scale { NumberAnimation { duration: Theme.ms(180); easing.type: Easing.OutBack } }
-        Label {
+        LabelShared {
             anchors.centerIn: parent
             text: ib.glyph
             font.pixelSize: ib.size * 0.5
@@ -353,14 +349,14 @@ Scope {
                     PathAngleArc { centerX: dial.width / 2; centerY: dial.height / 2; radiusX: dial.width / 2 - 5 * root.u; radiusY: dial.height / 2 - 5 * root.u; startAngle: -90; sweepAngle: 359.9 * Math.max(0.001, Math.min(1, ga.shown)) }
                 }
             }
-            Label {
+            LabelShared {
                 anchors.centerIn: parent
                 text: ga.valueText
                 font.pixelSize: 14 * root.u
                 color: Theme.bright
             }
         }
-        Label {
+        LabelShared {
             anchors.horizontalCenter: parent.horizontalCenter
             y: 74 * root.u
             text: ga.label
@@ -385,13 +381,13 @@ Scope {
             color: dma.containsMouse ? Theme.alpha(Theme.bright, 0.18) : Theme.alpha(Theme.bright, 0.08)
             Behavior on color { ColorAnimation { duration: Theme.ms(150) } }
         }
-        Label {
+        LabelShared {
             anchors.centerIn: parent
             text: db.glyph
             font.pixelSize: 24 * root.u
             color: Theme.bright
         }
-        Label {
+        LabelShared {
             anchors.horizontalCenter: parent.horizontalCenter
             y: -26 * root.u
             text: db.label
@@ -426,20 +422,20 @@ Scope {
 
                 Column {
                     id: sideClock
-                    readonly property real p: root.seg(0.1)
+                    readonly property real p: Theme.seg(root.t, 0.1)
                     anchors.centerIn: parent
                     opacity: p
                     transform: Translate { y: (1 - sideClock.p) * 16 * side.su }
                     spacing: 2 * side.su
 
-                    Label {
+                    LabelShared {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: Qt.formatTime(clock.date, "HH:mm")
                         font.pixelSize: 110 * side.su
                         font.weight: Font.Light
                         color: Theme.bright
                     }
-                    Label {
+                    LabelShared {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: Qt.formatDate(clock.date, "dddd, d MMMM")
                         font.pixelSize: 20 * side.su
@@ -475,19 +471,19 @@ Scope {
                 const k = event.key
                 const pl = root.player
                 if (k === Qt.Key_Escape) root.close()
-                else if (k === Qt.Key_L) root.run(Power.cmd("lock"))
-                else if (k === Qt.Key_E) root.run(Power.cmd("logout"))
-                else if (k === Qt.Key_R) root.run(Power.cmd("reboot"))
-                else if (k === Qt.Key_S) root.run(Power.cmd("poweroff"))
-                else if (k === Qt.Key_Space && pl) Media.toggle(pl)
-                else if (k === Qt.Key_Right && pl) Media.skip(pl, 1)
-                else if (k === Qt.Key_Left && pl) Media.skip(pl, -1)
-                else if (k === Qt.Key_Up) Audio.setVolume(Audio.volume + 0.05)
-                else if (k === Qt.Key_Down) Audio.setVolume(Audio.volume - 0.05)
-                else if (k === Qt.Key_M) Audio.toggleMute()
+                else if (k === Qt.Key_L) root.run(PowerShared.cmd("lock"))
+                else if (k === Qt.Key_E) root.run(PowerShared.cmd("logout"))
+                else if (k === Qt.Key_R) root.run(PowerShared.cmd("reboot"))
+                else if (k === Qt.Key_S) root.run(PowerShared.cmd("poweroff"))
+                else if (k === Qt.Key_Space && pl) MediaShared.toggle(pl)
+                else if (k === Qt.Key_Right && pl) MediaShared.skip(pl, 1)
+                else if (k === Qt.Key_Left && pl) MediaShared.skip(pl, -1)
+                else if (k === Qt.Key_Up) AudioShared.setVolume(AudioShared.volume + 0.05)
+                else if (k === Qt.Key_Down) AudioShared.setVolume(AudioShared.volume - 0.05)
+                else if (k === Qt.Key_M) AudioShared.toggleMute()
                 else if (k === Qt.Key_PageUp || k === Qt.Key_BracketLeft) root.shiftMonth(-1)
                 else if (k === Qt.Key_PageDown || k === Qt.Key_BracketRight) root.shiftMonth(1)
-                else if (k === Qt.Key_D) Notifs.dnd = !Notifs.dnd
+                else if (k === Qt.Key_D) NotifsShared.dnd = !NotifsShared.dnd
                 else if (k === Qt.Key_C) root.clearAll()
             }
 
@@ -505,21 +501,21 @@ Scope {
 
             Column {
                 id: clockBlock
-                readonly property real p: root.seg(0.02)
+                readonly property real p: Theme.seg(root.t, 0.02)
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: 64 * root.u
                 opacity: p
                 transform: Translate { y: (1 - clockBlock.p) * -24 * root.u }
                 spacing: 2 * root.u
 
-                Label {
+                LabelShared {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Qt.formatTime(clock.date, "HH:mm")
                     font.pixelSize: 128 * root.u
                     font.weight: Font.Light
                     color: Theme.bright
                 }
-                Label {
+                LabelShared {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Qt.formatDate(clock.date, "dddd, d MMMM")
                     font.pixelSize: 22 * root.u
@@ -547,7 +543,7 @@ Scope {
                         y: -35 * root.u
                         width: 28 * root.u
                         height: 28 * root.u
-                        Label {
+                        LabelShared {
                             anchors.centerIn: parent
                             text: "\uf1bc"
                             font.pixelSize: 20 * root.u
@@ -557,10 +553,10 @@ Scope {
                             Behavior on opacity { NumberAnimation { duration: Theme.ms(120) } }
                             Behavior on scale { NumberAnimation { duration: Theme.ms(120) } }
                         }
-                        Hover {
+                        HoverShared {
                             id: spotifyMa
                             anchors.fill: parent
-                            onClicked: { root.close(); Media.openSpotify() }
+                            onClicked: { root.close(); MediaShared.openSpotify() }
                         }
                     }
 
@@ -568,13 +564,13 @@ Scope {
                         visible: !media.pl
                         anchors.centerIn: parent
                         spacing: 8 * root.u
-                        Label {
+                        LabelShared {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "\uf001"
                             font.pixelSize: 34 * root.u
                             color: Theme.alpha(Theme.bright, 0.33)
                         }
-                        Label {
+                        LabelShared {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "Not playing"
                             font.pixelSize: 14 * root.u
@@ -586,7 +582,7 @@ Scope {
                         anchors.fill: parent
                         visible: media.pl !== null
 
-                        Cover {
+                        CoverShared {
                             id: art
                             width: 100 * root.u
                             height: 100 * root.u
@@ -601,14 +597,14 @@ Scope {
                             width: parent.width - x
                             anchors.verticalCenter: art.verticalCenter
                             spacing: 4 * root.u
-                            SwapText {
+                            SwapTextShared {
                                 width: parent.width
                                 value: track.title
                                 elide: Text.ElideRight
                                 font.pixelSize: 17 * root.u
                                 color: Theme.bright
                             }
-                            SwapText {
+                            SwapTextShared {
                                 width: parent.width
                                 value: track.artist
                                 elide: Text.ElideRight
@@ -617,7 +613,7 @@ Scope {
                             }
                         }
 
-                        Seek {
+                        SeekShared {
                             y: 126 * root.u
                             width: parent.width
                             player: media.pl
@@ -629,9 +625,9 @@ Scope {
                             anchors.horizontalCenter: parent.horizontalCenter
                             y: 176 * root.u
                             spacing: 18 * root.u
-                            SkipButton { anchors.verticalCenter: parent.verticalCenter; player: media.pl; dir: -1; size: 52 * root.u; glyphSize: 22 * root.u; tint: Theme.bright }
-                            PlayButton { anchors.verticalCenter: parent.verticalCenter; player: media.pl; size: 52 * root.u }
-                            SkipButton { anchors.verticalCenter: parent.verticalCenter; player: media.pl; dir: 1; size: 52 * root.u; glyphSize: 22 * root.u; tint: Theme.bright }
+                            SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: media.pl; dir: -1; size: 52 * root.u; glyphSize: 22 * root.u; tint: Theme.bright }
+                            PlayButtonShared { anchors.verticalCenter: parent.verticalCenter; player: media.pl; size: 52 * root.u }
+                            SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: media.pl; dir: 1; size: 52 * root.u; glyphSize: 22 * root.u; tint: Theme.bright }
                         }
 
                         Music.Visualizer {
@@ -639,7 +635,7 @@ Scope {
                             width: parent.width
                             height: 34 * root.u
                             running: root.shown && !root.closing && media.pl !== null
-                            intro: root.seg(0.2)
+                            intro: Theme.seg(root.t, 0.2)
                         }
                     }
                 }
@@ -702,7 +698,7 @@ Scope {
                                     visible: cell.today
                                     color: Theme.soft(Theme.accent)
                                 }
-                                Label {
+                                LabelShared {
                                     anchors.centerIn: parent
                                     text: cell.modelData > 0 ? cell.modelData : ""
                                     font.pixelSize: 14 * root.u
@@ -741,14 +737,14 @@ Scope {
                             radius: root.rr(8)
                             color: Theme.alpha(Theme.bright, 0.07)
 
-                            Label {
+                            LabelShared {
                                 x: 10 * root.u
                                 y: 8 * root.u
                                 text: "RAM"
                                 font.pixelSize: 10 * root.u
                                 color: Theme.alpha(Theme.bright, 0.5)
                             }
-                            Label {
+                            LabelShared {
                                 x: 10 * root.u
                                 y: 22 * root.u
                                 width: parent.width - 20 * root.u
@@ -771,7 +767,7 @@ Scope {
                                     color: Theme.accent2
                                 }
                             }
-                            Label {
+                            LabelShared {
                                 x: 10 * root.u
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 7 * root.u
@@ -787,14 +783,14 @@ Scope {
                             radius: root.rr(8)
                             color: Theme.alpha(Theme.bright, 0.07)
 
-                            Label {
+                            LabelShared {
                                 x: 10 * root.u
                                 y: 8 * root.u
                                 text: root.hasGpu ? "VRAM" : "MACHINE"
                                 font.pixelSize: 10 * root.u
                                 color: Theme.alpha(Theme.bright, 0.5)
                             }
-                            Label {
+                            LabelShared {
                                 x: 10 * root.u
                                 y: 22 * root.u
                                 text: root.hasGpu ? root.gpuMemUsed.toFixed(1) + " / " + root.gpuMemTotal.toFixed(1) + " GB" : root.host
@@ -818,7 +814,7 @@ Scope {
                                     color: Theme.info
                                 }
                             }
-                            Label {
+                            LabelShared {
                                 x: 10 * root.u
                                 y: 37 * root.u
                                 width: parent.width - 20 * root.u
@@ -828,7 +824,7 @@ Scope {
                                 font.pixelSize: 10 * root.u
                                 color: Theme.alpha(Theme.bright, 0.67)
                             }
-                            Label {
+                            LabelShared {
                                 x: 10 * root.u
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 7 * root.u
@@ -847,21 +843,21 @@ Scope {
                         anchors.bottom: parent.bottom
                         width: parent.width
                         spacing: 6 * root.u
-                        Label {
+                        LabelShared {
                             width: parent.width
                             text: root.cpuModel
                             elide: Text.ElideRight
                             font.pixelSize: 12 * root.u
                             color: Theme.alpha(Theme.bright, 0.8)
                         }
-                        Label {
+                        LabelShared {
                             width: parent.width
                             text: (root.hasGpu ? root.gpuName + "  ·  " : "") + (root.memTotal / 1048576).toFixed(0) + " GB"
                             elide: Text.ElideRight
                             font.pixelSize: 12 * root.u
                             color: Theme.alpha(Theme.bright, 0.5)
                         }
-                        Label {
+                        LabelShared {
                             width: parent.width
                             text: "Up " + root.fmtUptime(root.uptime) + (root.cpuTemp > 0 ? "  ·  " + Math.round(root.cpuTemp) + "°C" : "")
                             font.pixelSize: 12 * root.u
@@ -882,10 +878,10 @@ Scope {
                             title: "Volume"
                             delay: 0.24
 
-                            Label {
+                            LabelShared {
                                 anchors.right: parent.right
                                 y: -32 * root.u
-                                text: Audio.muted ? "Muted" : Math.round(Audio.volume * 100) + "%"
+                                text: AudioShared.muted ? "Muted" : Math.round(AudioShared.volume * 100) + "%"
                                 font.pixelSize: 13 * root.u
                                 color: Theme.alpha(Theme.bright, 0.6)
                             }
@@ -902,16 +898,16 @@ Scope {
                                     clip: true
                                     Rectangle {
                                         height: parent.height
-                                        width: Math.max(parent.height, parent.width * (Audio.muted ? 0 : Audio.volume))
+                                        width: Math.max(parent.height, parent.width * (AudioShared.muted ? 0 : AudioShared.volume))
                                         radius: height / 2
                                         color: Theme.soft(Theme.info)
                                         Behavior on width { enabled: !volDrag.pressed; NumberAnimation { duration: Theme.ms(120); easing.type: Easing.OutCubic } }
                                     }
                                 }
-                                Label {
+                                LabelShared {
                                     x: 13 * root.u
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: Audio.muted || Audio.volume === 0 ? "\uf026" : "\uf028"
+                                    text: AudioShared.muted || AudioShared.volume === 0 ? "\uf026" : "\uf028"
                                     font.pixelSize: 15 * root.u
                                     color: Theme.on(Theme.info)
                                 }
@@ -919,13 +915,13 @@ Scope {
                                     id: volDrag
                                     anchors.fill: parent
                                     preventStealing: true
-                                    onPressed: mouse => Audio.setVolume(mouse.x / width)
-                                    onPositionChanged: mouse => { if (pressed) Audio.setVolume(mouse.x / width) }
+                                    onPressed: mouse => AudioShared.setVolume(mouse.x / width)
+                                    onPositionChanged: mouse => { if (pressed) AudioShared.setVolume(mouse.x / width) }
                                 }
                                 MouseArea {
                                     width: parent.height
                                     height: parent.height
-                                    onClicked: Audio.toggleMute()
+                                    onClicked: AudioShared.toggleMute()
                                 }
                             }
                         }
@@ -933,7 +929,7 @@ Scope {
                         MouseArea {
                             anchors.fill: parent
                             acceptedButtons: Qt.NoButton
-                            onWheel: wheel => Audio.setVolume(Audio.volume + wheel.angleDelta.y / 120 * 0.03)
+                            onWheel: wheel => AudioShared.setVolume(AudioShared.volume + wheel.angleDelta.y / 120 * 0.03)
                         }
                     }
 
@@ -951,7 +947,7 @@ Scope {
                                 size: 28 * root.u
                                 glyph: root.dnd ? "\uf1f6" : "\uf0f3"
                                 tint: root.dnd ? Theme.accent2 : Theme.bright
-                                onClicked: Notifs.dnd = !Notifs.dnd
+                                onClicked: NotifsShared.dnd = !NotifsShared.dnd
                             }
                             RoundIcon {
                                 size: 28 * root.u
@@ -965,13 +961,13 @@ Scope {
                             anchors.centerIn: parent
                             visible: root.notifCount === 0
                             spacing: 8 * root.u
-                            Label {
+                            LabelShared {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: root.dnd ? "\uf1f6" : "\uf0f3"
                                 font.pixelSize: 34 * root.u
                                 color: Theme.alpha(Theme.bright, 0.33)
                             }
-                            Label {
+                            LabelShared {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: root.dnd ? "Do Not Disturb" : "All clear"
                                 font.pixelSize: 14 * root.u
@@ -987,7 +983,7 @@ Scope {
                             boundsBehavior: Flickable.StopAtBounds
                             model: ScriptModel { values: root.notifs }
 
-                            delegate: NotificationCard {
+                            delegate: NotificationCardShared {
                                 required property var modelData
                                 width: notifList.width
                                 n: modelData
@@ -1038,10 +1034,10 @@ Scope {
                     parent: dock
                     anchors.centerIn: parent
                     spacing: 16 * root.u
-                    DockButton { glyph: "\uf023"; label: "Lock  L"; cmd: Power.cmd("lock") }
-                    DockButton { glyph: "\uf08b"; label: "Log Out  E"; cmd: Power.cmd("logout") }
-                    DockButton { glyph: "\uf021"; label: "Restart  R"; cmd: Power.cmd("reboot") }
-                    DockButton { glyph: "\uf011"; label: "Shut Down  S"; cmd: Power.cmd("poweroff") }
+                    DockButton { glyph: "\uf023"; label: "Lock  L"; cmd: PowerShared.cmd("lock") }
+                    DockButton { glyph: "\uf08b"; label: "Log Out  E"; cmd: PowerShared.cmd("logout") }
+                    DockButton { glyph: "\uf021"; label: "Restart  R"; cmd: PowerShared.cmd("reboot") }
+                    DockButton { glyph: "\uf011"; label: "Shut Down  S"; cmd: PowerShared.cmd("poweroff") }
                 }
             }
         }

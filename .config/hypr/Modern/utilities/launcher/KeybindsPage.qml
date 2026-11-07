@@ -11,13 +11,13 @@ Item {
     property real intro: 1
     property string query: ""
 
-    Watched {
+    WatchedShared {
         id: source
         path: Quickshell.shellPath("../base/shortcuts.lua")
     }
-    Watched {
+    WatchedShared {
         id: common
-        path: Hypr.dir + "/binds.lua"
+        path: HyprShared.dir + "/binds.lua"
     }
 
     readonly property var parsed: Binds.parse(common.text() + "\n" + source.text())
@@ -104,7 +104,7 @@ Item {
             width: parent.width
             spacing: 2
 
-            Label {
+            LabelShared {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -113,7 +113,7 @@ Item {
                 font.pixelSize: 13
                 color: Theme.bright
             }
-            Label {
+            LabelShared {
                 anchors.horizontalCenter: parent.horizontalCenter
                 readonly property int count: page.matches ? page.matches.length : page.cur ? page.cur.binds.length : 0
                 text: page.matches ? count + (count === 1 ? " match" : " matches") : page.cur ? count + (count === 1 ? " bind" : " binds") : ""
@@ -154,7 +154,7 @@ Item {
             ScriptAction { script: { page.shown = page.cur; list.contentY = 0; list.shift = 16 * page.dir } }
             ParallelAnimation {
                 NumberAnimation { target: rows; property: "opacity"; to: 1; duration: Theme.ms(220); easing.type: Easing.OutCubic }
-                Settle { target: list; property: "shift"; to: 0; duration: Theme.move }
+                SettleShared { target: list; property: "shift"; to: 0; duration: Theme.move }
             }
         }
 
@@ -188,7 +188,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 4
 
-                        Label {
+                        LabelShared {
                             visible: !!row.modelData.icon
                             anchors.verticalCenter: parent.verticalCenter
                             width: 18
@@ -209,7 +209,7 @@ Item {
                                 border.width: 1
                                 border.color: Theme.alpha(Theme.accent, 0.3)
 
-                                Label {
+                                LabelShared {
                                     id: label
                                     anchors.centerIn: parent
                                     text: parent.modelData
@@ -220,7 +220,7 @@ Item {
                         }
                     }
 
-                    Label {
+                    LabelShared {
                         anchors.left: chips.right
                         anchors.leftMargin: 10
                         anchors.right: parent.right
@@ -237,7 +237,7 @@ Item {
         }
     }
 
-    Label {
+    LabelShared {
         anchors.centerIn: list
         visible: page.cats.length === 0 || (page.matches !== null && page.matches.length === 0)
         text: page.cats.length === 0 ? "No binds found in shortcuts.lua" : "No binds match \u201c" + page.query + "\u201d"

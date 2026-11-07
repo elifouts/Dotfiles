@@ -52,7 +52,7 @@ Rectangle {
         height: 20
         visible: row.glyph !== "" || row.iconSource !== ""
 
-        Label {
+        LabelShared {
             anchors.centerIn: parent
             visible: row.iconSource === ""
             text: row.glyph
@@ -107,14 +107,14 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         spacing: 1
 
-        Label {
+        LabelShared {
             width: parent.width
             text: row.label
             elide: Text.ElideRight
             font.pixelSize: 13
             color: row.active ? Theme.ink : row.hot ? Theme.bright : Theme.fg
         }
-        Label {
+        LabelShared {
             width: parent.width
             visible: row.sub !== ""
             text: row.sub
@@ -124,7 +124,7 @@ Rectangle {
         }
     }
 
-    Label {
+    LabelShared {
         id: tail
         anchors.right: parent.right
         anchors.rightMargin: 16
@@ -134,7 +134,7 @@ Rectangle {
         color: row.active ? Theme.ink : Theme.dim
     }
 
-    Hover {
+    HoverShared {
         id: area
         anchors.fill: parent
         enabled: row.enabledRow
@@ -165,14 +165,14 @@ Rectangle {
             Behavior on opacity { NumberAnimation { duration: Theme.ms(160) } }
             Behavior on scale { NumberAnimation { duration: Theme.ms(180); easing.type: Easing.OutBack } }
 
-            Label {
+            LabelShared {
                 anchors.centerIn: parent
                 text: "\uf013"
                 font.pixelSize: 12
                 color: row.active ? Theme.ink : cogArea.containsMouse ? Theme.bright : Theme.dim
             }
 
-            Hover {
+            HoverShared {
                 id: cogArea
                 anchors.fill: parent
                 anchors.margins: -2

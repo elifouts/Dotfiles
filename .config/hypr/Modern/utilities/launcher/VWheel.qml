@@ -95,7 +95,7 @@ Item {
                     color: Theme.alpha(Theme.along([Theme.fg, Theme.soft(Theme.accent)], row.ease), 0.045 + 0.795 * row.ease)
                 }
 
-                Label {
+                LabelShared {
                     id: name
                     anchors.left: parent.left
                     anchors.leftMargin: 14
@@ -107,7 +107,7 @@ Item {
                     color: Theme.along([Theme.fg, Theme.ink], row.ease)
                 }
 
-                Label {
+                LabelShared {
                     anchors.left: name.right
                     anchors.leftMargin: 12
                     anchors.right: parent.right

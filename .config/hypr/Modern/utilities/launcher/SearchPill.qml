@@ -44,7 +44,7 @@ Item {
         Behavior on color { ColorAnimation { duration: Theme.fast } }
     }
 
-    Label {
+    LabelShared {
         x: (pill.height - width) / 2
         anchors.verticalCenter: parent.verticalCenter
         text: ""
@@ -92,7 +92,7 @@ Item {
             transform: Translate { x: -14 * (1 - pill.stage(0.35)) }
         }
 
-        Label {
+        LabelShared {
             id: hintText
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
@@ -105,7 +105,7 @@ Item {
         }
     }
 
-    Hover {
+    HoverShared {
         id: area
         anchors.fill: parent
         enabled: !pill.expanded

@@ -1,0 +1,1 @@
+../../../shared/core/HyprShared.qml

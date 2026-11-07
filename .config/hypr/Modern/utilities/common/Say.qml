@@ -1,5 +1,5 @@
 import QtQuick
 
-Label {
+LabelShared {
     property int replay
 }

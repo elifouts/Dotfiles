@@ -18,7 +18,7 @@ Item {
         implicitSize: 18
         source: h.icon
     }
-    Label {
+    LabelShared {
         anchors.left: appIcon.visible ? appIcon.right : parent.left
         anchors.leftMargin: appIcon.visible ? 10 : 0
         anchors.right: noteText.left
@@ -28,7 +28,7 @@ Item {
         font.pixelSize: 16
         color: Theme.bright
     }
-    Label {
+    LabelShared {
         id: noteText
         anchors.right: tail.left
         anchors.rightMargin: tail.width > 0 ? 10 : 0

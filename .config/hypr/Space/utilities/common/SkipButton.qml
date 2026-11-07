@@ -1,1 +1,0 @@
-../../../shared/media/SkipButton.qml

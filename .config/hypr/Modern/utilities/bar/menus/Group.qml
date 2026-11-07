@@ -13,7 +13,7 @@ Column {
     width: parent ? parent.width : 0
     spacing: 6
 
-    Label {
+    LabelShared {
         x: 4
         visible: sec.title !== ""
         text: sec.title.toUpperCase()
@@ -40,7 +40,7 @@ Column {
             }
         }
 
-        Label {
+        LabelShared {
             anchors.centerIn: parent
             visible: sec.empty !== "" && list.implicitHeight < 4
             text: sec.empty

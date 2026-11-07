@@ -7,7 +7,7 @@
       1
     ],
     "preset": "snappy",
-    "speed": 1.7,
+    "speed": 2.5,
     "window": "popin 60%",
     "workspace": "slide"
   },
@@ -48,7 +48,7 @@
     },
     "general": {
       "border_size": 0,
-      "gaps_in": 0,
+      "gaps_in": 2,
       "gaps_out": 0,
       "gaps_workspaces": 0
     }

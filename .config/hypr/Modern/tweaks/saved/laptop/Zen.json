@@ -48,7 +48,7 @@
     "style": "zen"
   },
   "wallpaper": {
-    "path": "$HOME/wallpapers/library/sunset/sun-10.png"
+    "path": "$HOME/wallpapers/library/catppuccin/cat-12.png"
   },
   "waybar": {
     "style": "default"

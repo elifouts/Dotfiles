@@ -9,6 +9,6 @@ Dropdown {
         { v: "waybar", l: "Waybar" },
         { v: "quickshell", l: "Quickshell bar" }
     ]
-    current: Store.bar
-    onPicked: v => { if (v !== Store.bar) Store.applyBar(v) }
+    current: StoreShared.bar
+    onPicked: v => { if (v !== StoreShared.bar) StoreShared.applyBar(v) }
 }

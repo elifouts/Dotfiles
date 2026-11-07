@@ -44,7 +44,7 @@ Item {
             width: seg.cell
             height: seg.height
 
-            Label {
+            LabelShared {
                 anchors.centerIn: parent
                 width: parent.width - 8
                 horizontalAlignment: Text.AlignHCenter
@@ -55,7 +55,7 @@ Item {
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
             }
 
-            Hover {
+            HoverShared {
                 id: area
                 anchors.fill: parent
                 onClicked: seg.picked(modelData.v)

@@ -1,0 +1,1 @@
+../../../shared/widgets/WeatherTabShared.qml

@@ -1,1 +1,1 @@
-../../../../shared/menus/Network.qml
+../../../../shared/menus/NetworkShared.qml

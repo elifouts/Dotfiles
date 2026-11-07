@@ -20,7 +20,7 @@ Item {
         Behavior on color { ColorAnimation { duration: Theme.ms(140) } }
     }
 
-    Label {
+    LabelShared {
         anchors.left: parent.left
         anchors.leftMargin: 8 * row.u
         anchors.verticalCenter: parent.verticalCenter
@@ -40,7 +40,7 @@ Item {
         hot: area.containsMouse
     }
 
-    Hover {
+    HoverShared {
         id: area
         anchors.fill: parent
         onClicked: row.toggled()

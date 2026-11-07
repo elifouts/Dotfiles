@@ -4,7 +4,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../common"
-import "Motion.js" as Motion
+import "MotionShared.js" as Motion
 import "../common/Schema.js" as Schema
 
 PanelWindow {
@@ -33,15 +33,15 @@ PanelWindow {
         was = i
         swap.restart()
     }
-    Component.onCompleted: { Store.refresh(); morph.open() }
+    Component.onCompleted: { StoreShared.refresh(); morph.open() }
     function close() { morph.close() }
     function open() { morph.open() }
     function toggle() { morph.leaving ? morph.open() : morph.close() }
-    Morph { id: morph; openMs: 560; closeMs: 340; onClosed: sheet.done() }
+    MorphShared { id: morph; openMs: 560; closeMs: 340; onClosed: sheet.done() }
     property real w: Math.min(implicitWidth, Math.max(tabRow.implicitWidth + 96, content.implicitWidth + 48))
     property real h: Math.min(implicitHeight, content.implicitHeight + 46)
-    Behavior on w { Settle { duration: Theme.fast } }
-    Behavior on h { Settle { duration: Theme.fast } }
+    Behavior on w { SettleShared { duration: Theme.fast } }
+    Behavior on h { SettleShared { duration: Theme.fast } }
     function step(d) {
         tab = tabs[(tabs.indexOf(tab) + d + tabs.length) % tabs.length]
     }
@@ -54,13 +54,13 @@ PanelWindow {
         property var options: []
         property string key
         property var fallback
-        readonly property var raw: Store.values[key]
+        readonly property var raw: StoreShared.values[key]
         property var current: raw === "" ? options.find(o => o.dflt)?.v : raw ?? fallback
         readonly property bool many: options.length > 6
         readonly property var shown: many ? [options.find(o => (o.v ?? o) === current) ?? options[0]] : options
         readonly property bool fits: shown.reduce((n, o) => n + String(o.l ?? o).length * 8.2 + 12, 0) <= width - 158
         signal chose(var v)
-        onChose: v => { if (key) Store.set(key, v) }
+        onChose: v => { if (key) StoreShared.set(key, v) }
         function next(d) {
             const i = options.findIndex(o => (o.v ?? o) === current), o = options[(i + d + options.length) % options.length]
             chose(o.v ?? o)
@@ -95,7 +95,7 @@ PanelWindow {
         property string key
         property bool fallback: true
         property var raises
-        readonly property bool on: !!(Store.values[key] ?? fallback)
+        readonly property bool on: !!(StoreShared.values[key] ?? fallback)
         width: 320
         implicitHeight: 20
         Caption { width: tg.width - 40; text: tg.label }
@@ -105,8 +105,8 @@ PanelWindow {
             on: tg.on
             onFlip: {
                 const r = tg.raises, next = { [tg.key]: !tg.on }
-                if (!tg.on && r && Store.values[r.key] < r.min) next[r.key] = r.min
-                Store.setMany(next)
+                if (!tg.on && r && StoreShared.values[r.key] < r.min) next[r.key] = r.min
+                StoreShared.setMany(next)
             }
         }
     }
@@ -119,7 +119,7 @@ PanelWindow {
         property real to: 1
         property real step: 1
         property real fallback: from
-        readonly property real v: Store.values[key] ?? fallback
+        readonly property real v: StoreShared.values[key] ?? fallback
         readonly property int digits: (String(step).split(".")[1] ?? "").length
         width: 320
         spacing: 8
@@ -130,7 +130,7 @@ PanelWindow {
             scrollable: false
             readout: knob.v.toFixed(knob.digits) + knob.unit
             value: (knob.v - knob.from) / (knob.to - knob.from)
-            onMoved: x => Store.set(knob.key, Number((Math.round((knob.from + x * (knob.to - knob.from)) / knob.step) * knob.step).toFixed(knob.digits)))
+            onMoved: x => StoreShared.set(knob.key, Number((Math.round((knob.from + x * (knob.to - knob.from)) / knob.step) * knob.step).toFixed(knob.digits)))
         }
     }
 
@@ -183,8 +183,8 @@ PanelWindow {
                 width: on?.width ?? 0
                 height: 1
                 color: Theme.accent
-                Behavior on x { Settle { duration: Theme.fast } }
-                Behavior on width { Settle { duration: Theme.fast } }
+                Behavior on x { SettleShared { duration: Theme.fast } }
+                Behavior on width { SettleShared { duration: Theme.fast } }
             }
             Hud { anchors.right: parent.right; anchors.rightMargin: 24; y: 10; text: "esc"; color: Theme.alpha(Theme.fg, 0.25) }
 
@@ -198,8 +198,8 @@ PanelWindow {
             }
             ParallelAnimation {
                 id: swap
-                Settle { target: content; property: "opacity"; from: 0; to: 1; duration: Theme.fast }
-                Settle { target: shift; property: "x"; from: 24 * sheet.dir; to: 0; duration: Theme.fast }
+                SettleShared { target: content; property: "opacity"; from: 0; to: 1; duration: Theme.fast }
+                SettleShared { target: shift; property: "x"; from: 24 * sheet.dir; to: 0; duration: Theme.fast }
             }
         }
     }
@@ -211,18 +211,18 @@ PanelWindow {
             Column {
                 Pick {
                     label: "Style"
-                    options: Object.keys(Store.styles).sort()
-                    current: Store.active.style
+                    options: Object.keys(StoreShared.styles).sort()
+                    current: StoreShared.active.style
                     onChose: v => {
-                        const vs = Store.styles[v] || []
-                        if (v !== Store.active.style) Store.applyProfile(v, vs.includes(Store.active.variant) ? Store.active.variant : vs[0])
+                        const vs = StoreShared.styles[v] || []
+                        if (v !== StoreShared.active.style) StoreShared.applyProfile(v, vs.includes(StoreShared.active.variant) ? StoreShared.active.variant : vs[0])
                     }
                 }
                 Pick {
                     label: "Machine"
-                    options: Store.styles[Store.active.style] || []
-                    current: Store.active.variant
-                    onChose: v => { if (v !== Store.active.variant) Store.applyProfile(Store.active.style, v) }
+                    options: StoreShared.styles[StoreShared.active.style] || []
+                    current: StoreShared.active.variant
+                    onChose: v => { if (v !== StoreShared.active.variant) StoreShared.applyProfile(StoreShared.active.style, v) }
                 }
             }
             Column {
@@ -244,7 +244,7 @@ PanelWindow {
                     required property int index
                     readonly property var all: modelData.reduce((a, s) => a.concat(s.controls), [])
                     width: all.some(c => c.type === "bezier") ? 560 : 320
-                    visible: all.some(c => Schema.shown(c, Store.values, Store.caps))
+                    visible: all.some(c => Schema.shown(c, StoreShared.values, StoreShared.caps))
                     spacing: 10
                     Repeater {
                         model: col.modelData
@@ -252,7 +252,7 @@ PanelWindow {
                             id: sec
                             required property var modelData
                             required property int index
-                            visible: modelData.controls.some(c => Schema.shown(c, Store.values, Store.caps))
+                            visible: modelData.controls.some(c => Schema.shown(c, StoreShared.values, StoreShared.caps))
                             width: col.width
                             spacing: 2
                             Kit.Title { glyph: "\u25c6"; text: sec.modelData.label }
@@ -264,35 +264,35 @@ PanelWindow {
                                     readonly property var def: modelData
                                     width: sec.width
                                     height: item?.implicitHeight ?? 0
-                                    visible: Schema.shown(def, Store.values, Store.caps)
+                                    visible: Schema.shown(def, StoreShared.values, StoreShared.caps)
                                     active: visible
                                     sourceComponent: ({ slider: slider, toggle: flip, choice: choice, bezier: bezier, animpreset: preset, cursors: cursors })[def.type]
                                     Component { id: slider; Knob { key: ctl.def.key; label: ctl.def.label; unit: ctl.def.unit; from: ctl.def.min; to: ctl.def.max; step: ctl.def.step } }
                                     Component { id: flip; Toggle { key: ctl.def.key; label: ctl.def.label; raises: ctl.def.raises } }
                                     Component { id: choice; Pick { key: ctl.def.key; label: ctl.def.label; options: ctl.def.options } }
-                                    Component { id: bezier; SettingBezier {} }
+                                    Component { id: bezier; SettingBezierShared {} }
                                     Component {
                                         id: preset
                                         Pick {
                                             label: "Preset"
                                             options: Motion.PRESET_OPTIONS
-                                            current: Store.values["animation.preset"] || "theme"
-                                            onChose: v => Motion.pick(Store, v, Store.values["animation.curve"] || Motion.CURVE)
+                                            current: StoreShared.values["animation.preset"] || "theme"
+                                            onChose: v => Motion.pick(StoreShared, v, StoreShared.values["animation.curve"] || Motion.CURVE)
                                         }
                                     }
                                     Component {
                                         id: cursors
                                         Pick {
                                             label: "Cursor theme"
-                                            options: Store.cursors
-                                            current: Store.cursors.find(c => c.toLowerCase() === String(Store.values["cursor.theme"] || "").toLowerCase())
-                                            onChose: v => Store.set("cursor.theme", v)
+                                            options: StoreShared.cursors
+                                            current: StoreShared.cursors.find(c => c.toLowerCase() === String(StoreShared.values["cursor.theme"] || "").toLowerCase())
+                                            onChose: v => StoreShared.set("cursor.theme", v)
                                         }
                                     }
                                     MouseArea {
                                         anchors.fill: parent
                                         acceptedButtons: Qt.RightButton
-                                        onClicked: Store.reset(ctl.def.key ?? (ctl.def.type === "cursors" ? "cursor.theme" : "animation"))
+                                        onClicked: StoreShared.reset(ctl.def.key ?? (ctl.def.type === "cursors" ? "cursor.theme" : "animation"))
                                     }
                                 }
                             }
@@ -307,7 +307,7 @@ PanelWindow {
         id: colors
         Column {
             spacing: 8
-            TapHandler { acceptedButtons: Qt.RightButton; onTapped: Store.reset("space.world") }
+            TapHandler { acceptedButtons: Qt.RightButton; onTapped: StoreShared.reset("space.world") }
             Row {
                 spacing: 12
                 Caption { width: 60; caps: true; height: 24; text: "random" }
@@ -317,14 +317,14 @@ PanelWindow {
                 Hud {
                     height: 24
                     color: Theme.fg
-                    text: World.applied ? World.applied.t.name + "  //  " + World.accentNames[World.applied.i] : World.random ? "random" : Store.colorTheme
+                    text: World.applied ? World.applied.t.name + "  //  " + World.accentNames[World.applied.i] : World.random ? "random" : StoreShared.colorTheme
                 }
             }
             Grid {
                 columns: 9
                 spacing: 6
                 opacity: World.random ? 0.35 : 1
-                Behavior on opacity { Settle { duration: Theme.ms(200) } }
+                Behavior on opacity { SettleShared { duration: Theme.ms(200) } }
                 Repeater {
                     model: World.themes
                     Item {
@@ -357,7 +357,7 @@ PanelWindow {
                                     height: 10
                                     color: tile.modelData.c[modelData]
                                     opacity: World.pins[tile.modelData.id] !== undefined && modelData > 2 && !pinned ? 0.35 : 1
-                                    Behavior on opacity { Settle { duration: Theme.ms(140) } }
+                                    Behavior on opacity { SettleShared { duration: Theme.ms(140) } }
                                     Hud { visible: sw.pinned || tile.usedAccent === sw.modelData; anchors.centerIn: parent; font.pixelSize: 9; text: sw.pinned ? "accent" : "now"; color: tile.modelData.c[0] }
                                     MouseArea {
                                         anchors.fill: parent
@@ -380,7 +380,7 @@ PanelWindow {
         Column {
             id: fontsCol
             spacing: 8
-            TapHandler { acceptedButtons: Qt.RightButton; onTapped: Store.reset("space.font") }
+            TapHandler { acceptedButtons: Qt.RightButton; onTapped: StoreShared.reset("space.font") }
             property var all: []
             Process {
                 running: true
@@ -413,7 +413,7 @@ PanelWindow {
                         font.pixelSize: 13
                         color: parent.modelData === Theme.font ? Theme.accent : fh.containsMouse ? Theme.fg : Theme.dim
                     }
-                    MouseArea { id: fh; anchors.fill: parent; hoverEnabled: true; onClicked: Store.set("space.font", parent.modelData) }
+                    MouseArea { id: fh; anchors.fill: parent; hoverEnabled: true; onClicked: StoreShared.set("space.font", parent.modelData) }
                 }
             }
         }
@@ -428,18 +428,18 @@ PanelWindow {
                 width: 320
                 height: Math.min(168, Math.max(72, count * 24))
                 clip: true
-                model: Store.saved.entries.filter(e => e.exists)
+                model: StoreShared.saved.entries.filter(e => e.exists)
                 delegate: Kit.Line {
                     required property var modelData
                     property bool armed: false
                     width: 320
-                    glyph: modelData.id === Store.saved.active ? "◆" : "◇"
+                    glyph: modelData.id === StoreShared.saved.active ? "◆" : "◇"
                     text: modelData.name
                     value: armed ? "again to delete" : modelData.kind
-                    lit: modelData.id === Store.saved.active
+                    lit: modelData.id === StoreShared.saved.active
                     onClicked: m => {
-                        if (m.button === Qt.LeftButton) return Store.savedRun("apply", modelData.id)
-                        if (armed) Store.savedRun("delete", modelData.id)
+                        if (m.button === Qt.LeftButton) return StoreShared.savedRun("apply", modelData.id)
+                        if (armed) StoreShared.savedRun("delete", modelData.id)
                         armed = !armed
                     }
                 }
@@ -451,7 +451,7 @@ PanelWindow {
                     width: 320
                     placeholder: "name"
                     keysTo: [sheetKeys]
-                    onAccepted: { if (text.trim()) Store.savedRun("save", text.trim()); text = ""; sheetKeys.forceActiveFocus() }
+                    onAccepted: { if (text.trim()) StoreShared.savedRun("save", text.trim()); text = ""; sheetKeys.forceActiveFocus() }
                 }
             }
         }

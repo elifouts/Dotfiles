@@ -6,18 +6,18 @@ Column {
     id: pw
     spacing: 6
     property string armed: ""
-    Component.onCompleted: Brightness.probe()
+    Component.onCompleted: BrightnessShared.probe()
     Timer { id: disarm; interval: 2500; onTriggered: pw.armed = "" }
 
     Kit.Title { glyph: "󰐥"; text: "power" }
     Kit.Line {
-        visible: Power.hasBattery
-        glyph: Power.charging ? "󰂄" : "󰁹"
-        text: Power.charging ? "charging" : Power.full ? "full" : "battery"
-        value: Math.round(Power.charge * 100) + "%"
-        lit: Power.charging
+        visible: PowerShared.hasBattery
+        glyph: PowerShared.charging ? "󰂄" : "󰁹"
+        text: PowerShared.charging ? "charging" : PowerShared.full ? "full" : "battery"
+        value: Math.round(PowerShared.charge * 100) + "%"
+        lit: PowerShared.charging
     }
-    Kit.Slide { visible: Brightness.has; glyph: "󰃟"; value: Brightness.value; onMoved: v => Brightness.set(v) }
+    Kit.Slide { visible: BrightnessShared.has; glyph: "󰃟"; value: BrightnessShared.value; onMoved: v => BrightnessShared.set(v) }
     Item { width: 1; height: 4 }
     Row {
         id: tiles
@@ -63,13 +63,13 @@ Column {
                         width: tile.armedNow ? parent.width : 0
                         NumberAnimation on width { running: tile.armedNow; from: tiles.w; to: 0; duration: disarm.interval }
                     }
-                    Hover {
+                    HoverShared {
                         id: ma
                         anchors.fill: parent
                         onClicked: {
-                            if (Power.confirm(tile.modelData[0]) && !tile.armedNow) { pw.armed = tile.modelData[0]; return disarm.restart() }
+                            if (PowerShared.confirm(tile.modelData[0]) && !tile.armedNow) { pw.armed = tile.modelData[0]; return disarm.restart() }
                             Ui.panel = ""
-                            Power.act(tile.modelData[0])
+                            PowerShared.act(tile.modelData[0])
                         }
                     }
                 }

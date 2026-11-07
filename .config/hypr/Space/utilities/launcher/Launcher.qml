@@ -29,7 +29,7 @@ PanelWindow {
     onCmdChanged: if (cmd && !cmds.length) scan.running = true
     Process {
         id: scan
-        command: ["python3", Hypr.util + "/launcher.py", "commands"]
+        command: ["python3", HyprShared.util + "/launcher.py", "commands"]
         stdout: StdioCollector {
             onStreamFinished: {
                 try { win.cmds = JSON.parse(text).map(e => ({ name: e.n, genericName: e.k === "bin" ? "" : e.d })) } catch (e) {}
@@ -40,10 +40,10 @@ PanelWindow {
     property real t: 0
     Component.onCompleted: grow.start()
     function close() { if (!shut.running) { grow.stop(); shut.start() } }
-    Settle { id: grow; target: win; property: "t"; to: 1; duration: Theme.open }
+    SettleShared { id: grow; target: win; property: "t"; to: 1; duration: Theme.open }
     SequentialAnimation {
         id: shut
-        Settle { target: win; property: "t"; to: 0; duration: Theme.quick; easing.bezierCurve: Theme.leave }
+        SettleShared { target: win; property: "t"; to: 0; duration: Theme.quick; easing.bezierCurve: Theme.leave }
         ScriptAction { script: win.done() }
     }
 

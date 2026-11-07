@@ -19,7 +19,7 @@ Item {
         onExited: if (al.open) al.done()
     }
 
-    Label {
+    LabelShared {
         id: bell
         x: 4
         anchors.verticalCenter: parent.verticalCenter
@@ -58,8 +58,8 @@ Item {
         anchors.rightMargin: 10
         anchors.verticalCenter: parent.verticalCenter
         spacing: 2
-        Label { text: "Time's up"; font.pixelSize: 14; color: Theme.bright }
-        Label {
+        LabelShared { text: "Time's up"; font.pixelSize: 14; color: Theme.bright }
+        LabelShared {
             width: parent.width
             text: "Your " + al.length + " session has finished."
             font.pixelSize: 11

@@ -19,14 +19,14 @@ Item {
         width: parent.width - 44
         height: Math.max(150, media.implicitHeight)
 
-        Fade { on: pm.current === "media"; maxW: Infinity; MediaCtl { id: media; width: parent.width } }
-        Fade { on: pm.current === "timer"; TimerTab { anchors.fill: parent; timer: Live.timer } }
-        Fade { on: pm.current === "color"; ColorTab { anchors.fill: parent; onDone: Ui.panel = "" } }
-        Fade {
+        FadeShared { on: pm.current === "media"; maxW: Infinity; MediaCtl { id: media; width: parent.width } }
+        FadeShared { on: pm.current === "timer"; TimerTabShared { anchors.fill: parent; timer: Live.timer } }
+        FadeShared { on: pm.current === "color"; ColorTabShared { anchors.fill: parent; onDone: Ui.panel = "" } }
+        FadeShared {
             on: pm.current === "capture"
-            CaptureTab { id: cap; anchors.fill: parent; active: parent.visible; open: Ui.panel === "media"; onDone: Ui.panel = "" }
+            CaptureTabShared { id: cap; anchors.fill: parent; active: parent.visible; open: Ui.panel === "media"; onDone: Ui.panel = "" }
         }
-        Fade { on: pm.current === "weather"; WeatherTab { anchors.fill: parent; weather: Live.weather } }
+        FadeShared { on: pm.current === "weather"; WeatherTabShared { anchors.fill: parent; weather: Live.weather } }
     }
 
     Column {
@@ -53,7 +53,7 @@ Item {
                     color: tab.on ? Theme.accent : tabArea.containsMouse ? Theme.fg : Theme.dim
                     Behavior on color { ColorAnimation { duration: Theme.fast } }
                 }
-                Hover { id: tabArea; anchors.fill: parent; onContainsMouseChanged: if (containsMouse) Ui.tab = tab.modelData.id }
+                HoverShared { id: tabArea; anchors.fill: parent; onContainsMouseChanged: if (containsMouse) Ui.tab = tab.modelData.id }
             }
         }
         WheelHandler {

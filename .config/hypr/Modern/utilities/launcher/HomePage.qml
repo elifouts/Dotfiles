@@ -8,13 +8,13 @@ Item {
     property real intro: 1
     signal run(string id, string cmd, bool afterClose)
 
-    readonly property string util: Hypr.util + "/"
+    readonly property string util: HyprShared.util + "/"
     readonly property var commands: [
-        { id: "lock", icon: "", label: "Lock", sub: "Lock the session", cmd: Power.cmd("lock") },
-        { id: "suspend", icon: "", label: "Suspend", sub: "Sleep the machine", cmd: Power.cmd("suspend") },
-        { id: "logout", icon: "", label: "Log out", sub: "End the Hyprland session", confirm: "log out", cmd: Power.cmd("logout") },
-        { id: "reboot", icon: "", label: "Reboot", sub: "Restart the machine", confirm: "reboot", cmd: Power.cmd("reboot") },
-        { id: "poweroff", icon: "", label: "Power off", sub: "Shut down", confirm: "power off", cmd: Power.cmd("poweroff") },
+        { id: "lock", icon: "", label: "Lock", sub: "Lock the session", cmd: PowerShared.cmd("lock") },
+        { id: "suspend", icon: "", label: "Suspend", sub: "Sleep the machine", cmd: PowerShared.cmd("suspend") },
+        { id: "logout", icon: "", label: "Log out", sub: "End the Hyprland session", confirm: "log out", cmd: PowerShared.cmd("logout") },
+        { id: "reboot", icon: "", label: "Reboot", sub: "Restart the machine", confirm: "reboot", cmd: PowerShared.cmd("reboot") },
+        { id: "poweroff", icon: "", label: "Power off", sub: "Shut down", confirm: "power off", cmd: PowerShared.cmd("poweroff") },
         { id: "screenshot", icon: "", label: "Screenshot", sub: "Select a region", after: true, cmd: "hyprshot -m region -o ~/Screenshots/" },
         { id: "home", icon: "", label: "Home", sub: "Home screen", after: true, cmd: util + "session/shells.sh home" },
         { id: "wallpaper", icon: "", label: "Wallpaper", sub: "Pick a wallpaper", after: true, cmd: util + "session/shells.sh wallpaper" },
@@ -80,20 +80,20 @@ Item {
             width: parent.width
             spacing: 6
 
-            Label {
+            LabelShared {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: page.cur.icon
                 font.pixelSize: Math.round(ring.btn * 0.62)
                 color: page.waiting ? Theme.warn : Theme.accent
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
             }
-            Label {
+            LabelShared {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: page.cur.label
                 font.pixelSize: 17
                 color: Theme.bright
             }
-            Label {
+            LabelShared {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter

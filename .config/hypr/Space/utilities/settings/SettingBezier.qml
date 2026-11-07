@@ -1,1 +1,0 @@
-../../../shared/ui/SettingBezier.qml

@@ -1,1 +1,0 @@
-../../../shared/widgets/CaptureTab.qml

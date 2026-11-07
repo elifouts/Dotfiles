@@ -1,1 +1,1 @@
-../../../../shared/menus/Notifications.qml
+../../../../shared/menus/NotificationsShared.qml

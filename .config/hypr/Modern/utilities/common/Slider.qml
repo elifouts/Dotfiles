@@ -41,10 +41,10 @@ Item {
         radius: 6
         color: Theme.bright
         scale: sl.hot ? 1 : 0
-        Behavior on scale { Settle { duration: Theme.ms(140) } }
+        Behavior on scale { SettleShared { duration: Theme.ms(140) } }
     }
 
-    Hover {
+    HoverShared {
         id: area
         anchors.fill: parent
         anchors.topMargin: -8

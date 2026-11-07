@@ -15,9 +15,9 @@ Column {
     property bool standalone: false
     property string armed: ""
     property string uptime: ""
-    onOpenChanged: { armed = ""; if (open) { up.running = true; Brightness.probe() } }
+    onOpenChanged: { armed = ""; if (open) { up.running = true; BrightnessShared.probe() } }
 
-    Watched {
+    WatchedShared {
         id: dndFile
         path: Quickshell.env("XDG_RUNTIME_DIR") + "/home-dnd"
     }
@@ -39,10 +39,10 @@ Column {
     ]
 
     function press(a) {
-        if (Power.confirm(a.id) && armed !== a.id) { armed = a.id; disarm.restart(); return }
+        if (PowerShared.confirm(a.id) && armed !== a.id) { armed = a.id; disarm.restart(); return }
         armed = ""
         done()
-        Power.act(a.id)
+        PowerShared.act(a.id)
     }
 
     Header {
@@ -74,13 +74,13 @@ Column {
                 Column {
                     anchors.centerIn: parent
                     spacing: 6
-                    Label {
+                    LabelShared {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: btn.modelData.glyph
                         font.pixelSize: 20
                         color: btn.armed ? Theme.on(Theme.warn) : area.containsMouse ? Theme.accent : Theme.fg
                     }
-                    Label {
+                    LabelShared {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: btn.armed ? "Again" : btn.modelData.label
                         font.pixelSize: 10
@@ -88,7 +88,7 @@ Column {
                     }
                 }
 
-                Hover {
+                HoverShared {
                     id: area
                     anchors.fill: parent
                     onClicked: menu.press(btn.modelData)
@@ -99,11 +99,11 @@ Column {
 
     Tile {
         id: bat
-        readonly property var dev: Power.battery
-        readonly property bool present: Power.hasBattery
-        readonly property real charge: Power.charge
-        readonly property bool charging: Power.charging
-        readonly property bool full: Power.full
+        readonly property var dev: PowerShared.battery
+        readonly property bool present: PowerShared.hasBattery
+        readonly property real charge: PowerShared.charge
+        readonly property bool charging: PowerShared.charging
+        readonly property bool full: PowerShared.full
         readonly property bool low: !charging && !full && charge < 0.2
         readonly property real secs: !present ? 0 : charging ? dev.timeToFull : dev.timeToEmpty
 
@@ -116,7 +116,7 @@ Column {
         width: parent.width
         height: 44
 
-        Label {
+        LabelShared {
             id: batGlyph
             anchors.left: parent.left
             anchors.leftMargin: 14
@@ -146,7 +146,7 @@ Column {
             }
         }
 
-        Label {
+        LabelShared {
             id: batTime
             anchors.right: parent.right
             anchors.rightMargin: 14
@@ -158,11 +158,11 @@ Column {
     }
 
     Tile {
-        visible: Brightness.has
+        visible: BrightnessShared.has
         width: parent.width
         height: 44
 
-        Label {
+        LabelShared {
             id: sun
             anchors.left: parent.left
             anchors.leftMargin: 14
@@ -178,17 +178,17 @@ Column {
             anchors.right: sunPct.left
             anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
-            value: Brightness.value
-            onMoved: v => Brightness.set(Math.max(0.01, v))
+            value: BrightnessShared.value
+            onMoved: v => BrightnessShared.set(Math.max(0.01, v))
         }
-        Label {
+        LabelShared {
             id: sunPct
             anchors.right: parent.right
             anchors.rightMargin: 14
             anchors.verticalCenter: parent.verticalCenter
             width: 32
             horizontalAlignment: Text.AlignRight
-            text: Math.round(Brightness.value * 100) + "%"
+            text: Math.round(BrightnessShared.value * 100) + "%"
             font.pixelSize: 12
             color: Theme.fg
         }
@@ -199,7 +199,7 @@ Column {
         width: parent.width
         height: 44
 
-        Label {
+        LabelShared {
             anchors.left: parent.left
             anchors.leftMargin: 14
             anchors.verticalCenter: parent.verticalCenter
@@ -212,7 +212,7 @@ Column {
             anchors.rightMargin: 14
             anchors.verticalCenter: parent.verticalCenter
             checked: menu.dnd
-            onToggled: menu.run(Hypr.util + "/session/shells.sh notifications toggleDnd")
+            onToggled: menu.run(HyprShared.util + "/session/shells.sh notifications toggleDnd")
         }
     }
 }

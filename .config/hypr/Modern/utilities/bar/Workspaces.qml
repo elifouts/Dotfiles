@@ -17,7 +17,7 @@ Item {
 
     readonly property string wallpaper: wallFile.text().trim()
 
-    Watched {
+    WatchedShared {
         id: wallFile
         path: Quickshell.env("HOME") + "/.cache/wallpaper-picker/current"
     }
@@ -113,23 +113,23 @@ Item {
     }
 
     function focusWindow(t) {
-        Hypr.dispatch("hl.dsp.focus({ window = \"address:" + addr(t) + "\" })", "focuswindow address:" + addr(t))
+        HyprShared.dispatch("hl.dsp.focus({ window = \"address:" + addr(t) + "\" })", "focuswindow address:" + addr(t))
     }
 
     function moveTo(t, ws, mon) {
         const w = typeof ws === "string" ? "\"" + ws + "\"" : ws
-        Hypr.dispatch("hl.dsp.window.move({ workspace = " + w + ", window = \"address:" + addr(t) + "\", follow = false })",
+        HyprShared.dispatch("hl.dsp.window.move({ workspace = " + w + ", window = \"address:" + addr(t) + "\", follow = false })",
                        "movetoworkspacesilent " + ws + ",address:" + addr(t))
         if (mon && typeof ws === "number")
-            Hypr.dispatch("hl.dsp.workspace.move({ workspace = " + ws + ", monitor = \"" + mon + "\" })",
+            HyprShared.dispatch("hl.dsp.workspace.move({ workspace = " + ws + ", monitor = \"" + mon + "\" })",
                            "moveworkspacetomonitor " + ws + " " + mon)
         debounce.restart()
     }
 
     function keepCursor(lua, classic) {
-        const back = Hypr.lua ? "hl.dsp.cursor.move({ x = $x, y = $y })" : "movecursor $x $y"
+        const back = HyprShared.lua ? "hl.dsp.cursor.move({ x = $x, y = $y })" : "movecursor $x $y"
         Quickshell.execDetached(["sh", "-c", 'p=$(hyprctl cursorpos); x=${p%%,*}; y=${p##* }; hyprctl dispatch "$1" >/dev/null; hyprctl dispatch "' + back + '" >/dev/null',
-                                 "sh", Hypr.lua ? lua : classic])
+                                 "sh", HyprShared.lua ? lua : classic])
         debounce.restart()
     }
 
@@ -146,7 +146,7 @@ Item {
     function closeWindow(t) {
         const kill = /kitty/i.test(t.lastIpcObject ? t.lastIpcObject.class : "")
         closing = closing.concat(addr(t))
-        Hypr.dispatch("hl.dsp.window." + (kill ? "kill" : "close") + "({ window = \"address:" + addr(t) + "\" })",
+        HyprShared.dispatch("hl.dsp.window." + (kill ? "kill" : "close") + "({ window = \"address:" + addr(t) + "\" })",
                        (kill ? "killwindow" : "closewindow") + " address:" + addr(t))
     }
 
@@ -157,7 +157,7 @@ Item {
     }
 
     function goTo(id) {
-        Hypr.dispatch("hl.dsp.focus({ workspace = " + id + " })", "workspace " + id)
+        HyprShared.dispatch("hl.dsp.focus({ workspace = " + id + " })", "workspace " + id)
     }
 
     function keyOf(windows) { return windows.map(w => w.cmd).sort().join("\n") }
@@ -168,7 +168,7 @@ Item {
         } catch (e) { return [] }
     }
     readonly property var byKey: { const m = {}; for (const e of saved) m[e.key] = e; return m }
-    Watched {
+    WatchedShared {
         id: savedFile
         path: decodeURIComponent(Qt.resolvedUrl("../overview/workspaces.json").toString().replace(/^file:\/\//, ""))
     }
@@ -270,7 +270,7 @@ Item {
             const w = queue.shift()
             if (!w) return stop()
             const f = w.floating ? ", float = true, move = \"" + w.x + " " + w.y + "\", size = \"" + w.w + " " + w.h + "\"" : ""
-            Hypr.dispatch("hl.dsp.exec_cmd([==[" + w.cmd + "]==], { workspace = \"" + ws + " silent\"" + f + " })",
+            HyprShared.dispatch("hl.dsp.exec_cmd([==[" + w.cmd + "]==], { workspace = \"" + ws + " silent\"" + f + " })",
                            "exec [workspace " + ws + " silent" + (w.floating ? "; float; move " + w.x + " " + w.y + "; size " + w.w + " " + w.h : "") + "] " + w.cmd)
         }
     }
@@ -279,8 +279,8 @@ Item {
         id: dots
 
         readonly property int activeId: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : -1
-        readonly property var existing: Hypr.workspaces
-        readonly property var ids: Hypr.workspaceIds
+        readonly property var existing: HyprShared.workspaces
+        readonly property var ids: HyprShared.workspaceIds
 
         function occupied(id) {
             const w = existing.find(w => w.id === id)
@@ -288,7 +288,7 @@ Item {
         }
 
         function go(id) {
-            if (id !== activeId) Hypr.dispatch("hl.dsp.focus({ workspace = " + id + " })", "workspace " + id)
+            if (id !== activeId) HyprShared.dispatch("hl.dsp.focus({ workspace = " + id + " })", "workspace " + id)
         }
 
         spacing: 6
@@ -308,10 +308,10 @@ Item {
                 color: active ? Theme.accent
                     : full ? (dotArea.containsMouse ? Theme.bright : Theme.fg)
                     : Theme.alpha(Theme.fg, dotArea.containsMouse ? 0.5 : 0.25)
-                Behavior on width { Settle { duration: Theme.move } }
+                Behavior on width { SettleShared { duration: Theme.move } }
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
 
-                Hover {
+                HoverShared {
                     id: dotArea
                     anchors.fill: parent
                     anchors.margins: -4
@@ -360,7 +360,7 @@ Item {
             radius: tile.r
             color: Theme.alpha(Theme.fg, 0.06)
             scale: drop.containsDrag ? 1.03 : area.containsMouse && !tile.big ? 1.03 : 1
-            Behavior on scale { Settle { duration: Theme.fast } }
+            Behavior on scale { SettleShared { duration: Theme.fast } }
 
             Image {
                 anchors.fill: parent
@@ -373,7 +373,7 @@ Item {
                 Behavior on opacity { NumberAnimation { duration: Theme.fast } }
             }
 
-            Hover {
+            HoverShared {
                 id: area
                 anchors.fill: parent
                 onClicked: tile.workspacePicked(tile.wsId)
@@ -383,13 +383,13 @@ Item {
                 anchors.centerIn: parent
                 visible: tile.isNew
                 spacing: 4
-                Label {
+                LabelShared {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: ""
                     font.pixelSize: tile.big ? 28 : 16
                     color: area.containsMouse ? Theme.accent : Theme.dim
                 }
-                Label {
+                LabelShared {
                     anchors.horizontalCenter: parent.horizontalCenter
                     visible: tile.big
                     text: tile.hint
@@ -409,11 +409,11 @@ Item {
                     opacity: tile.ghost && tile.ghost.dragging && tile.ghost.toplevel === modelData ? 0.25 : 1
                     scale: hot && tile.big && !(tile.ghost && tile.ghost.dragging) ? 1.02 : 1
                     Behavior on opacity { NumberAnimation { duration: Theme.fast } }
-                    Behavior on scale { Settle { duration: Theme.fast } }
-                    Behavior on x { Settle { duration: Theme.move } }
-                    Behavior on y { Settle { duration: Theme.move } }
-                    Behavior on width { Settle { duration: Theme.move } }
-                    Behavior on height { Settle { duration: Theme.move } }
+                    Behavior on scale { SettleShared { duration: Theme.fast } }
+                    Behavior on x { SettleShared { duration: Theme.move } }
+                    Behavior on y { SettleShared { duration: Theme.move } }
+                    Behavior on width { SettleShared { duration: Theme.move } }
+                    Behavior on height { SettleShared { duration: Theme.move } }
                     x: (o.at[0] - tile.geom.x) * tile.k
                     y: (o.at[1] - tile.geom.y) * tile.k
                     width: Math.max(8, o.size[0] * tile.k)
@@ -460,7 +460,7 @@ Item {
                         height: tile.big ? 24 : 16
                         radius: Math.min(Theme.rounding, height / 2)
                         color: Theme.alpha(Theme.bg, 0.85)
-                        Label {
+                        LabelShared {
                             id: label
                             anchors.centerIn: parent
                             width: Math.min(implicitWidth, parent.width - 12)
@@ -483,7 +483,7 @@ Item {
                         onClicked: tile.windowPicked(win.modelData)
                     }
 
-                    IconButton {
+                    IconButtonShared {
                         visible: win.hot && win.width >= 24
                         anchors.right: parent.right
                         anchors.top: parent.top
@@ -536,12 +536,12 @@ Item {
         property int size: 13
         spacing: size + 1
 
-        IconButton {
+        IconButtonShared {
             text: "\uf0c7"
             font.pixelSize: acts.size
             onClicked: acts.expose.save(acts.wsId, acts.geom)
         }
-        IconButton {
+        IconButtonShared {
             text: "\uf1f8"
             font.pixelSize: acts.size
             hot: Theme.warn
@@ -563,13 +563,13 @@ Item {
         property real fromW: width
         property real fromH: height
         property real grow: dragging ? 1 : 0
-        Behavior on grow { Settle { duration: Theme.move } }
+        Behavior on grow { SettleShared { duration: Theme.move } }
         readonly property real g: entry ? grow : 1
         visible: opacity > 0
         opacity: dragging ? 0.9 : 0
         scale: dragging ? 1.04 : 0.96
         Behavior on opacity { NumberAnimation { duration: Theme.fast; easing.type: Easing.BezierSpline; easing.bezierCurve: proxy.dragging ? Theme.settle : Theme.leave } }
-        Behavior on scale { Settle { duration: Theme.move } }
+        Behavior on scale { SettleShared { duration: Theme.move } }
         z: 10
         Drag.active: dragging
         Drag.hotSpot.x: 0
@@ -668,7 +668,7 @@ Item {
                 color: lay.fill
                 border.width: 1
                 border.color: lay.edge
-                Label {
+                LabelShared {
                     anchors.centerIn: parent
                     width: parent.width - 6
                     horizontalAlignment: Text.AlignHCenter
@@ -741,7 +741,7 @@ Item {
                         Item {
                             width: page.tileW
                             height: 14
-                            Label {
+                            LabelShared {
                                 x: 2
                                 text: cell.isNew ? "New" : cell.wsId + "  ·  " + (cell.count === 0 ? "empty" : cell.count + (cell.count > 1 ? " windows" : " window"))
                                 font.pixelSize: 10
@@ -772,7 +772,7 @@ Item {
             Column {
                 width: parent.width
                 spacing: 2
-                move: Transition { Settle { property: "y"; duration: Theme.move } }
+                move: Transition { SettleShared { property: "y"; duration: Theme.move } }
             Repeater {
                 model: ScriptModel { values: page.expose.saved.map(e => e.key) }
                 Menus.Entry {
@@ -799,7 +799,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 14
                         visible: savedRow.hot || pencil.hovered || bin.hovered
-                        Label {
+                        LabelShared {
                             text: "\uf040"
                             font.pixelSize: 11
                             color: pencil.hovered ? Theme.accent : Theme.dim
@@ -811,7 +811,7 @@ Item {
                                 onClicked: page.renaming = savedRow.modelData
                             }
                         }
-                        Label {
+                        LabelShared {
                             text: "\uf1f8"
                             font.pixelSize: 11
                             color: bin.hovered ? Theme.warn : Theme.dim

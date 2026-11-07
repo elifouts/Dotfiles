@@ -7,9 +7,9 @@ Item {
     id: tp
 
     readonly property var entries: {
-        const p = Store.pywalPalette
+        const p = StoreShared.pywalPalette
         const pywal = p.length >= 16 ? [{ id: "pywal", name: "Pywal", palette: full(p.slice(0, 16)) }] : []
-        return pywal.concat(Store.themes)
+        return pywal.concat(StoreShared.themes)
     }
     readonly property var slotNames: Array.from({ length: 16 }, (_, i) => "color" + i)
     readonly property var hints: [["bg", "background, darkest"], ["red", "red, errors"], ["green", "green, strings"],
@@ -49,7 +49,7 @@ Item {
     readonly property color fg: lc(7)
 
     function sync() {
-        const i = entries.findIndex(e => e.id === Store.colorTheme)
+        const i = entries.findIndex(e => e.id === StoreShared.colorTheme)
         if (i >= 0 && !draft && !listHover.hovered) cur = i
     }
     onEntriesChanged: sync()
@@ -57,12 +57,12 @@ Item {
     NumberAnimation { id: jumble; target: tp; property: "settle"; from: 0; to: 1; duration: Theme.ms(650); easing.type: Easing.OutCubic }
     onCurChanged: jumble.restart()
     Timer { id: back; interval: 140; onTriggered: tp.sync() }
-    Connections { target: Store; function onColorThemeChanged() { tp.sync() } }
+    Connections { target: StoreShared; function onColorThemeChanged() { tp.sync() } }
 
     function step(d) { if (!draft && entries.length) cur = (cur + d + entries.length) % entries.length }
-    function pick() { draft ? save() : Store.applyTheme(entry.id) }
-    Component.onCompleted: { sync(); Store.picker = tp }
-    Component.onDestruction: if (Store.picker === tp) Store.picker = null
+    function pick() { draft ? save() : StoreShared.applyTheme(entry.id) }
+    Component.onCompleted: { sync(); StoreShared.picker = tp }
+    Component.onDestruction: if (StoreShared.picker === tp) StoreShared.picker = null
 
     property string editing: ""
     function create(e) {
@@ -101,13 +101,13 @@ Item {
         draft = null
     }
     property string role: "accent"
-    function remove(e) { run(e.id === Store.colorTheme ? "pywal" : "", ["rm", "-f", file(e.id)]) }
+    function remove(e) { run(e.id === StoreShared.colorTheme ? "pywal" : "", ["rm", "-f", file(e.id)]) }
     function file(id) { return Quickshell.env("HOME") + "/.config/wal/colorschemes/" + id + ".json" }
     function run(then, cmd) { writer.then = then; writer.command = cmd; writer.running = true }
     Process {
         id: writer
         property string then
-        onExited: { if (then) Store.applyTheme(then); Store.refresh() }
+        onExited: { if (then) StoreShared.applyTheme(then); StoreShared.refresh() }
     }
 
     function t(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") }
@@ -147,7 +147,7 @@ Item {
             onEditingFinished: { text = parent.value; parent.done() }
             Keys.onEscapePressed: tp.draft = null
         }
-        Label {
+        LabelShared {
             visible: !input.text
             x: 10
             anchors.verticalCenter: parent.verticalCenter
@@ -169,13 +169,13 @@ Item {
             id: term
             width: parent.width
             height: stack.implicitHeight + 24
-            Behavior on height { Settle { duration: Theme.move } }
+            Behavior on height { SettleShared { duration: Theme.move } }
             radius: tp.r
             clip: true
             color: tp.bg
             border.width: 1
             border.color: Theme.alpha(Theme.fg, 0.14)
-            Rise { target: term; replay: Store.opened }
+            Rise { target: term; replay: StoreShared.opened }
 
             Column {
                 id: stack
@@ -183,7 +183,7 @@ Item {
                 y: 12
                 width: parent.width - 28
 
-                Label {
+                LabelShared {
                     width: parent.width
                     textFormat: Text.StyledText
                     lineHeight: 1.35
@@ -235,13 +235,13 @@ Item {
                                 color: tp.lc(cell.s)
                                 border.width: cell.on ? 2 : 1
                                 border.color: cell.on ? tp.fg : Theme.alpha(tp.fg, 0.15)
-                                Hover {
+                                HoverShared {
                                     anchors.fill: parent
                                     enabled: !!tp.draft
                                     onClicked: tp.slot = cell.s
                                 }
                             }
-                            Label {
+                            LabelShared {
                                 width: parent.width
                                 horizontalAlignment: Text.AlignHCenter
                                 text: tp.draft && !tp.draft[cell.s] ? tp.hints[cell.s][0] : tp.lc(cell.s).slice(1)
@@ -266,7 +266,7 @@ Item {
             currentIndex: tp.cur
             highlightMoveDuration: Theme.ms(160)
             highlightResizeDuration: 0
-            Rise { target: list; index: 1; replay: Store.opened }
+            Rise { target: list; index: 1; replay: StoreShared.opened }
             HoverHandler {
                 id: listHover
                 onPointChanged: {
@@ -284,7 +284,7 @@ Item {
                 id: row
                 required property var modelData
                 required property int index
-                readonly property bool on: modelData.id === Store.colorTheme
+                readonly property bool on: modelData.id === StoreShared.colorTheme
                 width: list.width
                 height: 32
 
@@ -296,12 +296,12 @@ Item {
                     Behavior on opacity { NumberAnimation { duration: Theme.ms(120) } }
                 }
 
-                Hover {
+                HoverShared {
                     id: rowArea
                     anchors.fill: parent
-                    onClicked: Store.applyTheme(row.modelData.id)
+                    onClicked: StoreShared.applyTheme(row.modelData.id)
                 }
-                Label {
+                LabelShared {
                     x: 12
                     anchors.verticalCenter: parent.verticalCenter
                     text: row.modelData.name.toLowerCase()
@@ -314,8 +314,8 @@ Item {
                     anchors.rightMargin: 12
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 12
-                    IconButton { id: editBtn; text: "edit"; font.pixelSize: 10; onClicked: tp.create(row.modelData) }
-                    IconButton {
+                    IconButtonShared { id: editBtn; text: "edit"; font.pixelSize: 10; onClicked: tp.create(row.modelData) }
+                    IconButtonShared {
                         id: rmBtn
                         visible: !!row.modelData.custom
                         text: "rm"
@@ -347,7 +347,7 @@ Item {
             visible: !tp.draft
             width: parent.width
             spacing: 8
-            Rise { target: roleBox; index: 2; replay: Store.opened }
+            Rise { target: roleBox; index: 2; replay: StoreShared.opened }
             Segmented {
                 width: parent.width
                 options: [{ v: "accent", l: "primary" }, { v: "accent2", l: "second" }, { v: "ok", l: "ok" },
@@ -368,19 +368,19 @@ Item {
                         color: tp.lc(index)
                         border.width: on ? 2 : 1
                         border.color: on ? Theme.bright : Theme.alpha(Theme.fg, 0.15)
-                        Hover { anchors.fill: parent; onClicked: Theme.setRole(tp.role, index) }
+                        HoverShared { anchors.fill: parent; onClicked: Theme.setRole(tp.role, index) }
                     }
                 }
             }
         }
 
-        IconButton {
+        IconButtonShared {
             id: add
             visible: !tp.draft
             text: "+ new theme"
             font.pixelSize: 12
             onClicked: tp.create()
-            Rise { target: add; index: 3; replay: Store.opened }
+            Rise { target: add; index: 3; replay: StoreShared.opened }
         }
 
         Column {
@@ -400,7 +400,7 @@ Item {
                         if (/^[0-9a-f]{6}$/.test(h)) tp.setSlot("#" + h)
                     }
                 }
-                IconButton {
+                IconButtonShared {
                     id: dropper
                     anchors.verticalCenter: parent.verticalCenter
                     text: "󰈊"
@@ -424,7 +424,7 @@ Item {
                     readonly property real v: Math.max(0, tp.picked[modelData[1]])
                     width: parent.width
                     spacing: 10
-                    Label {
+                    LabelShared {
                         width: 44
                         anchors.verticalCenter: parent.verticalCenter
                         text: modelData[0]
@@ -442,7 +442,7 @@ Item {
                             tp.setSlot(Qt.hsla(h[0], h[1], h[2], 1))
                         }
                     }
-                    Label {
+                    LabelShared {
                         width: 34
                         anchors.verticalCenter: parent.verticalCenter
                         horizontalAlignment: Text.AlignRight
@@ -456,9 +456,9 @@ Item {
             Row {
                 anchors.right: parent.right
                 spacing: 18
-                IconButton { text: "esc cancel"; font.pixelSize: 12; onClicked: tp.draft = null }
-                IconButton { visible: tp.editing !== ""; text: "save as new"; font.pixelSize: 12; onClicked: tp.save(true) }
-                IconButton { text: "↵ save"; font.pixelSize: 12; idle: Theme.accent; hot: Theme.bright; onClicked: tp.save() }
+                IconButtonShared { text: "esc cancel"; font.pixelSize: 12; onClicked: tp.draft = null }
+                IconButtonShared { visible: tp.editing !== ""; text: "save as new"; font.pixelSize: 12; onClicked: tp.save(true) }
+                IconButtonShared { text: "↵ save"; font.pixelSize: 12; idle: Theme.accent; hot: Theme.bright; onClicked: tp.save() }
             }
         }
     }

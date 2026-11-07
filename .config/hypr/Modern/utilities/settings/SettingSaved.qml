@@ -5,7 +5,7 @@ Item {
     id: control
 
     property var def
-    readonly property var entries: Store.saved.entries || []
+    readonly property var entries: StoreShared.saved.entries || []
     readonly property string draft: input.text.trim()
     readonly property bool exists: entries.some(e => e.kind === "saved" && e.name.toLowerCase() === draft.toLowerCase())
     property string armed: ""
@@ -23,7 +23,7 @@ Item {
 
     function submit() {
         if (!draft) return
-        Store.savedRun("save", draft)
+        StoreShared.savedRun("save", draft)
         input.text = ""
         release()
     }
@@ -45,7 +45,7 @@ Item {
                 id: entry
                 required property var modelData
                 required property int index
-                readonly property bool current: modelData.id === Store.saved.active
+                readonly property bool current: modelData.id === StoreShared.saved.active
                 readonly property bool usable: modelData.exists
                 readonly property bool deletable: modelData.kind !== "default" && modelData.exists
                 readonly property bool hot: rowArea.containsMouse || binArea.containsMouse
@@ -62,11 +62,11 @@ Item {
                     color: Theme.alpha(Theme.fg, 0.07)
                 }
 
-                Hover {
+                HoverShared {
                     id: rowArea
                     anchors.fill: parent
                     enabled: entry.usable && !entry.current
-                    onClicked: Store.savedRun("apply", entry.modelData.id)
+                    onClicked: StoreShared.savedRun("apply", entry.modelData.id)
                 }
 
                 Rectangle {
@@ -81,7 +81,7 @@ Item {
                     Behavior on color { ColorAnimation { duration: Theme.fast } }
                 }
 
-                Label {
+                LabelShared {
                     id: label
                     anchors.left: dot.right
                     anchors.leftMargin: 10
@@ -94,7 +94,7 @@ Item {
                     Behavior on color { ColorAnimation { duration: Theme.fast } }
                 }
 
-                Label {
+                LabelShared {
                     id: kind
                     anchors.left: label.right
                     anchors.leftMargin: 8
@@ -106,7 +106,7 @@ Item {
                     color: Theme.dim
                 }
 
-                Label {
+                LabelShared {
                     id: tag
                     anchors.right: bin.left
                     anchors.rightMargin: 10
@@ -130,7 +130,7 @@ Item {
                     Behavior on color { ColorAnimation { duration: Theme.fast } }
                     Behavior on width { NumberAnimation { duration: Theme.fast; easing.type: Easing.OutCubic } }
 
-                    Label {
+                    LabelShared {
                         id: binText
                         anchors.centerIn: parent
                         text: bin.primed ? "Delete?" : ""
@@ -138,12 +138,12 @@ Item {
                         color: bin.primed ? Theme.on(Theme.warn) : binArea.containsMouse ? Theme.bright : Theme.dim
                     }
 
-                    Hover {
+                    HoverShared {
                         id: binArea
                         anchors.fill: parent
                         onClicked: if (control.arm("del:" + entry.modelData.id)) {
                             control.armed = ""
-                            Store.savedRun("delete", entry.modelData.id)
+                            StoreShared.savedRun("delete", entry.modelData.id)
                         }
                     }
                 }
@@ -215,7 +215,7 @@ Item {
                 color: Theme.soft(Theme.accent, saveArea.containsMouse && control.draft)
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
 
-                Label {
+                LabelShared {
                     id: saveText
                     anchors.centerIn: parent
                     text: control.exists ? "Overwrite" : "Save"
@@ -223,7 +223,7 @@ Item {
                     color: Theme.ink
                 }
 
-                Hover {
+                HoverShared {
                     id: saveArea
                     anchors.fill: parent
                     enabled: !!control.draft
@@ -244,19 +244,19 @@ Item {
                 color: parent.primed ? Theme.soft(Theme.warn) : Theme.alpha(Theme.fg, wipeArea.containsMouse ? 0.14 : 0.07)
                 Behavior on color { ColorAnimation { duration: Theme.fast } }
 
-                Label {
+                LabelShared {
                     anchors.centerIn: parent
                     text: parent.parent.primed ? "Click again to delete everything" : "Delete all saved profiles and tweaks"
                     font.pixelSize: 12
                     color: parent.parent.primed ? Theme.on(Theme.warn) : wipeArea.containsMouse ? Theme.bright : Theme.fg
                 }
 
-                Hover {
+                HoverShared {
                     id: wipeArea
                     anchors.fill: parent
                     onClicked: if (control.arm("wipe")) {
                         control.armed = ""
-                        Store.savedRun("wipe")
+                        StoreShared.savedRun("wipe")
                     }
                 }
             }

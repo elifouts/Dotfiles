@@ -97,7 +97,7 @@ Item {
                     scale: area.pressed ? 0.8 : 1
                     Behavior on x { NumberAnimation { duration: Theme.ms(180); easing.type: Easing.OutBack } }
                     Behavior on color { ColorAnimation { duration: Theme.fast } }
-                    Behavior on scale { Settle { duration: Theme.ms(80) } }
+                    Behavior on scale { SettleShared { duration: Theme.ms(80) } }
                 }
             }
             Hud { visible: tg.text !== ""; text: tg.text; height: parent.height; color: tg.on ? Theme.accent : Theme.dim }

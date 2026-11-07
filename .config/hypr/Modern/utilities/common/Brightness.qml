@@ -1,1 +1,0 @@
-../../../shared/system/Brightness.qml

@@ -8,7 +8,7 @@ Scope {
 
     required property var screen
     readonly property bool tall: (screen?.height ?? 0) > (screen?.width ?? 1)
-    readonly property string file: Hypr.home + "/.config/space/layouts/" + role + ".json"
+    readonly property string file: HyprShared.home + "/.config/space/layouts/" + role + ".json"
     readonly property string role: {
         const s = screen
         if (!s) return "none"
@@ -42,9 +42,9 @@ Scope {
     function show(list) { pending = list; swap.restart() }
     SequentialAnimation {
         id: swap
-        Settle { target: dm; property: "shown"; to: 0; duration: Theme.quick }
+        SettleShared { target: dm; property: "shown"; to: 0; duration: Theme.quick }
         ScriptAction { script: { dm.items = dm.pending; dm.picked = -1 } }
-        Settle { target: dm; property: "shown"; to: 1; duration: Theme.quick * 1.5 }
+        SettleShared { target: dm; property: "shown"; to: 1; duration: Theme.quick * 1.5 }
     }
 
     Timer { id: saveTimer; interval: 300; onTriggered: layout.setText(JSON.stringify(dm.items)) }

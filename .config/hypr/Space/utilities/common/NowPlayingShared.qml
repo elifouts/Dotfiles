@@ -1,0 +1,1 @@
+../../../shared/media/NowPlayingShared.qml

@@ -32,7 +32,7 @@ ShellRoot {
                 Hud {
                     caps: false
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: Qt.formatTime(clock.date, Store.values["space.clock24"] === false ? "h:mm" : "HH:mm")
+                    text: Qt.formatTime(clock.date, StoreShared.values["space.clock24"] === false ? "h:mm" : "HH:mm")
                     font.pixelSize: Math.min(face.width, face.height) * 0.11
                     font.weight: Font.ExtraLight
                     font.letterSpacing: 6
@@ -106,7 +106,7 @@ ShellRoot {
     property int wrong: 0
     property real t: 0
     Component.onCompleted: fadeIn.start()
-    Settle { id: fadeIn; target: root; property: "t"; to: 1; duration: Theme.ms(700) }
+    SettleShared { id: fadeIn; target: root; property: "t"; to: 1; duration: Theme.ms(700) }
 
     function submit() {
         if (checking || !pw) return
@@ -115,7 +115,7 @@ ShellRoot {
     }
     PamContext {
         id: pam
-        configDirectory: Hypr.dir + "/shared/system/pam"
+        configDirectory: HyprShared.dir + "/shared/system/pam"
         config: "password.conf"
         user: Quickshell.env("USER")
         onPamMessage: if (responseRequired) respond(root.pw)
@@ -128,7 +128,7 @@ ShellRoot {
     }
     SequentialAnimation {
         id: leave
-        Settle { target: root; property: "t"; to: 0; duration: Theme.ms(350); easing.bezierCurve: Theme.leave }
+        SettleShared { target: root; property: "t"; to: 0; duration: Theme.ms(350); easing.bezierCurve: Theme.leave }
         ScriptAction { script: { session.locked = false; Qt.quit() } }
     }
 

@@ -1,0 +1,1 @@
+../../../shared/system/PowerShared.qml

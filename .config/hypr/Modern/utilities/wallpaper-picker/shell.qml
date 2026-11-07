@@ -46,8 +46,8 @@ ShellRoot {
         onTriggered: if (root.shown && !root.leaving && root.current) root.tint(root.current.colors)
     }
 
-    FileView { id: colorTheme; path: Hypr.state + "/color-theme"; blockLoading: true; printErrors: false }
-    FileView { id: activeBar; path: Hypr.state + "/bar"; blockLoading: true; printErrors: false }
+    FileView { id: colorTheme; path: HyprShared.state + "/color-theme"; blockLoading: true; printErrors: false }
+    FileView { id: activeBar; path: HyprShared.state + "/bar"; blockLoading: true; printErrors: false }
     property bool tinted: false
 
     function tint(p) {
@@ -86,19 +86,15 @@ ShellRoot {
 
     Behavior on pos { id: posBehavior; NumberAnimation { duration: Theme.ms(380); easing.type: Easing.OutCubic } }
 
-    Watched {
+    WatchedShared {
         id: curFile
-        path: Hypr.home + "/.cache/wallpaper-picker/current"
+        path: HyprShared.home + "/.cache/wallpaper-picker/current"
     }
     readonly property string applied: curFile.text().trim()
 
     onAppliedChanged: {
         if (holding) { holding = false; Theme.preview = null; tinted = false; waybar("") }
         if (!shown) rebuild(applied)
-    }
-
-    function seg(delay) {
-        return Math.max(0, Math.min(1, (t - delay) / (1 - delay)))
     }
 
     function jump(i) {
@@ -140,7 +136,7 @@ ShellRoot {
     function favorite() {
         if (!current || favProc.running) return
         const path = current.path
-        favProc.command = [Hypr.util + "/wallpaper/wallpaper-fav.sh", path]
+        favProc.command = [HyprShared.util + "/wallpaper/wallpaper-fav.sh", path]
         favProc.running = true
         const i = cur
         setAll(all.map(w => w.path === path ? Object.assign({}, w, { fav: !w.fav }) : w))
@@ -159,7 +155,7 @@ ShellRoot {
         if (!current || leaving) return
         holding = current.path !== applied
         holdTimer.restart()
-        Quickshell.execDetached([Hypr.util + "/wallpaper/wallpaper-apply.sh", current.path])
+        Quickshell.execDetached([HyprShared.util + "/wallpaper/wallpaper-apply.sh", current.path])
         close()
     }
 
@@ -170,7 +166,7 @@ ShellRoot {
         activeBar.reload()
         colorTheme.reload()
         locating = true
-        Hypr.locate(open)
+        HyprShared.locate(open)
     }
 
     function open(screen) {
@@ -252,11 +248,11 @@ ShellRoot {
         id: indexer
         running: true
         command: ["flock", "-w", "5", (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/wallpaper-index.lock",
-                  "python3", Hypr.util + "/wallpaper/wallpaper-index.py"]
+                  "python3", HyprShared.util + "/wallpaper/wallpaper-index.py"]
         onExited: { idx.reload(); if (reindex.again) { reindex.again = false; running = true } }
     }
 
-    readonly property string library: Hypr.home + "/wallpapers/library"
+    readonly property string library: HyprShared.home + "/wallpapers/library"
     Variants {
         model: [""].concat(root.themes.slice(1))
         delegate: FolderListModel {
@@ -276,7 +272,7 @@ ShellRoot {
 
     FileView {
         id: idx
-        path: Hypr.home + "/.cache/wallpaper-picker/index.json"
+        path: HyprShared.home + "/.cache/wallpaper-picker/index.json"
         printErrors: false
         onLoaded: {
             const text = idx.text()
@@ -423,8 +419,8 @@ ShellRoot {
         y: Math.round(110 * root.u)
         width: Math.max(0, chips.width - gap)
         height: chips.height
-        opacity: Math.max(0.001, root.seg(0))
-        transform: Translate { y: (1 - root.seg(0)) * 40 * root.u }
+        opacity: Math.max(0.001, Theme.seg(root.t, 0))
+        transform: Translate { y: (1 - Theme.seg(root.t, 0)) * 40 * root.u }
 
         Row {
             id: chips
@@ -626,8 +622,8 @@ ShellRoot {
                 anchors.top: parent.top
                 anchors.topMargin: 180
                 height: 250
-                opacity: Math.max(0.001, root.seg(0.08))
-                transform: Translate { y: (1 - root.seg(0.08)) * 60 }
+                opacity: Math.max(0.001, Theme.seg(root.t, 0.08))
+                transform: Translate { y: (1 - Theme.seg(root.t, 0.08)) * 60 }
 
                 readonly property real cardW: 400
                 readonly property real cardH: 225
@@ -712,7 +708,7 @@ ShellRoot {
                                     Behavior on border.color { ColorAnimation { duration: Theme.ms(250) } }
                                 }
 
-                                Label {
+                                LabelShared {
                                     visible: !!root.favs[card.modelData.path]
                                     anchors.top: parent.top
                                     anchors.right: parent.right
@@ -739,10 +735,10 @@ ShellRoot {
                 anchors.top: wheel.bottom
                 anchors.topMargin: 18
                 spacing: 14
-                opacity: Math.max(0.001, root.seg(0.22))
-                transform: Translate { y: (1 - root.seg(0.22)) * 40 }
+                opacity: Math.max(0.001, Theme.seg(root.t, 0.22))
+                transform: Translate { y: (1 - Theme.seg(root.t, 0.22)) * 40 }
 
-                Label {
+                LabelShared {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: root.current ? root.current.name.replace(/[_-]/g, " ") : ""
                     elide: Text.ElideRight

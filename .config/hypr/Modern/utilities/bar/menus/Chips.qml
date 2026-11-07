@@ -25,7 +25,7 @@ Flow {
                 : Theme.alpha(Theme.fg, chipArea.containsMouse ? 0.14 : 0.07)
             Behavior on color { ColorAnimation { duration: Theme.ms(140) } }
 
-            Label {
+            LabelShared {
                 id: label
                 anchors.centerIn: parent
                 text: chip.modelData[1]
@@ -33,7 +33,7 @@ Flow {
                 color: chip.on ? Theme.ink : Theme.fg
             }
 
-            Hover {
+            HoverShared {
                 id: chipArea
                 anchors.fill: parent
                 onClicked: { chips.value = chip.modelData[0]; chips.picked(chips.value) }

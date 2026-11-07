@@ -11,14 +11,14 @@ Rectangle {
     color: Theme.alpha(Theme.fg, rbArea.containsMouse ? 0.14 : 0.07)
     Behavior on color { ColorAnimation { duration: Theme.ms(120) } }
 
-    Label {
+    LabelShared {
         anchors.centerIn: parent
         text: rb.glyph
         font.pixelSize: 12
         color: rbArea.containsMouse ? Theme.bright : Theme.fg
     }
 
-    Hover {
+    HoverShared {
         id: rbArea
         anchors.fill: parent
         onClicked: rb.clicked()

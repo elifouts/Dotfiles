@@ -5,7 +5,7 @@ Item {
     id: control
 
     property var def
-    readonly property var raw: Store.values[def.key]
+    readonly property var raw: StoreShared.values[def.key]
     readonly property bool ready: raw !== undefined && raw !== null
     readonly property bool on: ready && !!raw
     readonly property bool hot: area.containsMouse
@@ -13,7 +13,7 @@ Item {
     implicitHeight: 46
     opacity: ready ? 1 : 0.35
 
-    Label {
+    LabelShared {
         anchors.left: parent.left
         anchors.leftMargin: Theme.pad
         anchors.right: knobTrack.left
@@ -36,7 +36,7 @@ Item {
         enabled: false
     }
 
-    Hover {
+    HoverShared {
         id: area
         anchors.fill: parent
         enabled: control.ready
@@ -44,15 +44,10 @@ Item {
             const changes = {}
             changes[control.def.key] = !control.on
             const r = control.def.raises
-            if (!control.on && r && Store.values[r.key] < r.min) changes[r.key] = r.min
-            Store.setMany(changes)
+            if (!control.on && r && StoreShared.values[r.key] < r.min) changes[r.key] = r.min
+            StoreShared.setMany(changes)
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.RightButton
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Store.reset(control.def.key)
-    }
+    ResetArea { key: control.def.key }
 }

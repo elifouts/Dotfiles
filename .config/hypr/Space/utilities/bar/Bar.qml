@@ -38,13 +38,13 @@ PanelWindow {
         anchors.right: parent.right
         Chip { glyph: "󰝚"; panel: "media" }
         Chip { decode: false; show: Live.timer.active; glyph: "󰔛"; text: Live.timer.format(Live.timer.remaining); panel: "media"; tab: "timer"; hot: !Live.timer.running }
-        Chip { show: Updates.count > 0; glyph: "󰚰"; text: Updates.count; panel: "updates" }
+        Chip { show: UpdatesShared.count > 0; glyph: "󰚰"; text: UpdatesShared.count; panel: "updates" }
         Chip { glyph: Sys.net === "OFFLINE" ? "󰤭" : Sys.net === "WLAN" ? "󰤨" : "󰈀"; panel: "net"; hot: Sys.net === "OFFLINE" }
         Chip {
-            glyph: Audio.muted ? "󰝟" : "󰕾"
+            glyph: AudioShared.muted ? "󰝟" : "󰕾"
             panel: "audio"
             room: 66
-            onWheel: dir => Audio.nudge(dir)
+            onWheel: dir => AudioShared.nudge(dir)
             Slider {
                 anchors.right: parent.right
                 anchors.rightMargin: 14
@@ -52,27 +52,27 @@ PanelWindow {
                 width: 60
                 cells: 12
                 scrollable: false
-                value: Math.min(1, Audio.volume)
-                dimmed: Audio.muted
-                onMoved: v => Audio.setVolume(v)
+                value: Math.min(1, AudioShared.volume)
+                dimmed: AudioShared.muted
+                onMoved: v => AudioShared.setVolume(v)
             }
         }
         Chip {
-            show: Power.hasBattery
-            glyph: Power.charging ? "󰂄" : "󰁹"
-            text: Math.round(Power.charge * 100)
+            show: PowerShared.hasBattery
+            glyph: PowerShared.charging ? "󰂄" : "󰁹"
+            text: Math.round(PowerShared.charge * 100)
             panel: "power"
-            hot: Power.discharging && Power.charge < 0.15
+            hot: PowerShared.discharging && PowerShared.charge < 0.15
         }
         Chip { show: SystemTray.items.values.length > 0; glyph: "󱊔"; panel: "tray" }
-        Chip { glyph: Notifs.dnd ? "󰂛" : "󰂚"; text: Notifs.count || ""; panel: "notifs" }
+        Chip { glyph: NotifsShared.dnd ? "󰂛" : "󰂚"; text: NotifsShared.count || ""; panel: "notifs" }
         Chip {
             SystemClock { id: clock; precision: SystemClock.Minutes }
             glyph: "󰥔"
-            text: Qt.formatTime(clock.date, Store.values["space.clock24"] === false ? "h:mm ap" : "HH:mm")
+            text: Qt.formatTime(clock.date, StoreShared.values["space.clock24"] === false ? "h:mm ap" : "HH:mm")
             panel: "time"
             MouseArea { anchors.fill: parent; acceptedButtons: Qt.RightButton; onClicked: Ui.openPanel("media", bar.screen, "timer") }
         }
-        Chip { glyph: "󰐥"; panel: "power"; show: !Power.hasBattery }
+        Chip { glyph: "󰐥"; panel: "power"; show: !PowerShared.hasBattery }
     }
 }

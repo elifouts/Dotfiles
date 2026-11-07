@@ -5,7 +5,7 @@ Item {
     id: control
 
     property var def
-    readonly property var raw: Store.values[def.key]
+    readonly property var raw: StoreShared.values[def.key]
     readonly property bool ready: raw !== undefined && raw !== null
     readonly property real step: def.step
     readonly property int decimals: {
@@ -19,7 +19,7 @@ Item {
     implicitHeight: 58
     opacity: ready ? 1 : 0.35
 
-    Label {
+    LabelShared {
         x: Theme.pad
         y: 10
         text: control.def.label
@@ -28,7 +28,7 @@ Item {
         Behavior on color { ColorAnimation { duration: Theme.fast } }
     }
 
-    Label {
+    LabelShared {
         anchors.right: parent.right
         anchors.rightMargin: Theme.pad
         y: 10
@@ -50,14 +50,9 @@ Item {
         onMoved: v => {
             v = Number(Math.max(control.def.min, Math.min(control.def.max,
                 control.def.min + Math.round((v - control.def.min) / control.step) * control.step)).toFixed(control.decimals))
-            if (v !== control.raw) Store.set(control.def.key, v)
+            if (v !== control.raw) StoreShared.set(control.def.key, v)
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.RightButton
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Store.reset(control.def.key)
-    }
+    ResetArea { key: control.def.key }
 }

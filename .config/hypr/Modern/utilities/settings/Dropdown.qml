@@ -24,7 +24,7 @@ Item {
         width: parent.width
         height: dd.headH
 
-        Label {
+        LabelShared {
             anchors.left: parent.left
             anchors.leftMargin: Theme.pad
             anchors.verticalCenter: parent.verticalCenter
@@ -59,14 +59,14 @@ Item {
                     }
                 }
 
-                Label {
+                LabelShared {
                     anchors.verticalCenter: parent.verticalCenter
                     text: dd.selected ? dd.selected.l : "-"
                     font.pixelSize: 12
                     color: dd.open ? Theme.ink : Theme.bright
                 }
 
-                Label {
+                LabelShared {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "\uf078"
                     font.pixelSize: 9
@@ -77,7 +77,7 @@ Item {
             }
         }
 
-        Hover {
+        HoverShared {
             id: headArea
             anchors.fill: parent
             onClicked: dd.open = !dd.open
@@ -144,7 +144,7 @@ Item {
                             }
                         }
 
-                        Label {
+                        LabelShared {
                             anchors.verticalCenter: parent.verticalCenter
                             text: modelData.l
                             font.pixelSize: 13
@@ -167,7 +167,7 @@ Item {
                         Behavior on opacity { NumberAnimation { duration: Theme.fast } }
                     }
 
-                    Label {
+                    LabelShared {
                         visible: on
                         anchors.right: parent.right
                         anchors.rightMargin: 12
@@ -177,7 +177,7 @@ Item {
                         color: Theme.ink
                     }
 
-                    Hover {
+                    HoverShared {
                         id: rowArea
                         anchors.fill: parent
                         onClicked: { dd.picked(modelData.v); dd.open = false }

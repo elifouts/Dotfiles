@@ -35,7 +35,7 @@ Item {
         onClicked: m => {
             const p = mod.ctx.player
             if (m.button === Qt.LeftButton) mod.pill.toggle("island")
-            else Media.toggle(p)
+            else MediaShared.toggle(p)
         }
     }
 
@@ -60,7 +60,7 @@ Item {
             pill: mod.pill
             text: Quickshell.env("USER")
             tint: Theme.accent2
-            onClicked: b => mod.ctx.run(Hypr.util + "/session/shells.sh " + (b === Qt.RightButton ? "settings" : b === Qt.MiddleButton ? "launcher" : "home"))
+            onClicked: b => mod.ctx.run(HyprShared.util + "/session/shells.sh " + (b === Qt.RightButton ? "settings" : b === Qt.MiddleButton ? "launcher" : "home"))
         }
     }
 
@@ -91,7 +91,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 10
 
-                    SwapText {
+                    SwapTextShared {
                         id: title
                         anchors.verticalCenter: parent.verticalCenter
                         font.pixelSize: 12
@@ -104,12 +104,12 @@ Item {
                             function onMaxWChanged() { Qt.callLater(title.refit) }
                         }
                         width: Math.ceil(Math.min(fullWidth, fit))
-                        Behavior on width { Settle { duration: Theme.move } }
+                        Behavior on width { SettleShared { duration: Theme.move } }
                         value: [mod.ctx.track.title, mod.ctx.track.artist].filter(s => !!s).join("  ·  ")
                         elide: Text.ElideRight
                     }
 
-                    MiniWave {
+                    MiniWaveShared {
                         anchors.verticalCenter: parent.verticalCenter
                         playing: mod.ctx.playing
                         tint: t => Theme.along(Theme.spectrum, t)
@@ -165,7 +165,7 @@ Item {
                     width: timerText.implicitWidth + 14
                     radius: Math.min(Theme.rounding, height / 2)
                     color: Theme.alpha(Theme.accent, mod.ctx.timer.running ? 0.3 : 0.14)
-                    Label {
+                    LabelShared {
                         id: timerText
                         anchors.centerIn: parent
                         text: "󰔛 " + mod.ctx.timer.format(mod.ctx.timer.remaining)
@@ -182,7 +182,7 @@ Item {
         Item {
             implicitWidth: clockText.implicitWidth + 20
             implicitHeight: mod.pill.pillH
-            Label {
+            LabelShared {
                 id: clockText
                 anchors.centerIn: parent
                 text: Qt.formatTime(mod.ctx.now, "h:mm AP")
@@ -212,7 +212,7 @@ Item {
                         const item = modelData
                         if (b === Qt.MiddleButton) item.secondaryActivate()
                         else if (b === Qt.RightButton || item.onlyMenu) { if (item.hasMenu) mod.pill.toggle("tray", item) }
-                        else if (Media.isSpotify(item)) { mod.pill.close(); Media.openSpotify() }
+                        else if (MediaShared.isSpotify(item)) { mod.pill.close(); MediaShared.openSpotify() }
                         else { mod.pill.close(); item.activate() }
                     }
                     onWheel: dir => modelData.scroll(dir * 120, false)
@@ -241,8 +241,8 @@ Item {
         Chip {
             pill: mod.pill
             page: "notifications"
-            glyph: Notifs.dnd ? "󰂛" : "󰂚"
-            text: Notifs.count || ""
+            glyph: NotifsShared.dnd ? "󰂛" : "󰂚"
+            text: NotifsShared.count || ""
         }
     }
 
@@ -294,22 +294,22 @@ Item {
         id: audioC
         Chip {
             id: vol
-            readonly property real volume: Audio.volume
+            readonly property real volume: AudioShared.volume
             readonly property real level: Math.min(1, volume)
-            readonly property bool muted: Audio.muted
+            readonly property bool muted: AudioShared.muted
 
             pill: mod.pill
             page: "audio"
-            visible: !!Audio.sink
+            visible: !!AudioShared.sink
             glyph: muted ? "󰝟" : volume > 0.66 ? "󰕾" : volume > 0.33 ? "󰖀" : "󰕿"
             glyphColor: muted ? Theme.dim : lit ? Theme.accent : Theme.along(Theme.spectrum, level)
             scrub: track
-            onScrubbed: f => Audio.setVolume(f)
+            onScrubbed: f => AudioShared.setVolume(f)
             onClicked: b => {
-                if (b === Qt.MiddleButton) Audio.toggleMute()
+                if (b === Qt.MiddleButton) AudioShared.toggleMute()
                 else if (b === Qt.RightButton) mod.ctx.run("pavucontrol")
             }
-            onWheel: dir => Audio.nudge(dir)
+            onWheel: dir => AudioShared.nudge(dir)
 
             Item {
                 anchors.verticalCenter: parent.verticalCenter
@@ -364,12 +364,12 @@ Item {
     Component {
         id: powerC
         Chip {
-            readonly property bool low: Power.discharging && Power.charge < 0.15
+            readonly property bool low: PowerShared.discharging && PowerShared.charge < 0.15
             pill: mod.pill
             page: "power"
             glyph: ""
             tint: Theme.ok
-            glyphColor: low ? Theme.warn : lit ? tint : Power.charging ? Theme.ok : Theme.bright
+            glyphColor: low ? Theme.warn : lit ? tint : PowerShared.charging ? Theme.ok : Theme.bright
         }
     }
 
@@ -439,7 +439,7 @@ Item {
                     implicitSize: 15
                     source: chip.icon
                 }
-                Label {
+                LabelShared {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: chip.glyph !== ""
                     width: Math.max(implicitWidth, 15)
@@ -449,7 +449,7 @@ Item {
                     color: chip.glyphColor
                     Behavior on color { ColorAnimation { duration: Theme.fast } }
                 }
-                Label {
+                LabelShared {
                     id: label
                     anchors.verticalCenter: parent.verticalCenter
                     visible: chip.text !== ""
@@ -463,7 +463,7 @@ Item {
             }
         }
 
-        Hover {
+        HoverShared {
             id: area
             anchors.fill: parent
             acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton

@@ -9,6 +9,7 @@ import pyprland.ipc as ipc
 from pyprland.adapters import hyprland as hypr_adapter
 from pyprland.adapters import notifier
 from pyprland.models import PyprError
+from pyprland.plugins.scratchpads.schema import SCRATCHPAD_SCHEMA
 
 _open_connection = ipc.hyprctl_connection
 
@@ -45,6 +46,18 @@ def _never_fail(method):
 
 for _name in ("notify", "notify_info", "notify_error"):
     setattr(notifier.HyprlandNotifier, _name, _never_fail(getattr(notifier.HyprlandNotifier, _name)))
+
+
+def _check_each(valid):
+    def check(values):
+        return [f"Invalid value {v!r}, valid options: {', '.join(valid)}" for v in values if v not in valid]
+
+    return check
+
+
+for _field in SCRATCHPAD_SCHEMA:
+    if _field.field_type is list and _field.choices and not _field.validator:
+        _field.validator = _check_each(_field.choice_values)
 
 from pyprland.command import main
 
