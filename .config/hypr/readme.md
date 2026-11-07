@@ -206,7 +206,7 @@ Same scripts, settings and color themes as Modern, none of the visuals. One proc
 | world | `Alt+W` | new color and land from `World.qml`, not saved to the profile. `before` in `Land.qml` is a second terrain holding the old seed and colors. `hopProg` in `World.qml` drives every monitor: both pan together while a soft edge wipes the old one away and the moon comes back overhead. a press mid way only runs it to the end fast. the reload waits for it all to stop with `Ui.holdTheme` |
 | star map | `Super+Tab` | workspaces and special workspaces with windows are stars, windows are planets, pypr scratchpads are moons |
 | scan | `Alt+Tab` | visor with system info |
-| launcher | tap `Super` | little terminal under the bar, `Tab` cycles apps, commands and a bare kitty prompt, `Shift+Enter` runs in the background instead of kitty |
+| launcher | tap `Super` | little terminal under the bar, `Tab` switches between apps and commands, `Shift+Enter` runs in the background instead of kitty |
 | desk | `Alt+D` | widgets, layouts in `~/.config/space/layouts/` |
 | settings | `Alt+S` | hud sheet that sizes to each tab, most pages come from `SchemaShared.js`, `LAYOUT` in Space's `Schema.js` sets their columns, right click resets an option |
 | welcome | first run | the tour. the galaxy map opens, closes itself after takeoff and moves on once it has landed. goes to one empty workspace and back so it can't jump monitors |

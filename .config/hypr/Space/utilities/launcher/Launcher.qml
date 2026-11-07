@@ -22,9 +22,7 @@ PanelWindow {
     WlrLayershell.keyboardFocus: Ui.touring ? WlrKeyboardFocus.None : WlrKeyboardFocus.Exclusive
 
     property int sel: 0
-    property int mode: 0
-    readonly property bool cmd: mode === 1
-    readonly property bool kitty: mode === 2
+    property bool cmd: false
     property var cmds: []
     onCmdChanged: if (cmd && !cmds.length) scan.running = true
     Process {
@@ -63,7 +61,7 @@ PanelWindow {
     readonly property var apps: DesktopEntries.applications.values.filter(a => !a.noDisplay)
     readonly property var hits: {
         const line = field.text.trim(), q = line.toLowerCase()
-        if (!q || kitty) return []
+        if (!q) return []
         const key = cmd ? q.split(/\s+/)[0] : q
         const found = (cmd ? cmds : apps).map(a => [a, Math.max(score(key, a.name) * 1.5, score(key, a.genericName), score(key, (a.keywords || []).join(" ")))])
             .filter(x => x[1] >= 0).sort((a, b) => b[1] - a[1]).map(x => x[0])
@@ -75,9 +73,9 @@ PanelWindow {
     onHitsChanged: sel = 0
 
     function launch(background) {
-        const a = hits[sel], line = kitty ? field.text.trim() : a?.name
+        const a = hits[sel]
         if (a?.execute) a.execute()
-        else if (line) Quickshell.execDetached((background ? [] : ["kitty", "--hold", "env", "NOFETCH=1"]).concat(["bash", "-ic", line]))
+        else if (a) Quickshell.execDetached((background ? [] : ["kitty", "--hold", "env", "NOFETCH=1"]).concat(["bash", "-ic", a.name]))
         close()
     }
 
@@ -105,7 +103,7 @@ PanelWindow {
 
                 Row {
                     spacing: 8
-                    Hud { text: ["~/run", "~/cmd", "~/kitty"][win.mode]; color: Theme.accent; font.capitalization: Font.MixedCase; height: 22 }
+                    Hud { text: win.cmd ? "~/cmd" : "~/run"; color: Theme.accent; font.capitalization: Font.MixedCase; height: 22 }
                     Hud { text: "$"; color: Theme.dim; height: 22 }
                     TextInput {
                         id: field
@@ -125,7 +123,7 @@ PanelWindow {
                         Keys.onEnterPressed: event => win.launch(event.modifiers & Qt.ShiftModifier)
                         Keys.onDownPressed: win.sel = Math.min(win.hits.length - 1, win.sel + 1)
                         Keys.onUpPressed: win.sel = Math.max(0, win.sel - 1)
-                        Keys.onTabPressed: win.mode = (win.mode + 1) % 3
+                        Keys.onTabPressed: win.cmd = !win.cmd
                         Rectangle {
                             x: field.cursorRectangle.x
                             anchors.verticalCenter: parent.verticalCenter
@@ -178,7 +176,7 @@ PanelWindow {
                         MouseArea { anchors.fill: parent; hoverEnabled: true; onEntered: if (line.app) win.sel = line.index; onClicked: if (line.app) win.launch() }
                     }
                 }
-                Hud { visible: field.text !== "" && !win.hits.length && !win.kitty; text: "command not found"; color: Theme.alpha(Theme.fg, 0.35); height: 22 }
+                Hud { visible: field.text !== "" && !win.hits.length; text: "command not found"; color: Theme.alpha(Theme.fg, 0.35); height: 22 }
             }
         }
     }
