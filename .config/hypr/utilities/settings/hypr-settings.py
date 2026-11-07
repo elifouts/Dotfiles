@@ -262,8 +262,7 @@ def bar_styles(folder, marker):
 
 def waybar():
     styles, live, base = bar_styles("waybar", "style.css"), HOME / ".config/waybar", style_dir() / "waybar"
-    same = lambda s: all((base / s["id"] / f).read_bytes() == (live / f).read_bytes()
-                         for f in ("config", "style.css") if (base / s["id"] / f).is_file() and (live / f).is_file())
+    same = lambda s: (live / "style.css").is_file() and (base / s["id"] / "style.css").read_bytes() == (live / "style.css").read_bytes()
     return {"styles": styles, "active": next((s["id"] for s in styles if same(s)), "")}
 
 
@@ -394,9 +393,23 @@ def cmd_set(pairs):
     reapply(reload)
     if any(p.startswith("cursor.") for p in pairs):
         cmd_cursor()
+    if any(p.startswith("utilities.clock24=") for p in pairs):
+        cmd_waybar_clock()
     if "space.world=null" in pairs:
         sync_world(live_settings())
         detached(str(HYPR / "utilities/colors/color-apply.sh"), dig(settings, "colors.theme") or DEFAULT_THEME)
+
+
+def cmd_waybar_clock():
+    h24 = dig(live_settings(), "utilities.clock24")
+    if h24 is None:
+        h24 = FALLBACKS["utilities.clock24"]
+    path = HOME / ".config/waybar/config"
+    text = path.read_text() if (style_dir() / "waybar").is_dir() and path.is_file() else ""
+    clock = re.sub(r"%I:%M:%S %p|%H:%M:%S", "%H:%M:%S" if h24 else "%I:%M:%S %p", text)
+    if clock != text:
+        path.write_text(clock)
+        run("pkill", "-USR2", "-x", "waybar")
 
 
 def cmd_reset():
@@ -618,7 +631,7 @@ def main():
     migrate()
     command, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("", [])
     handlers = {"state": cmd_state, "set": cmd_set, "ui": cmd_ui, "saved": cmd_saved}
-    bare = {"reset": cmd_reset, "sync": cmd_sync, "cursor": cmd_cursor, "colors": cmd_colors, "appearance": cmd_appearance}
+    bare = {"reset": cmd_reset, "sync": cmd_sync, "cursor": cmd_cursor, "colors": cmd_colors, "appearance": cmd_appearance, "waybar-clock": cmd_waybar_clock}
     if command in bare:
         bare[command]()
     elif command in handlers:

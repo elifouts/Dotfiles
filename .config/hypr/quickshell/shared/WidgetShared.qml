@@ -77,8 +77,8 @@ Item {
                 text: modelData[0]
                 font.pixelSize: modelData[1] * w.s
                 font.weight: modelData[1] > 30 ? Font.ExtraLight : Font.Normal
-                font.letterSpacing: modelData[1] > 30 ? 2 * w.s : 1.6 * w.s
-                font.capitalization: modelData[1] > 30 ? Font.MixedCase : Font.AllUppercase
+                font.letterSpacing: modelData[1] > 30 ? Theme.tracking * 1.25 * w.s : Theme.tracking * w.s
+                font.capitalization: modelData[1] > 30 ? Font.MixedCase : Theme.caps
                 color: Theme.alpha(w.ink, modelData[2])
             }
         }

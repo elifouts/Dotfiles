@@ -21,6 +21,7 @@ case "${1:-}" in
         }
         cp "$config" "$WAYBAR/config"
         cp "$dir/$name/style.css" "$WAYBAR/style.css"
+        python3 "$UTIL/settings/hypr-settings.py" waybar-clock
         if [ "$("$UTIL/bars/bar.sh" current)" = waybar ]; then
             pkill -x waybar 2>/dev/null || true
             setsid -f waybar >/dev/null 2>&1 </dev/null
