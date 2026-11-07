@@ -164,7 +164,7 @@ Scope {
                         caps: false
                         decode: false
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: Qt.formatTime(clock.date, StoreShared.values["space.clock24"] === false ? "h:mm:ss" : "HH:mm:ss")
+                        text: Theme.clock(clock.date, true)
                         font.pixelSize: 34
                         font.weight: Font.ExtraLight
                         font.letterSpacing: 4

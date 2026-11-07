@@ -70,7 +70,7 @@ PanelWindow {
         Module {
             SystemClock { id: clock; precision: SystemClock.Minutes }
             glyph: "󰥔"
-            text: Qt.formatTime(clock.date, StoreShared.values["space.clock24"] === false ? "h:mm ap" : "HH:mm")
+            text: Theme.clock(clock.date, false, "ap")
             panel: "time"
             MouseArea { anchors.fill: parent; acceptedButtons: Qt.RightButton; onClicked: Ui.openPanel("media", bar.screen, "timer") }
         }

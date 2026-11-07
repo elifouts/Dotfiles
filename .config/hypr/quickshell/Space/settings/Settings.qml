@@ -24,7 +24,7 @@ PanelWindow {
     WlrLayershell.keyboardFocus: Ui.touring ? WlrKeyboardFocus.None : WlrKeyboardFocus.Exclusive
 
     property string tab: Ui.sheet
-    readonly property var tabs: ["core", "colors", "fonts"].concat(Schema.PAGES.map(p => p.id), "profiles")
+    readonly property var tabs: ["core", "colors", "fonts"].concat(Schema.PAGES.map(p => p.id))
     readonly property var page: Schema.PAGES.find(p => p.id === tab)
     property int dir: 1
     property int was: tabs.indexOf(tab)
@@ -195,7 +195,7 @@ PanelWindow {
                 y: 34
                 transform: Translate { id: shift }
                 onLoaded: sheetKeys.forceActiveFocus()
-                sourceComponent: ({ core: core, colors: colors, fonts: fonts, profiles: profiles })[sheet.tab] ?? pageView
+                sourceComponent: ({ core: core, colors: colors, fonts: fonts })[sheet.tab] ?? pageView
             }
             ParallelAnimation {
                 id: swap
@@ -225,10 +225,38 @@ PanelWindow {
                     current: StoreShared.active.variant
                     onChose: v => { if (v !== StoreShared.active.variant) StoreShared.applyProfile(StoreShared.active.style, v) }
                 }
+                Knob { label: "Pan distance"; key: "space.parallax"; from: 0.2; to: 2; step: 0.1; fallback: 1 }
+            }
+            ListView {
+                id: plist
+                width: 320
+                height: Math.min(168, Math.max(72, count * 24))
+                clip: true
+                model: StoreShared.saved.entries.filter(e => e.exists)
+                delegate: Controls.Line {
+                    required property var modelData
+                    property bool armed: false
+                    width: 320
+                    glyph: modelData.id === StoreShared.saved.active ? "◆" : "◇"
+                    text: modelData.name
+                    value: armed ? "again to delete" : modelData.kind
+                    lit: modelData.id === StoreShared.saved.active
+                    onClicked: m => {
+                        if (m.button === Qt.LeftButton) return StoreShared.savedRun("apply", modelData.id)
+                        if (armed) StoreShared.savedRun("delete", modelData.id)
+                        armed = !armed
+                    }
+                }
             }
             Column {
-                Toggle { label: "24h clock"; key: "space.clock24" }
-                Knob { label: "Pan distance"; key: "space.parallax"; from: 0.2; to: 2; step: 0.1; fallback: 1 }
+                spacing: 8
+                DecodeText { text: "save as"; color: Theme.alpha(Theme.fg, 0.35) }
+                Field {
+                    width: 320
+                    placeholder: "name"
+                    keysTo: [sheetKeys]
+                    onAccepted: { if (text.trim()) StoreShared.savedRun("save", text.trim()); text = ""; sheetKeys.forceActiveFocus() }
+                }
             }
         }
     }
@@ -415,44 +443,6 @@ PanelWindow {
                         color: parent.modelData === Theme.font ? Theme.accent : fh.containsMouse ? Theme.fg : Theme.dim
                     }
                     MouseArea { id: fh; anchors.fill: parent; hoverEnabled: true; onClicked: StoreShared.set("space.font", parent.modelData) }
-                }
-            }
-        }
-    }
-
-    Component {
-        id: profiles
-        Row {
-            spacing: 24
-            ListView {
-                id: plist
-                width: 320
-                height: Math.min(168, Math.max(72, count * 24))
-                clip: true
-                model: StoreShared.saved.entries.filter(e => e.exists)
-                delegate: Controls.Line {
-                    required property var modelData
-                    property bool armed: false
-                    width: 320
-                    glyph: modelData.id === StoreShared.saved.active ? "◆" : "◇"
-                    text: modelData.name
-                    value: armed ? "again to delete" : modelData.kind
-                    lit: modelData.id === StoreShared.saved.active
-                    onClicked: m => {
-                        if (m.button === Qt.LeftButton) return StoreShared.savedRun("apply", modelData.id)
-                        if (armed) StoreShared.savedRun("delete", modelData.id)
-                        armed = !armed
-                    }
-                }
-            }
-            Column {
-                spacing: 8
-                DecodeText { text: "save as"; color: Theme.alpha(Theme.fg, 0.35) }
-                Field {
-                    width: 320
-                    placeholder: "name"
-                    keysTo: [sheetKeys]
-                    onAccepted: { if (text.trim()) StoreShared.savedRun("save", text.trim()); text = ""; sheetKeys.forceActiveFocus() }
                 }
             }
         }

@@ -269,7 +269,7 @@ Item {
                     id: clockRow
                     anchors.horizontalCenter: parent.horizontalCenter
                     readonly property real size: 150 * face.u
-                    readonly property string hh: String(clock.hours % 12 || 12).padStart(2, "0")
+                    readonly property string hh: String(Theme.h24 ? clock.hours : clock.hours % 12 || 12).padStart(2, "0")
                     readonly property string mm: String(clock.minutes).padStart(2, "0")
 
                     Digit { value: clockRow.hh[0]; size: clockRow.size }

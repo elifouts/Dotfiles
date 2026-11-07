@@ -11,7 +11,7 @@ Column {
     SystemClock { id: clock; precision: SystemClock.Minutes }
     DecodeText {
         caps: false
-        text: Qt.formatTime(clock.date, StoreShared.values["space.clock24"] === false ? "h:mm" : "HH:mm")
+        text: Theme.clock(clock.date)
         font.pixelSize: 34
         font.weight: Font.ExtraLight
         color: Theme.fg

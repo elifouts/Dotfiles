@@ -431,7 +431,7 @@ Scope {
 
                     LabelShared {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: Qt.formatTime(clock.date, "HH:mm")
+                        text: Theme.clock(clock.date)
                         font.pixelSize: 110 * side.su
                         font.weight: Font.Light
                         color: Theme.bright
@@ -511,7 +511,7 @@ Scope {
 
                 LabelShared {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: Qt.formatTime(clock.date, "HH:mm")
+                    text: Theme.clock(clock.date)
                     font.pixelSize: 128 * root.u
                     font.weight: Font.Light
                     color: Theme.bright

@@ -21,7 +21,16 @@ Singleton {
     property real hyprPace: 1
     property var hyprSettle: own
     property var hyprLeave: own
-    readonly property bool ownMotion: /\["utilities"\]\s*=\s*\{[^}]*\["animations"\]\s*=\s*true/.test(settingsFile.text())
+    function utility(key, fallback) {
+        const m = settingsFile.text().match(new RegExp('\\["utilities"\\]\\s*=\\s*\\{[^}]*\\["' + key + '"\\]\\s*=\\s*([\\w.]+)'))
+        return m ? m[1] : fallback
+    }
+    readonly property bool ownMotion: utility("animations") === "true"
+    property bool clock24Default: false
+    readonly property bool h24: utility("clock24", String(clock24Default)) === "true"
+    function clock(date, seconds, mark) {
+        return Qt.formatTime(date, (h24 ? "HH" : "h") + ":mm" + (seconds ? ":ss" : "") + (mark && !h24 ? " " + mark : ""))
+    }
 
     readonly property var own: [0.2, 0.9, 0.3, 1, 1, 1]
     readonly property bool animates: ownMotion || hyprAnimates

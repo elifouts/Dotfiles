@@ -21,12 +21,11 @@ Item {
     visible: editing || (d.type !== "media" && d.type !== "viz") || !!player
 
     SystemClock { id: clock; precision: d.type === "clock" ? SystemClock.Minutes : SystemClock.Hours }
-    readonly property bool h24: StoreShared.values["space.clock24"] !== false
 
     readonly property var lines: {
         const day = Qt.formatDate(clock.date, "ddd · dd MMM")
         switch (d.type) {
-        case "clock": return [[Qt.formatTime(clock.date, h24 ? "HH:mm" : "h:mm"), 64, 1], [day, 12, 0.6]]
+        case "clock": return [[Theme.clock(clock.date), 64, 1], [day, 12, 0.6]]
         case "stats": return [["cpu " + Math.round(SystemStats.cpu * 100) + "%  ·  ram " + Math.round(SystemStats.ram * 100) + "%", 13, 1],
                               [SystemStats.net + (PowerShared.hasBattery ? "  ·  bat " + Math.round(PowerShared.charge * 100) + "%" : ""), 11, 0.6]]
         }

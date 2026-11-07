@@ -186,7 +186,7 @@ Item {
             LabelShared {
                 id: clockText
                 anchors.centerIn: parent
-                text: Qt.formatTime(mod.ctx.now, "h:mm AP")
+                text: Theme.clock(mod.ctx.now, false, "AP")
                 font.pixelSize: 13
                 font.bold: true
                 color: Theme.bright

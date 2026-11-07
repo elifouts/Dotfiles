@@ -302,6 +302,7 @@ def wallpaper_palette(path, index=None):
 FALLBACKS = {
     "animation.preset": "theme",
     "utilities.animations": False,
+    "utilities.clock24": style_dir().name == "Space",
     "animation.speed": 1.0,
     "animation.curve": [0.15, 0.85, 0.25, 1.0],
     "animation.window": "popin 90%",

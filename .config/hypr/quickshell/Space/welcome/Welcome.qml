@@ -9,9 +9,9 @@ TourShared {
     steps: [
         { title: "Keybinds", keys: ["SUPER", "launcher", "SUPER Q", "terminal", "SUPER B", "close", "SUPER 1-9", "workspaces", "SUPER TAB", "galaxy map"] },
         { title: "Settings", hint: "ALT S", where: "settings", beat: 800, pages: [
-            ["core", "Style, machine, clock."], ["colors", "Themes and accents."], ["fonts", "Any font you have."],
+            ["core", "Style, machine, saved tweaks."], ["colors", "Themes and accents."], ["fonts", "Any font you have."],
             ["windows", "Gaps, borders, tiling."], ["effects", "Blur, glow, shadows."], ["animations", "Speed and curves."],
-            ["input", "Mouse, keyboard, cursor."], ["system", "Display and wake."], ["profiles", "Save your tweaks."]] },
+            ["input", "Mouse, keyboard, cursor."], ["system", "Display, wake, clock."]] },
         { title: "Bar", hint: "ALT A", text: "Click a readout to open its panel.", where: "bar" },
         { title: "Workspaces", hint: "SUPER 1-9", text: "Each workspace is a spot on the land.", where: "workspaces" },
         { title: "Worlds", hint: "ALT W", text: "This is what changes your colors.", where: "world" },

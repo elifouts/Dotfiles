@@ -196,6 +196,9 @@ var PAGES = [
                 toggle("boot.enabled", "Boot screen"),
                 slider("boot.black_ms", "Boot screen delay", 0, 5000, 100, " ms", { when: { key: "boot.enabled", eq: true } })
             ]),
+            section("Clock", [
+                toggle("utilities.clock24", "24 hour clock")
+            ]),
             section("Display", [
                 choice("config.misc.vrr", "Variable refresh rate", [opt(0, "Off"), opt(1, "On"), opt(2, "Fullscreen")]),
                 toggle("config.debug.vfr", "Save power when idle"),

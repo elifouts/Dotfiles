@@ -7,7 +7,7 @@ var LAYOUT = {
     effects: [["Blur"], ["Shadow", "Glow", "Focus"]],
     animations: [["Motion", "Details"], ["Curve"]],
     input: [["Mouse", "Keyboard"], ["Cursor look", "Cursor behavior"], ["Touchpad", "Gestures"]],
-    system: [["Display"], ["Behavior"]]
+    system: [["Display", "Clock"], ["Behavior"]]
 }
 var PAGES = Object.keys(LAYOUT).map(function (id) {
     var p = Base.PAGES.find(function (x) { return x.id === id })
@@ -17,5 +17,5 @@ var PAGES = Object.keys(LAYOUT).map(function (id) {
 })
 
 function keys() {
-    return Base.keys().concat(["space.parallax", "space.clock24", "space.font"])
+    return Base.keys().concat(["space.parallax", "space.font"])
 }

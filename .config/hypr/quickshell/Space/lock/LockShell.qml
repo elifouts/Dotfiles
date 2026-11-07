@@ -33,7 +33,7 @@ ShellRoot {
                 DecodeText {
                     caps: false
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: Qt.formatTime(clock.date, StoreShared.values["space.clock24"] === false ? "h:mm" : "HH:mm")
+                    text: Theme.clock(clock.date)
                     font.pixelSize: Math.min(face.width, face.height) * 0.11
                     font.weight: Font.ExtraLight
                     font.letterSpacing: 6
