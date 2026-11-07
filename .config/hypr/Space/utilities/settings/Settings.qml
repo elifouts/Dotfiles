@@ -47,7 +47,7 @@ PanelWindow {
     }
     HyprlandFocusGrab { active: !Ui.touring && !morph.leaving; windows: [sheet]; onCleared: sheet.close() }
 
-    component Caption: Hud { width: 150; height: 20; caps: false; elide: Text.ElideRight; color: Theme.dim }
+    component Caption: DecodeText { width: 150; height: 20; caps: false; elide: Text.ElideRight; color: Theme.dim }
     component Pick: Flow {
         id: pick
         property string label
@@ -72,7 +72,7 @@ PanelWindow {
             spacing: 12
             Repeater {
                 model: pick.shown
-                Hud {
+                DecodeText {
                     required property var modelData
                     readonly property var v: modelData.v ?? modelData
                     text: (modelData.l ?? modelData) + (pick.many ? " \u203a" : "")
@@ -99,7 +99,7 @@ PanelWindow {
         width: 320
         implicitHeight: 20
         Caption { width: tg.width - 40; text: tg.label }
-        Kit.Toggle {
+        Controls.Toggle {
             anchors.right: parent.right
             height: 20
             on: tg.on
@@ -124,7 +124,7 @@ PanelWindow {
         width: 320
         spacing: 8
         Caption { text: knob.label }
-        Kit.Slide {
+        Controls.Slide {
             width: knob.width - 158
             height: 20
             scrollable: false
@@ -168,7 +168,7 @@ PanelWindow {
                 Repeater {
                     id: tabItems
                     model: sheet.tabs
-                    Hud {
+                    DecodeText {
                         required property string modelData
                         text: modelData
                         color: sheet.tab === modelData ? Theme.accent : Theme.dim
@@ -186,7 +186,7 @@ PanelWindow {
                 Behavior on x { SettleShared { duration: Theme.fast } }
                 Behavior on width { SettleShared { duration: Theme.fast } }
             }
-            Hud { anchors.right: parent.right; anchors.rightMargin: 24; y: 10; text: "esc"; color: Theme.alpha(Theme.fg, 0.25) }
+            DecodeText { anchors.right: parent.right; anchors.rightMargin: 24; y: 10; text: "esc"; color: Theme.alpha(Theme.fg, 0.25) }
 
             Loader {
                 id: content
@@ -255,7 +255,7 @@ PanelWindow {
                             visible: modelData.controls.some(c => Schema.shown(c, StoreShared.values, StoreShared.caps))
                             width: col.width
                             spacing: 2
-                            Kit.Title { glyph: "\u25c6"; text: sec.modelData.label }
+                            Controls.Title { glyph: "\u25c6"; text: sec.modelData.label }
                             Repeater {
                                 model: sec.modelData.controls
                                 Loader {
@@ -311,10 +311,10 @@ PanelWindow {
             Row {
                 spacing: 12
                 Caption { width: 60; caps: true; height: 24; text: "random" }
-                Kit.Toggle { on: World.random; onFlip: World.setRandom(!World.random) }
+                Controls.Toggle { on: World.random; onFlip: World.setRandom(!World.random) }
                 Button { label: "new world"; onPressed: World.hop(true) }
                 Rectangle { width: 12; height: 12; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter }
-                Hud {
+                DecodeText {
                     height: 24
                     color: Theme.fg
                     text: World.applied ? World.applied.t.name + "  //  " + World.accentNames[World.applied.i] : World.random ? "random" : StoreShared.colorTheme
@@ -341,7 +341,7 @@ PanelWindow {
                             border.color: tile.used ? Theme.accent : Theme.alpha(Theme.fg, 0.12)
                             Behavior on color { ColorAnimation { duration: Theme.fast } }
                         }
-                        Hud { x: 8; y: 6; font.pixelSize: 9; text: tile.modelData.name; color: tile.used ? Theme.fg : Theme.dim }
+                        DecodeText { x: 8; y: 6; font.pixelSize: 9; text: tile.modelData.name; color: tile.used ? Theme.fg : Theme.dim }
                         Column {
                             z: 2
                             x: 8
@@ -358,7 +358,7 @@ PanelWindow {
                                     color: tile.modelData.c[modelData]
                                     opacity: World.pins[tile.modelData.id] !== undefined && modelData > 2 && !pinned ? 0.35 : 1
                                     Behavior on opacity { SettleShared { duration: Theme.ms(140) } }
-                                    Hud { visible: sw.pinned || tile.usedAccent === sw.modelData; anchors.centerIn: parent; font.pixelSize: 9; text: sw.pinned ? "accent" : "now"; color: tile.modelData.c[0] }
+                                    DecodeText { visible: sw.pinned || tile.usedAccent === sw.modelData; anchors.centerIn: parent; font.pixelSize: 9; text: sw.pinned ? "accent" : "now"; color: tile.modelData.c[0] }
                                     MouseArea {
                                         anchors.fill: parent
                                         enabled: sw.modelData > 2
@@ -391,7 +391,7 @@ PanelWindow {
                 spacing: 14
                 Caption { width: 40; caps: true; height: 24; text: "font" }
                 Field { id: find; width: 260; placeholder: "search"; keysTo: [sheetKeys]; onAccepted: sheetKeys.forceActiveFocus() }
-                Hud { text: Theme.font; height: 24; color: Theme.accent }
+                DecodeText { text: Theme.font; height: 24; color: Theme.accent }
             }
             GridView {
                 width: 720
@@ -429,7 +429,7 @@ PanelWindow {
                 height: Math.min(168, Math.max(72, count * 24))
                 clip: true
                 model: StoreShared.saved.entries.filter(e => e.exists)
-                delegate: Kit.Line {
+                delegate: Controls.Line {
                     required property var modelData
                     property bool armed: false
                     width: 320
@@ -446,7 +446,7 @@ PanelWindow {
             }
             Column {
                 spacing: 8
-                Hud { text: "save as"; color: Theme.alpha(Theme.fg, 0.35) }
+                DecodeText { text: "save as"; color: Theme.alpha(Theme.fg, 0.35) }
                 Field {
                     width: 320
                     placeholder: "name"

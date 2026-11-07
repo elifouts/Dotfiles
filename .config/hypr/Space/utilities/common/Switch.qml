@@ -1,6 +1,6 @@
 import QtQuick
 
-Kit.Toggle {
+Controls.Toggle {
     property bool checked: false
     signal toggled()
     on: checked

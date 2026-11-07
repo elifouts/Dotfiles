@@ -39,7 +39,7 @@ ShellRoot {
             return [
                 "hl.on(\"hyprland.start\", function()",
                 "    hl.exec_cmd(\"waybar\")",
-                "    hl.exec_cmd(\"qs -p utilities/home-screen\")",
+                "    hl.exec_cmd(\"qs -p utilities/home\")",
                 "    hl.exec_cmd(\"awww restore\")",
                 "end)"
             ]

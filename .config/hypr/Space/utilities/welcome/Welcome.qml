@@ -15,7 +15,7 @@ TourShared {
         { title: "Workspaces", hint: "SUPER 1-9", text: "Each workspace is a spot on the land.", where: "workspaces" },
         { title: "Worlds", hint: "ALT W", text: "This is what changes your colors.", where: "world" },
         { title: "Launcher", hint: "SUPER", text: "Apps and commands. Tab switches.", where: "launcher" },
-        { title: "Galaxy map", hint: "SUPER TAB", text: "Workspaces are stars, windows are planets.\nWASD flies, click a star to land.", where: "overview", ms: 20000 },
+        { title: "Overview", hint: "SUPER TAB", text: "Workspaces are stars, windows are planets.\nWASD flies, click a star to land.", where: "overview", ms: 20000 },
         { title: "Thanks", text: "Thanks for using my dotfiles.\n— Eli" }
     ]
 

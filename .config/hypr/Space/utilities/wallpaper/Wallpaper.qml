@@ -3,12 +3,12 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import "../common"
-import "../desk"
+import "../widgets"
 
 PanelWindow {
     id: win
 
-    required property var desk
+    required property var widgets
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Ignore
     color: "black"
@@ -22,7 +22,7 @@ PanelWindow {
     Connections {
         target: land.Window.window
         enabled: win.moving && win.screen === HyprShared.moonScreen
-        function onFrameSwapped() { Pace.frame() }
+        function onFrameSwapped() { RenderScale.frame() }
     }
 
     Terrain {
@@ -37,7 +37,7 @@ PanelWindow {
         lift: World.hopBusy && World.hopSwapped ? 0.9 * Math.pow(1 - World.hopAfter, 3) : 0
         skyFade: !World.hopBusy ? 1 : World.hopSwapped ? World.ease(World.hopAfter) : 1 - World.ease(World.hopProg / 0.3)
         layer.enabled: true
-        layer.textureSize: win.moving ? Pace.size(width, height, win.screen) : Qt.size(0, 0)
+        layer.textureSize: win.moving ? RenderScale.size(width, height, win.screen) : Qt.size(0, 0)
         Behavior on pan { enabled: !World.hopBusy; NumberAnimation { id: panning; duration: Theme.ms(1400); easing.type: Easing.InOutCubic } }
     }
     Terrain {
@@ -51,8 +51,8 @@ PanelWindow {
         lift: -0.9 * (1 - Math.cos(Math.PI / 2 * Math.min(1, World.hopProg / 0.5)))
         skyFade: 1 - World.ease(World.hopProg / 0.5)
         wipe: World.ease(World.hopAfter)
-        layer.enabled: visible && Pace.scale < 1
-        layer.textureSize: Pace.size(width, height, win.screen)
+        layer.enabled: visible && RenderScale.scale < 1
+        layer.textureSize: RenderScale.size(width, height, win.screen)
     }
 
     Connections {
@@ -66,5 +66,5 @@ PanelWindow {
         }
     }
 
-    Desk { anchors.fill: parent; model: win.desk; visible: Ui.editing !== win.screen?.name }
+    Widgets { anchors.fill: parent; model: win.widgets; visible: Ui.editing !== win.screen?.name }
 }

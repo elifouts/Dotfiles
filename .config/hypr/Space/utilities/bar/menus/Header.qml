@@ -1,7 +1,7 @@
 import QtQuick
 import "../../common"
 
-Kit.Title {
+Controls.Title {
     property string title
     text: title
     glyph: ({ "Wi-Fi": "󰤨", Bluetooth: "󰂯", Sound: "󰕾", Updates: "󰚰", Notifications: "󰂚" })[title] ?? ""

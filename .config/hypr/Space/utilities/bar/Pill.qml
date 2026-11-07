@@ -3,7 +3,7 @@ import QtQuick.Shapes
 import "../common"
 
 Item {
-    id: wing
+    id: pill
 
     component Bracket: Item {
         property bool atRight: false
@@ -36,9 +36,9 @@ Item {
     width: natW + extraW
     height: 28 + drop
     opacity: intro
-    transform: Translate { y: -(1 - wing.intro) * 12 }
+    transform: Translate { y: -(1 - pill.intro) * 12 }
     SequentialAnimation on intro {
-        PauseAnimation { duration: wing.introDelay }
+        PauseAnimation { duration: pill.introDelay }
         SettleShared { to: 1; duration: Theme.open }
     }
 
@@ -51,26 +51,26 @@ Item {
             strokeWidth: 1
             strokeColor: Theme.alpha(Theme.accent, 0.4)
             fillGradient: LinearGradient {
-                y2: wing.height
+                y2: pill.height
                 GradientStop { position: 0; color: Theme.alpha(Theme.bg, 0.72) }
                 GradientStop { position: 1; color: Theme.alpha(Theme.bg, 0.42) }
             }
-            startX: wing.fx(8); startY: 0
-            PathLine { x: wing.fx(wing.width); y: 0 }
-            PathLine { x: wing.fx(wing.width); y: wing.height - 8 }
-            PathLine { x: wing.fx(wing.width - 8); y: wing.height }
-            PathLine { x: wing.fx(0); y: wing.height }
-            PathLine { x: wing.fx(0); y: 8 }
-            PathLine { x: wing.fx(8); y: 0 }
+            startX: pill.fx(8); startY: 0
+            PathLine { x: pill.fx(pill.width); y: 0 }
+            PathLine { x: pill.fx(pill.width); y: pill.height - 8 }
+            PathLine { x: pill.fx(pill.width - 8); y: pill.height }
+            PathLine { x: pill.fx(0); y: pill.height }
+            PathLine { x: pill.fx(0); y: 8 }
+            PathLine { x: pill.fx(8); y: 0 }
         }
     }
 
-    Bracket { x: wing.lean > 0 ? wing.width - 7 : 0; y: 0; atRight: wing.lean > 0; atBottom: false }
-    Bracket { x: wing.lean > 0 ? 0 : wing.width - 7; y: wing.height - 7; atRight: wing.lean < 0; atBottom: true }
+    Bracket { x: pill.lean > 0 ? pill.width - 7 : 0; y: 0; atRight: pill.lean > 0; atBottom: false }
+    Bracket { x: pill.lean > 0 ? 0 : pill.width - 7; y: pill.height - 7; atRight: pill.lean < 0; atBottom: true }
 
-    Rectangle { x: 8; y: wing.height - 1; width: wing.width - 16; height: 1; color: Theme.alpha(Theme.accent, 0.28) }
+    Rectangle { x: 8; y: pill.height - 1; width: pill.width - 16; height: 1; color: Theme.alpha(Theme.accent, 0.28) }
 
-    Row { id: inner; x: wing.padL + (wing.lean < 0 ? wing.extraW : 0); height: 28 }
+    Row { id: inner; x: pill.padL + (pill.lean < 0 ? pill.extraW : 0); height: 28 }
 
     HoverHandler { id: hh }
     Connections {
@@ -79,23 +79,23 @@ Item {
         function onRun(cmd) { HyprShared.run(cmd) }
         function onDone() { Ui.panel = "" }
     }
-    Timer { interval: 260; running: wing.dropped && !hh.hovered && !body.item?.holdOpen; onTriggered: Ui.panel = "" }
+    Timer { interval: 260; running: pill.dropped && !hh.hovered && !body.item?.holdOpen; onTriggered: Ui.panel = "" }
 
     Item {
         x: 0; y: 28
-        width: wing.width
-        height: Math.max(0, wing.height - 28)
+        width: pill.width
+        height: Math.max(0, pill.height - 28)
         clip: true
         Rectangle { x: 12; y: 0; width: parent.width - 24; height: 1; color: Theme.alpha(Theme.accent, 0.25) }
         Loader {
             id: body
             x: 12
             y: 11 + Math.min(0, parent.height - height - 22)
-            width: wing.panelW - 24
-            opacity: wing.dropped ? 1 : 0
+            width: pill.panelW - 24
+            opacity: pill.dropped ? 1 : 0
             Behavior on opacity { SettleShared { duration: Theme.open } }
-            source: wing.kind ? "panels/Panel" + wing.kind[0].toUpperCase() + wing.kind.slice(1) + ".qml" : ""
-            onLoaded: if ("open" in item) item.open = Qt.binding(() => wing.dropped)
+            source: pill.kind ? "menus/" + ({ audio: "SoundShared", media: "Island", net: "NetworkShared", notifs: "NotificationsShared", power: "Session", time: "Calendar", tray: "Tray", updates: "UpdateMenuShared" })[pill.kind] + ".qml" : ""
+            onLoaded: if ("open" in item) item.open = Qt.binding(() => pill.dropped)
         }
     }
 }

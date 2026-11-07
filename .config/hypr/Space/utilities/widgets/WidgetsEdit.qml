@@ -12,14 +12,14 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "space-desk"
+    WlrLayershell.namespace: "space-widgets"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
     Rectangle { anchors.fill: parent; color: Theme.void_; opacity: 0.55 }
 
-    Desk { anchors.fill: parent; model: win.model; editing: true }
+    Widgets { anchors.fill: parent; model: win.model; editing: true }
 
-    Editor {
+    WidgetEditor {
         model: win.model
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter

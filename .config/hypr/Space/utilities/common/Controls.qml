@@ -9,7 +9,7 @@ Item {
         width: parent?.width ?? 280
         height: 24
         Text { id: g; text: title.glyph; font.family: Theme.font; font.pixelSize: 14; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter }
-        Hud { x: g.width + 8; text: title.text; color: Theme.fg; height: parent.height }
+        DecodeText { x: g.width + 8; text: title.text; color: Theme.fg; height: parent.height }
         Row { id: side; anchors.right: parent.right; height: parent.height; spacing: 10 }
         Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 1; color: Theme.alpha(Theme.accent, 0.25) }
     }
@@ -27,7 +27,7 @@ Item {
         Rectangle { anchors.fill: parent; color: Theme.alpha(Theme.accent, line.hot ? 0.1 : 0) }
         Rectangle { width: 2; height: parent.height; color: Theme.accent; visible: line.lit }
         Text { x: 8; text: line.glyph; font.family: Theme.font; font.pixelSize: 13; color: line.lit ? Theme.accent : Theme.dim; anchors.verticalCenter: parent.verticalCenter }
-        Hud {
+        DecodeText {
             caps: false
             x: line.glyph ? 28 : 8
             width: parent.width - x - val.width - 14
@@ -37,7 +37,7 @@ Item {
             color: line.lit || line.hot ? Theme.fg : Theme.dim
             anchors.verticalCenter: parent.verticalCenter
         }
-        Hud { id: val; anchors.right: parent.right; anchors.rightMargin: 6; height: parent.height; text: line.value; color: line.lit ? Theme.accent : Theme.alpha(Theme.fg, 0.35) }
+        DecodeText { id: val; anchors.right: parent.right; anchors.rightMargin: 6; height: parent.height; text: line.value; color: line.lit ? Theme.accent : Theme.alpha(Theme.fg, 0.35) }
         MouseArea { id: area; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.LeftButton | Qt.RightButton; onClicked: m => line.clicked(m) }
     }
 
@@ -61,7 +61,7 @@ Item {
             scrollable: sl.scrollable
             onMoved: v => sl.moved(v)
         }
-        Hud { decode: false; anchors.right: parent.right; height: parent.height; text: sl.off ? "off" : sl.readout || Math.round(sl.value * 100); color: Theme.fg }
+        DecodeText { decode: false; anchors.right: parent.right; height: parent.height; text: sl.off ? "off" : sl.readout || Math.round(sl.value * 100); color: Theme.fg }
     }
 
     component Toggle: Item {
@@ -100,7 +100,7 @@ Item {
                     Behavior on scale { SettleShared { duration: Theme.ms(80) } }
                 }
             }
-            Hud { visible: tg.text !== ""; text: tg.text; height: parent.height; color: tg.on ? Theme.accent : Theme.dim }
+            DecodeText { visible: tg.text !== ""; text: tg.text; height: parent.height; color: tg.on ? Theme.accent : Theme.dim }
         }
         MouseArea { id: area; anchors.fill: parent; anchors.margins: -4; hoverEnabled: true; onClicked: tg.flip() }
     }

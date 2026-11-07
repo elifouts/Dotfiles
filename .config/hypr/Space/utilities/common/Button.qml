@@ -14,6 +14,6 @@ Rectangle {
     border.width: 1
     border.color: Theme.alpha(Theme.accent, primary ? 0.7 : 0.25)
 
-    Hud { id: caption; anchors.centerIn: parent; text: b.label; color: b.primary ? Theme.accent : b.tone }
+    DecodeText { id: caption; anchors.centerIn: parent; text: b.label; color: b.primary ? Theme.accent : b.tone }
     HoverShared { id: area; anchors.fill: parent; onClicked: b.pressed() }
 }

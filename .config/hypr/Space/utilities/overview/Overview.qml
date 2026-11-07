@@ -6,7 +6,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import Quickshell.Widgets
 import "../common"
-import "../land"
+import "../wallpaper"
 
 Scope {
     id: map
@@ -588,7 +588,7 @@ Scope {
                 function onFrameSwapped() {
                     if (map.gate) map.gateFrames++
                     else if (map.poseDirty) map.flyPath()
-                    if (win.main && (takeoff.running || descend.running)) Pace.frame()
+                    if (win.main && (takeoff.running || descend.running)) RenderScale.frame()
                 }
             }
             Item {
@@ -615,7 +615,7 @@ Scope {
                 readonly property color tint1: Theme.accent
                 readonly property color tint2: Theme.accent2
                 readonly property color base: Theme.mix(Theme.bg, "#000000", 0.7)
-                fragmentShader: Qt.resolvedUrl("starmap.frag.qsb")
+                fragmentShader: Qt.resolvedUrl("overview.frag.qsb")
             }
 
             Repeater {
@@ -720,8 +720,8 @@ Scope {
                         opacity: map.ui
                         x: (u.p?.x ?? 0) - win.ox + sb.width / 2 + 6
                         y: (u.p?.y ?? 0) - win.oy - 8
-                        Hud { decode: false; text: map.sysName(u.modelData.id) + (u.modelData.id === map.current ? "  ◂" : ""); color: u.picked ? Theme.accent : Theme.fg; opacity: u.picked || map.aimed === u.modelData ? 1 : 0.6 }
-                        Hud { decode: false; text: map.nameOf(u.modelData.ws); font.pixelSize: 10; color: Theme.dim; visible: text !== "" && (u.picked || map.aimed === u.modelData || u.modelData.id === map.current) }
+                        DecodeText { decode: false; text: map.sysName(u.modelData.id) + (u.modelData.id === map.current ? "  ◂" : ""); color: u.picked ? Theme.accent : Theme.fg; opacity: u.picked || map.aimed === u.modelData ? 1 : 0.6 }
+                        DecodeText { decode: false; text: map.nameOf(u.modelData.ws); font.pixelSize: 10; color: Theme.dim; visible: text !== "" && (u.picked || map.aimed === u.modelData || u.modelData.id === map.current) }
                     }
                 }
             }
@@ -749,7 +749,7 @@ Scope {
                         x: Math.cos(mk.ang) * 9 - 3; y: Math.sin(mk.ang) * 9 - 0.5
                         width: 6; height: 1; rotation: mk.ang * 180 / Math.PI; antialiasing: true; color: Theme.dim
                     }
-                    Hud {
+                    DecodeText {
                         x: -Math.cos(mk.ang) * 20 - width / 2
                         y: -Math.sin(mk.ang) * 14 - height / 2
                         decode: false
@@ -784,7 +784,7 @@ Scope {
                         sun: map.sunDir(map.shown(bd.modelData), bd.modelData.star)
                         opacity: (bd.p ? Math.min(1, (400 - bd.p.z) / 120) : 0) * (map.isTransit(bd.modelData) && map.ascent < 0.995 ? 0 : 1)
                     }
-                    Hud {
+                    DecodeText {
                         visible: pl.visible && bd.modelData.kind !== "home" && !bd.modelData.natural && map.aimed === bd.modelData
                         x: pl.x + pl.width / 2 + bd.rpx + 8
                         y: pl.y + pl.height / 2 - 7
@@ -833,7 +833,7 @@ Scope {
                         y: 11
                         width: parent.width - 30
                         spacing: 4
-                        Hud {
+                        DecodeText {
                             font.pixelSize: 12
                             color: Theme.fg
                             text: info.kind === "ws" ? map.sysName(info.o.id) + (info.o.id === map.current ? "  (you)" : "")
@@ -844,7 +844,7 @@ Scope {
                         }
                         Row {
                         spacing: 8
-                        Hud {
+                        DecodeText {
                             color: Theme.accent
                             text: info.kind === "ws" ? (info.wins.length + 1) + (info.wins.length ? " planets" : " planet")
                                 : info.kind === "planet" ? "planet of " + map.sysName(info.o.wsid)
@@ -852,27 +852,27 @@ Scope {
                                 : info.kind === "home" ? (info.o.sys.kind === "ws" ? "your world" : "a new world")
                                 : info.kind ? "1 planet  //  unexplored" : ""
                         }
-                        Hud { visible: info.kind === "home" && info.o.sys.kind !== "ws";}}
+                        DecodeText { visible: info.kind === "home" && info.o.sys.kind !== "ws";}}
                         Repeater {
                             model: info.wins.slice(0, 8)
-                            Hud {
+                            DecodeText {
                                 caps: false; elide: Text.ElideRight; font.pixelSize: 11; color: Theme.dim
                                 required property var modelData
                                 width: info.width
                                 text: "◦ " + (map.appOf(modelData) || "window") + (modelData.title ? "  " + modelData.title : "")
                             }
                         }
-                        Hud { caps: false; elide: Text.ElideRight; font.pixelSize: 11; color: Theme.dim; width: info.width; visible: info.kind === "planet"; text: info.o?.window?.title ?? "" }
+                        DecodeText { caps: false; elide: Text.ElideRight; font.pixelSize: 11; color: Theme.dim; width: info.width; visible: info.kind === "planet"; text: info.o?.window?.title ?? "" }
                         Item {
                             width: info.width
                             height: hint.height
-                            Hud {
+                            DecodeText {
                                 id: hint
                                 color: Theme.alpha(Theme.fg, 0.4)
                                 font.pixelSize: 9
                                 text: !info.kind ? "" : info.o.star ? "click  land" : info.o.id === map.sel?.id ? "click  land here" : "click  fly to it"
                             }
-                            Hud { anchors.right: parent.right; font.pixelSize: 9; visible: !!info.kind; text: info.world; color: info.accent }
+                            DecodeText { anchors.right: parent.right; font.pixelSize: 9; visible: !!info.kind; text: info.world; color: info.accent }
                         }
                     }
                 }
@@ -888,7 +888,7 @@ Scope {
                 Rectangle { anchors.centerIn: parent; width: 2; height: 2; radius: 1; color: Theme.fg }
             }
 
-            Hud {
+            DecodeText {
                 visible: win.main && map.ui > 0
                 anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -907,8 +907,8 @@ Scope {
                 z: 50
                 visible: map.warm || map.ground * map.veil > 0
                 opacity: map.warm ? 0.0015 : map.ground * Math.min(1, map.veil * 2)
-                layer.enabled: visible && Pace.scale < 1
-                layer.textureSize: Pace.size(width, height, win.modelData)
+                layer.enabled: visible && RenderScale.scale < 1
+                layer.textureSize: RenderScale.size(width, height, win.modelData)
                 ws: map.landWs
                 asTheme: true
                 screenX: win.ox

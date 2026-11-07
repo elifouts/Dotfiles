@@ -103,8 +103,8 @@ PanelWindow {
 
                 Row {
                     spacing: 8
-                    Hud { text: win.cmd ? "~/cmd" : "~/run"; color: Theme.accent; font.capitalization: Font.MixedCase; height: 22 }
-                    Hud { text: "$"; color: Theme.dim; height: 22 }
+                    DecodeText { text: win.cmd ? "~/cmd" : "~/run"; color: Theme.accent; font.capitalization: Font.MixedCase; height: 22 }
+                    DecodeText { text: "$"; color: Theme.dim; height: 22 }
                     TextInput {
                         id: field
                         cursorDelegate: Item {}
@@ -157,7 +157,7 @@ PanelWindow {
                             x: 6
                             height: parent.height
                             spacing: 8
-                            Hud { text: line.on ? "›" : String(line.index + 1); color: line.on ? Theme.accent : Theme.alpha(Theme.fg, 0.3); height: parent.height; visible: !!line.app }
+                            DecodeText { text: line.on ? "›" : String(line.index + 1); color: line.on ? Theme.accent : Theme.alpha(Theme.fg, 0.3); height: parent.height; visible: !!line.app }
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: col.width - 34
@@ -176,7 +176,7 @@ PanelWindow {
                         MouseArea { anchors.fill: parent; hoverEnabled: true; onEntered: if (line.app) win.sel = line.index; onClicked: if (line.app) win.launch() }
                     }
                 }
-                Hud { visible: field.text !== "" && !win.hits.length; text: "command not found"; color: Theme.alpha(Theme.fg, 0.35); height: 22 }
+                DecodeText { visible: field.text !== "" && !win.hits.length; text: "command not found"; color: Theme.alpha(Theme.fg, 0.35); height: 22 }
             }
         }
     }

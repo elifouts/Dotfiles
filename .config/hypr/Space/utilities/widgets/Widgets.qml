@@ -2,7 +2,7 @@ import QtQuick
 import "../common"
 
 Item {
-    id: desk
+    id: board
 
     required property var model
     property bool editing: false
@@ -33,59 +33,59 @@ Item {
     }
 
     Repeater {
-        model: desk.editing ? Math.ceil(desk.width / desk.grid) : 0
-        Rectangle { required property int index; x: index * desk.grid; width: 1; height: desk.height; color: Theme.alpha(Theme.fg, 0.05) }
+        model: board.editing ? Math.ceil(board.width / board.grid) : 0
+        Rectangle { required property int index; x: index * board.grid; width: 1; height: board.height; color: Theme.alpha(Theme.fg, 0.05) }
     }
     Repeater {
-        model: desk.editing ? Math.ceil(desk.height / desk.grid) : 0
-        Rectangle { required property int index; y: index * desk.grid; height: 1; width: desk.width; color: Theme.alpha(Theme.fg, 0.05) }
+        model: board.editing ? Math.ceil(board.height / board.grid) : 0
+        Rectangle { required property int index; y: index * board.grid; height: 1; width: board.width; color: Theme.alpha(Theme.fg, 0.05) }
     }
-    MouseArea { anchors.fill: parent; enabled: desk.editing; onClicked: desk.model.picked = -1 }
+    MouseArea { anchors.fill: parent; enabled: board.editing; onClicked: board.model.picked = -1 }
 
     Repeater {
         id: widgets
-        model: desk.model.items
+        model: board.model.items
         Widget {
             id: wdg
             required property var modelData
             required property int index
-            readonly property bool on: desk.editing && desk.model.picked === index
+            readonly property bool on: board.editing && board.model.picked === index
             d: modelData
-            editing: desk.editing
-            x: modelData.x * desk.width
-            y: modelData.y * desk.height
-            onNoteEdited: t => desk.model.quiet(index, { text: t })
+            editing: board.editing
+            x: modelData.x * board.width
+            y: modelData.y * board.height
+            onNoteEdited: t => board.model.quiet(index, { text: t })
 
             Rectangle {
-                visible: desk.editing
+                visible: board.editing
                 anchors.fill: parent
                 anchors.margins: -6
                 color: "transparent"
                 border.width: 1
                 border.color: wdg.on ? Theme.accent : Theme.faint
             }
-            MouseArea { anchors.fill: parent; enabled: desk.editing; onPressed: m => { desk.model.picked = wdg.index; m.accepted = false } }
-            Hud {
-                visible: desk.editing
+            MouseArea { anchors.fill: parent; enabled: board.editing; onPressed: m => { board.model.picked = wdg.index; m.accepted = false } }
+            DecodeText {
+                visible: board.editing
                 x: parent.width + 2
                 y: -18
                 text: "×"
                 font.pixelSize: 16
                 color: rm.containsMouse ? Theme.warn : Theme.dim
-                MouseArea { id: rm; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true; onClicked: desk.model.remove(wdg.index) }
+                MouseArea { id: rm; anchors.fill: parent; anchors.margins: -6; hoverEnabled: true; onClicked: board.model.remove(wdg.index) }
             }
             DragHandler {
-                enabled: desk.editing
+                enabled: board.editing
                 target: null
                 property point from
                 onActiveChanged: {
                     if (active) return from = Qt.point(wdg.x, wdg.y)
-                    desk.guideX = desk.guideY = -1
-                    desk.model.change(wdg.index, { x: wdg.x / desk.width, y: wdg.y / desk.height })
+                    board.guideX = board.guideY = -1
+                    board.model.change(wdg.index, { x: wdg.x / board.width, y: wdg.y / board.height })
                 }
                 onTranslationChanged: {
                     if (!active) return
-                    const p = desk.snap(wdg.index, from.x + translation.x, from.y + translation.y, wdg.width, wdg.height)
+                    const p = board.snap(wdg.index, from.x + translation.x, from.y + translation.y, wdg.width, wdg.height)
                     wdg.x = p[0]
                     wdg.y = p[1]
                 }
@@ -103,7 +103,7 @@ Item {
                     property real w0: 80
                     onActiveChanged: {
                         if (active) { from = wdg.s; w0 = Math.max(80, wdg.width); return }
-                        if (wdg.live) desk.model.change(wdg.index, { s: wdg.live })
+                        if (wdg.live) board.model.change(wdg.index, { s: wdg.live })
                     }
                     onTranslationChanged: if (active) wdg.live = Math.max(0.5, Math.min(3, from * (1 + translation.x / w0)))
                 }
@@ -111,6 +111,6 @@ Item {
         }
     }
 
-    Rectangle { visible: desk.guideX >= 0; x: desk.guideX; width: 1; height: desk.height; color: Theme.accent }
-    Rectangle { visible: desk.guideY >= 0; y: desk.guideY; height: 1; width: desk.width; color: Theme.accent }
+    Rectangle { visible: board.guideX >= 0; x: board.guideX; width: 1; height: board.height; color: Theme.accent }
+    Rectangle { visible: board.guideY >= 0; y: board.guideY; height: 1; width: board.width; color: Theme.accent }
 }

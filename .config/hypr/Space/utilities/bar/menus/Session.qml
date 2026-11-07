@@ -9,15 +9,15 @@ Column {
     Component.onCompleted: BrightnessShared.probe()
     Timer { id: disarm; interval: 2500; onTriggered: pw.armed = "" }
 
-    Kit.Title { glyph: "󰐥"; text: "power" }
-    Kit.Line {
+    Controls.Title { glyph: "󰐥"; text: "power" }
+    Controls.Line {
         visible: PowerShared.hasBattery
         glyph: PowerShared.charging ? "󰂄" : "󰁹"
         text: PowerShared.charging ? "charging" : PowerShared.full ? "full" : "battery"
         value: Math.round(PowerShared.charge * 100) + "%"
         lit: PowerShared.charging
     }
-    Kit.Slide { visible: BrightnessShared.has; glyph: "󰃟"; value: BrightnessShared.value; onMoved: v => BrightnessShared.set(v) }
+    Controls.Slide { visible: BrightnessShared.has; glyph: "󰃟"; value: BrightnessShared.value; onMoved: v => BrightnessShared.set(v) }
     Item { width: 1; height: 4 }
     Row {
         id: tiles
@@ -54,7 +54,7 @@ Column {
                             Behavior on scale { NumberAnimation { duration: Theme.ms(120); easing.type: Easing.OutBack } }
                             Behavior on color { ColorAnimation { duration: Theme.fast } }
                         }
-                        Hud { anchors.horizontalCenter: parent.horizontalCenter; font.pixelSize: 9; text: tile.armedNow ? "again" : tile.modelData[0]; color: tile.armedNow ? Theme.warn : Theme.dim }
+                        DecodeText { anchors.horizontalCenter: parent.horizontalCenter; font.pixelSize: 9; text: tile.armedNow ? "again" : tile.modelData[0]; color: tile.armedNow ? Theme.warn : Theme.dim }
                     }
                     Rectangle {
                         anchors.bottom: parent.bottom

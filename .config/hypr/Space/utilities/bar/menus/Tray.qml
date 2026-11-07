@@ -10,10 +10,10 @@ Column {
 
     QsMenuOpener { id: opener; menu: tray.item?.menu ?? null }
 
-    Kit.Title { glyph: "󱊔"; text: tray.item ? (tray.item.tooltipTitle || tray.item.title || tray.item.id) : "tray" }
+    Controls.Title { glyph: "󱊔"; text: tray.item ? (tray.item.tooltipTitle || tray.item.title || tray.item.id) : "tray" }
     Repeater {
         model: tray.item ? [] : SystemTray.items.values
-        Kit.Line {
+        Controls.Line {
             required property var modelData
             glyph: "•"
             text: modelData.tooltipTitle || modelData.title || modelData.id
@@ -24,10 +24,10 @@ Column {
             }
         }
     }
-    Kit.Line { visible: !!tray.item; glyph: "‹"; text: "back"; onClicked: tray.item = null }
+    Controls.Line { visible: !!tray.item; glyph: "‹"; text: "back"; onClicked: tray.item = null }
     Repeater {
         model: opener.children.values.filter(e => !e.isSeparator)
-        Kit.Line {
+        Controls.Line {
             required property var modelData
             text: modelData.text
             enabled: modelData.enabled

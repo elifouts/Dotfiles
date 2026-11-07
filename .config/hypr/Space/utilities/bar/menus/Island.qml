@@ -8,25 +8,25 @@ Item {
 
     readonly property var tabs: [
         { id: "media", glyph: "󰝚" }, { id: "timer", glyph: "󰔛" }, { id: "color", glyph: "󰈊" }, { id: "capture", glyph: "󰄀" },
-        { id: "weather", glyph: Live.weather.ready ? Live.weather.glyph(Live.weather.code, Live.weather.night) : "󰖕" }
+        { id: "weather", glyph: TimerForecast.weather.ready ? TimerForecast.weather.glyph(TimerForecast.weather.code, TimerForecast.weather.night) : "󰖕" }
     ]
     readonly property string current: Ui.tab || "media"
     readonly property bool holdOpen: cap.sharing && current === "capture"
-    onCurrentChanged: if (current === "weather") Live.weather.refresh(false)
+    onCurrentChanged: if (current === "weather") TimerForecast.weather.refresh(false)
 
     Item {
         id: pages
         width: parent.width - 44
         height: Math.max(150, media.implicitHeight)
 
-        FadeShared { on: pm.current === "media"; maxW: Infinity; MediaCtl { id: media; width: parent.width } }
-        FadeShared { on: pm.current === "timer"; TimerTabShared { anchors.fill: parent; timer: Live.timer } }
+        FadeShared { on: pm.current === "media"; maxW: Infinity; MediaTab { id: media; width: parent.width } }
+        FadeShared { on: pm.current === "timer"; TimerTabShared { anchors.fill: parent; timer: TimerForecast.timer } }
         FadeShared { on: pm.current === "color"; ColorTabShared { anchors.fill: parent; onDone: Ui.panel = "" } }
         FadeShared {
             on: pm.current === "capture"
             CaptureTabShared { id: cap; anchors.fill: parent; active: parent.visible; open: Ui.panel === "media"; onDone: Ui.panel = "" }
         }
-        FadeShared { on: pm.current === "weather"; WeatherTabShared { anchors.fill: parent; weather: Live.weather } }
+        FadeShared { on: pm.current === "weather"; WeatherTabShared { anchors.fill: parent; weather: TimerForecast.weather } }
     }
 
     Column {

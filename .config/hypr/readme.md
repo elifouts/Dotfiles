@@ -146,7 +146,7 @@ shells.sh <utility> [call] [args]   # default call is toggle, starts the shell i
 | Utility | Key | Notes |
 |---|---|---|
 | launcher | tap `Super` | dial, apps, commands, keybinds |
-| home-screen | `Alt+Tab` | Music, System stats, Notifications, Calendar |
+| home | `Alt+Tab` | Music, System stats, Notifications, Calendar |
 | settings | `Alt+S` | sheet from the left |
 | music | `Alt+Enter` | follows Spotify, else whatever's playing |
 | wallpaper-picker | `Alt+W` | previews on every monitor |
@@ -203,46 +203,46 @@ Same scripts, settings and color themes as Modern, none of the visuals. One proc
 | Part | Key | What it is |
 |---|---|---|
 | land | | the wallpaper is a shader, workspaces pan across it |
-| world | `Alt+W` | new color and land from `World.qml`, not saved to the profile. `before` in `Land.qml` is a second terrain holding the old seed and colors. `hopProg` in `World.qml` drives every monitor: both pan together while a soft edge wipes the old one away and the moon comes back overhead. a press mid way only runs it to the end fast. the reload waits for it all to stop with `Ui.holdTheme` |
-| star map | `Super+Tab` | workspaces and special workspaces with windows are stars, windows are planets, pypr scratchpads are moons |
-| scan | `Alt+Tab` | visor with system info |
+| world | `Alt+W` | new color and land from `World.qml`, not saved to the profile. `before` in `Wallpaper.qml` is a second terrain holding the old seed and colors. `hopProg` in `World.qml` drives every monitor: both pan together while a soft edge wipes the old one away and the moon comes back overhead. a press mid way only runs it to the end fast. the reload waits for it all to stop with `Ui.holdTheme` |
+| overview | `Super+Tab` | workspaces and special workspaces with windows are stars, windows are planets, pypr scratchpads are moons |
+| home | `Alt+Tab` | visor with system info |
 | launcher | tap `Super` | little terminal under the bar, `Tab` switches between apps and commands, `Shift+Enter` runs in the background instead of kitty |
-| desk | `Alt+D` | widgets, layouts in `~/.config/space/layouts/` |
+| widgets | `Alt+D` | layouts in `~/.config/space/layouts/` |
 | settings | `Alt+S` | hud sheet that sizes to each tab, most pages come from `SchemaShared.js`, `LAYOUT` in Space's `Schema.js` sets their columns, right click resets an option |
-| welcome | first run | the tour. the galaxy map opens, closes itself after takeoff and moves on once it has landed. goes to one empty workspace and back so it can't jump monitors |
+| welcome | first run | the tour. the overview opens, closes itself after takeoff and moves on once it has landed. goes to one empty workspace and back so it can't jump monitors |
 | lock | `Super+L` | land dimmed behind a small hud |
 
 Panels move on Hyprland's curves like Modern, through `Settle`, `Theme.leave` and `Theme.ms`. The star map's flights and the world hop keep their own timing, they're tied to the capture and terrain steps below. `hyprctl animations` reports `windowsIn` as `spring:easy` and a spring isn't a bezier, so `ThemeBase` falls back to `global`.
 
-`Hud` text scrambles when it first shows and when it changes. Anything that ticks sets `decode: false`, like the timer, volume, sliders and seek times.
+`DecodeText` scrambles when it first shows and when it changes. Anything that ticks sets `decode: false`, like the timer, volume, sliders and seek times.
 
-Star map cards show the color you'd land on in the corner: the preset's name, or the hex if it's random, in its accent. Planets get their own accent from the system's preset unless that preset has a pinned accent.
+Overview cards show the color you'd land on in the corner: the preset's name, or the hex if it's random, in its accent. Planets get their own accent from the system's preset unless that preset has a pinned accent.
 
-Star map keys: mouse aims, `wasd`, arrows or `hjkl` fly, `q` `e` turn, `shift` is fast, `tab` cycles your systems.
+Overview keys: mouse aims, `wasd`, arrows or `hjkl` fly, `q` `e` turn, `shift` is fast, `tab` cycles your systems.
 
-The windows falling away on launch are captures drawn in the star map, the real ones never move. They use `active_opacity` and `inactive_opacity` from `style.lua` as fixed numbers in `StarMap.qml`, so change both together. `fall` in `StarMap.qml` sets how fast they drop. Their blur is done in the star map too, `blurMax` on `frosted` is the strength.
+The windows falling away on launch are captures drawn in the overview, the real ones never move. They use `active_opacity` and `inactive_opacity` from `style.lua` as fixed numbers in `Overview.qml`, so change both together. `fall` in `Overview.qml` sets how fast they drop. Their blur is done in the overview too, `blurMax` on `frosted` is the strength.
 
 On landing the captures come from the workspace you picked, not the one you left. Picking a pypr scratchpad moon runs `pypr toggle` and keeps that window on top.
 
 Launch and landing stay smooth because the heavy work happens while nothing is moving:
-- first frames and captures are prepared before the clock starts, that's `gate` in `StarMap.qml`
+- first frames and captures are prepared before the clock starts, that's `gate` in `Overview.qml`
 - a world's colors start when you pick it, `color-apply.sh` runs as its own process so apps recolor while they're hidden
 - `Theme.frozen` holds the qml colors and `World.heldReload` holds the Hyprland reload until the camera has stopped and the terrain still covers everything, then the reveal waits a moment so no old colors show
-- the bar and desk fade in as the terrain lifts, that's the last `veil` animation in `descend`
+- the bar and widgets fade in as the terrain lifts, that's the last `veil` animation in `descend`
 - stars get reused when the camera crosses cells instead of being rebuilt
 - the camera updates once per finished frame, so it works at any refresh rate
 
 **How the shaders work**
 
-The land's colors go through `dither()` in `land.frag`, or the faint moon and sky band into shapes in 8-bit. `h3` is a `mod 289` hash because the old float one could give a cell's shared corner different values, which drew hard blocks on the moon. Don't use `uint` in these shaders, Qt loads a GLSL version here that doesn't have it.
+The land's colors go through `dither()` in `terrain.frag`, or the faint moon and sky band into shapes in 8-bit. `h3` is a `mod 289` hash because the old float one could give a cell's shared corner different values, which drew hard blocks on the moon. Don't use `uint` in these shaders, Qt loads a GLSL version here that doesn't have it.
 
 The scenery has no images and there's no 3D engine. QML keeps the state and hands numbers and colors to the shaders, and a QML property reaches the shader when it has the same name as a uniform. Colors get mixed from the theme in `Terrain.qml`, so a new theme doesn't need a recompile. Editing a `.frag` does, see "I edited a shader and nothing happened".
 
-- `land.frag` draws the sky, moon, planets, hills and trees in one pass. Switching workspaces only animates `pan`.
-- Drawing all of that every frame is expensive, so `Land.qml` draws it once, stars included, and keeps the result. It only redraws when something like `pan` actually changes.
+- `terrain.frag` draws the sky, moon, planets, hills and trees in one pass. Switching workspaces only animates `pan`.
+- Drawing all of that every frame is expensive, so `Wallpaper.qml` draws it once, stars included, and keeps the result. It only redraws when something like `pan` actually changes.
 - `craters()` skips cells further than 0.83 away because a crater can't reach past that. That's the biggest radius times the 1.8 fade, so if you change either one change the number too.
 - Only `Hypr.moonScreen` gets the moon, the other monitors are `moonless`.
-- `starmap.frag` is only the backdrop, nebula and far stars worked out from where the camera is looking. Everything you can fly to is a normal QML item, and `project()` in `StarMap.qml` does the 3D math by hand to get its screen position and size.
+- `overview.frag` is only the backdrop, nebula and far stars worked out from where the camera is looking. Everything you can fly to is a normal QML item, and `project()` in `Overview.qml` does the 3D math by hand to get its screen position and size.
 - `common/orb.frag` is the small orb used by `Orb.qml`.
 
 </details>
@@ -334,7 +334,7 @@ The links Space's bar and Modern's settings load by a name they build at runtime
 | `Theme` | `shared/core/ThemeBaseShared.qml` is the real one, each style's `common/Theme.qml` extends it |
 | `shell.qml` | one per utility, plus `utilities/shell.qml` which loads them |
 | `Toggle`, `Card`, `Reveal` | each exists more than once, they're local to their folder |
-| `stats.sh` | one file, linked as `home-stats.sh` and `scan/stats.sh` |
+| `stats.sh` | one file, linked as `home-stats.sh` in both styles |
 
 </details>
 
@@ -347,7 +347,7 @@ It's also why `lock.qml` and `boot.qml` are tiny wrappers at the top of `utiliti
 
 Edit the real file in `shared/`, not the link. It changes both styles.
 
-The bar's wifi, bluetooth, sound, updates and notifications menus work like this too. What they do is in `shared/menus/`. What they look like is `Entry`, `Group`, `Header`, `Round`, `Chips`, `Slider`, `Switch` and `Tile`, each style has its own. Space's panels are links with a `Panel` name, `Wing.qml` tells them when they're open.
+The bar's wifi, bluetooth, sound, updates and notifications menus work like this too. What they do is in `shared/menus/`. What they look like is `Entry`, `Group`, `Header`, `Round`, `Chips`, `Slider`, `Switch` and `Tile`, each style has its own. Space links them under `bar/menus` with the same names, `Pill.qml` tells them when they're open.
 
 One folder link per style doesn't work, I tried. The shared singletons would have to import a folder that lists them, and Qt fails with `Audio is instantiated recursively`.
 
@@ -356,7 +356,7 @@ One folder link per style doesn't work, I tried. The shared singletons would hav
 <details>
 <summary><b>Why does Modern's shell.qml import folders it doesn't use?</b></summary>
 
-Quickshell only registers a folder's components if it reaches that folder through an `import`, starting from the root file. Modern loads its utilities with `createComponent`, which it can't follow, so the imports at the top of `utilities/shell.qml` are how it finds them. Same for Space's `bar/panels`, those load through a `Loader`.
+Quickshell only registers a folder's components if it reaches that folder through an `import`, starting from the root file. Modern loads its utilities with `createComponent`, which it can't follow, so the imports at the top of `utilities/shell.qml` are how it finds them. Same for Space's `bar/menus`, those load through a `Loader`.
 
 There are no `qmldir` files, Quickshell makes them from these. A singleton just needs `pragma Singleton`.
 
@@ -382,7 +382,7 @@ There are no `qmldir` files, Quickshell makes them from these. A singleton just 
 Qt runs the `.qsb`, not the `.frag`. Recompile it:
 
 ```bash
-/usr/lib/qt6/bin/qsb --qt6 -o land.frag.qsb land.frag
+/usr/lib/qt6/bin/qsb --qt6 -o terrain.frag.qsb terrain.frag
 ```
 
 </details>
@@ -450,7 +450,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 
 - The land is drawn once and kept, the stars are part of that one layer and don't twinkle. Looping the whole shader repainted every pixel at full refresh, and even redrawing only the stars made Hyprland redraw everything on top of them. Now the GPU goes back to idle when nothing is moving
 - Vsync stays on unless the monitors have different refresh rates, that's `qs_sync` in `paths.sh`. With it off the shell drew around 280 fps on a 165hz screen and none of it lined up with the display. My desktop is 240 and 75, so it still runs without vsync
-- `Pace.qml` watches frame times while the land, a hop, a launch or a landing is moving. Under about 40 fps it draws the terrain at lower resolution, down to half, and goes back up when frames are fast again. It only applies while moving, the land goes back to full resolution when it stops. A fast GPU never drops
+- `RenderScale.qml` watches frame times while the land, a hop, a launch or a landing is moving. Under about 40 fps it draws the terrain at lower resolution, down to half, and goes back up when frames are fast again. It only applies while moving, the land goes back to full resolution when it stops. A fast GPU never drops
 - If everything is suddenly laggy on the laptop check the battery first. At 6% the GPU was capped to 30W instead of 125W and stuck around 500MHz, by 14% the cap was gone. `nvidia-smi -q -d POWER` shows the current limit
 - One `Cava` for every visualizer, each monitor's bar used to spawn its own
 - `Panel` frees textures after it's been closed a while
@@ -470,7 +470,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - `tabs.py` decodes mozlz4 itself so I don't need `python-lz4`
 - `pypr.sh` closes fd 9 for pypr, a slow dying one used to block the next supervisor
 - `color-roles.sh` rewrites `style.css` onto itself because waybar only reloads when that file changes
-- `MediaCtl` and `NowPlaying` handle Spotify's music videos, which play through its own chromium as `title • artist`
+- `MediaTab` and `NowPlaying` handle Spotify's music videos, which play through its own chromium as `title • artist`
 - `capture.sh` recordings are capped at 60fps because wf-recorder's default spreads the bits over 200+ frames a second on the 240Hz monitor. The bt709 tags are set by hand or colors shift in players
 - `cast.py` mirrors to Miracast tvs over Wi-Fi Direct through NetworkManager, the LG CX shows up this way. A tv on DLNA only opens the stream as a video in its media player, and the LG won't even start one with no end to it, so Wi-Fi Direct wins when a tv has both. It runs next to the normal Wi-Fi so the internet stays up. The link is UDP with no resends, so the stream keeps a keyframe every half second, paces its packets and marks them as video priority to keep a lost packet from showing for long.
 - `capture.sh` falls back to x264 when NVENC won't start. NVENC rejects tiny regions and doesn't exist without an NVIDIA card
@@ -610,7 +610,7 @@ shared/
 │  ├─ OsdStateShared.qml             what the osd does, caps lock tracking
 │  ├─ net.sh                         nmcli calls for the wifi menus
 │  ├─ PowerShared.qml                session actions and battery
-│  ├─ stats.sh                       system info from /proc and /sys, read by home and scan
+│  ├─ stats.sh                       system info from /proc and /sys, read by both home screens
 │  └─ UpdatesShared.qml              pending pacman and aur count, every 30 min
 ├─ ui/
 │  ├─ CurvePlotShared.qml            draggable bezier graph
@@ -805,9 +805,9 @@ Modern/utilities/common/
 Modern/utilities/
 ├─ boot/
 │  └─ BootShell.qml                      boot animation, runs alone
-├─ home-screen/
+├─ home/
 │  ├─ Home.qml                           home screen. clock, music, stats, notifications
-│  ├─ home-stats.sh                      → system: system info from /proc and /sys, read by home and scan
+│  ├─ home-stats.sh                      → system: system info from /proc and /sys, read by both home screens
 │  ├─ home-wall.sh                       prints a screen sized wallpaper copy per monitor
 │  └─ shell.qml                          loads Home when it opens, drops it when it closes
 ├─ launcher/
@@ -909,21 +909,20 @@ Space/utilities/common/
 ├─ CavaShared.qml                 → media: one cava feed for every visualizer
 ├─ CavaFeedShared.qml             → media: runs cava with its own bar count
 ├─ ColorTabShared.qml             → widgets: color picker tab, shares waybar's history
+├─ Controls.qml                   small hud controls every menu uses
 ├─ CountdownShared.qml            → widgets: focus timer logic, lives in the shell
 ├─ CoverShared.qml                → media: album art that slides the way you skipped
 ├─ decode.js                      the text scramble effect
+├─ DecodeText.qml                 the one text style, decodes on change
 ├─ FadeShared.qml                 → ui: one island tab, fades and rises in when on
 ├─ Field.qml                      Modern's Field api, space look
 ├─ ForecastShared.qml             → widgets: wttr.in weather data, refreshes every 30 min
 ├─ HoverShared.qml                → ui: MouseArea with hover and the hand cursor
-├─ Hud.qml                        the one text style, decodes on change
 ├─ HyprShared.qml                 → core: paths, which screen has focus or the cursor, dispatch
 ├─ IconButtonShared.qml           → ui: clickable icon that lights up on hover
-├─ Kit.qml                        small hud controls every panel uses
 ├─ LabelShared.qml                → ui: Text in the theme font and color
-├─ Live.qml                       one timer and forecast for every monitor
 ├─ MediaShared.qml                → media: picks the player, skip and play controls
-├─ MediaCtl.qml                   now playing for the bar panel, scan and the desk
+├─ MediaTab.qml                   now playing for the island, home screen and widgets
 ├─ MiniWaveShared.qml             → media: small bar visualizer
 ├─ MorphShared.qml                → ui: the grow out of a dot open and close
 ├─ MotionShared.js                → core: animation presets and curves for both settings pages
@@ -936,26 +935,27 @@ Space/utilities/common/
 ├─ Orb.qml                        glowing ball, bar dots and stars
 ├─ OsdShared.qml                  → system: osd pill and media card
 ├─ OsdStateShared.qml             → system: what the osd does, caps lock tracking
-├─ Pace.qml                       lowers the terrain's resolution while moving if frames get slow
 ├─ PlayButtonShared.qml           → media: accent circle with the play/pause morph
 ├─ PlayPauseShared.qml            → media: shape that morphs between play and pause
 ├─ PowerShared.qml                → system: session actions and battery
+├─ RenderScale.qml                lowers the terrain's resolution while moving if frames get slow
 ├─ Say.qml                        the tour's text, scrambles in Space
 ├─ Schema.js                      which shared pages Space shows, plus its own keys
 ├─ SchemaBase.js                  → core: every settings page and option, one line per setting
 ├─ SeekShared.qml                 → media: smooth progress bar
 ├─ SettleShared.qml               → ui: NumberAnimation on hyprland's window curve
 ├─ SkipButtonShared.qml           → media: prev/next that kicks when it skips
-├─ Slider.qml                     segmented slider, Kit.Slide uses it too
+├─ Slider.qml                     segmented slider, Controls.Slide uses it too
 ├─ spotify.sh                     → media: opens spotify's scratchpad, or a normal window without pypr
 ├─ StoreShared.qml                → core: settings state, batches writes to hypr-settings.py
 ├─ SwapTextShared.qml             → ui: text that slides out and types back in
-├─ Switch.qml                     Kit toggle for the shared menus
-├─ Sys.qml                        cpu, ram and link from /proc, no processes
+├─ Switch.qml                     Controls toggle for the shared menus
+├─ SystemStats.qml                cpu, ram and link from /proc, no processes
 ├─ Theme.qml                      ThemeBase, square, Space's font, accent outlines
 ├─ ThemeBaseShared.qml            → core: palette, rounding, gaps, timing. each Theme.qml extends this
 ├─ Tile.qml                       outlined panel behind menu rows
 ├─ TimerTabShared.qml             → widgets: drag ring timer ui
+├─ TimerForecast.qml              one timer and forecast for every monitor
 ├─ TodosShared.qml                → widgets: todo storage in state/todos.json
 ├─ TourShared.qml                 → ui: first run tour, each style gives it steps and spots
 ├─ Ui.qml                         what's open, so windows can react to each other
@@ -973,59 +973,59 @@ Space/utilities/common/
 ```text
 Space/utilities/
 ├─ bar/
-│  ├─ Bar.qml                      bar window, two wings and input regions
-│  ├─ panels/
+│  ├─ Bar.qml                      bar window, two pills and input regions
+│  ├─ menus/
 │  │  ├─ BluetoothListShared.qml   → menus: bluetooth devices and their rows, pair and connect
+│  │  ├─ Calendar.qml              big clock, calendar and todos
 │  │  ├─ CardShared.qml            → menus: Tile with padding for menu content
 │  │  ├─ Chips.qml                 row of pickable chips, made of Buttons
-│  │  ├─ Entry.qml                 menu row, a Kit line with a gear
+│  │  ├─ Entry.qml                 menu row, a Controls line with a gear
 │  │  ├─ Group.qml                 titled group of rows that scrolls
-│  │  ├─ Header.qml                Kit title for the shared menus
+│  │  ├─ Header.qml                Controls title for the shared menus
+│  │  ├─ Island.qml                shared island tabs under the media module
+│  │  ├─ NetworkShared.qml         → menus: wifi and bluetooth side by side
+│  │  ├─ NotificationsShared.qml   → menus: notification history, dnd and clear
 │  │  ├─ OopsShared.qml            → menus: inline error text
-│  │  ├─ PanelAudio.qml            → menus: SoundShared.qml
-│  │  ├─ PanelMedia.qml            shared island tabs under the media chip
-│  │  ├─ PanelNet.qml              → menus: NetworkShared.qml
-│  │  ├─ PanelNotifs.qml           → menus: NotificationsShared.qml
-│  │  ├─ PanelPower.qml            battery, brightness and session
-│  │  ├─ PanelTime.qml             big clock, calendar and todos
-│  │  ├─ PanelTray.qml             tray apps as lines
-│  │  ├─ PanelUpdates.qml          → menus: UpdateMenuShared.qml
 │  │  ├─ Round.qml                 small Button with a glyph
+│  │  ├─ Session.qml               battery, brightness and session
+│  │  ├─ SoundShared.qml           → menus: speakers, mics, volume rows and device picking
 │  │  ├─ ToggleShared.qml          → menus: label and switch row
-│  │  ├─ WifiShared.qml            → menus: wifi list and connect
-│  │  └─ WifiEditorShared.qml      → menus: edit a saved connection: ip, dns, security, with its fields
-│  ├─ Chip.qml                     readout that opens a panel
+│  │  ├─ Tray.qml                  tray apps as lines
+│  │  ├─ UpdateMenuShared.qml      → menus: pending updates, update now or check again
+│  │  ├─ WifiEditorShared.qml      → menus: edit a saved connection: ip, dns, security, with its fields
+│  │  └─ WifiShared.qml            → menus: wifi list and connect
+│  ├─ Module.qml                   readout that opens a menu
 │  ├─ net.sh                       → system: nmcli calls for the wifi menus
-│  ├─ Stars.qml                    workspace dots as orbs
-│  └─ Wing.qml                     glass wing with corner brackets, loads Panel<kind>.qml
-├─ desk/
-│  ├─ Desk.qml                     desktop widgets with snapping
-│  ├─ DeskEdit.qml                 edit mode overlay
-│  ├─ DeskModel.qml                one monitor's widgets, saved per monitor shape
-│  ├─ Editor.qml                   strip for adding and tweaking widgets
-│  └─ Widget.qml                   one widget
-├─ land/
-│  ├─ land.frag                    sky, moon, hills and pines. no image files
-│  ├─ land.frag.qsb                compiled, this is what runs
-│  ├─ Land.qml                     one monitor's wallpaper window, pans with workspaces
-│  └─ Terrain.qml                  the land shader with theme colors
+│  ├─ Pill.qml                     glass pill with corner brackets, loads the open menu
+│  └─ Workspaces.qml               workspace dots as orbs
+├─ home/
+│  ├─ Home.qml                     alt tab visor with system readouts
+│  └─ home-stats.sh                → system: system info from /proc and /sys, read by both home screens
 ├─ launcher/
 │  └─ Launcher.qml                 little terminal under the bar
-├─ scan/
-│  ├─ Scan.qml                     alt tab visor with system readouts
-│  └─ stats.sh                     → system: system info from /proc and /sys, read by home and scan
+├─ overview/
+│  ├─ glow.png                     star glow sprite
+│  ├─ overview.frag                far sky shader
+│  ├─ overview.frag.qsb            compiled, this is what runs
+│  └─ Overview.qml                 3d star map. workspaces are stars, windows are planets
 ├─ settings/
 │  ├─ CurvePlotShared.qml          → ui: draggable bezier graph
 │  ├─ MotionShared.js              → core: animation presets and curves for both settings pages
 │  ├─ SettingBezierShared.qml      → ui: full curve editor with preview and randomize
 │  └─ Settings.qml                 hud settings sheet from the bottom
-├─ starmap/
-│  ├─ glow.png                     star glow sprite
-│  ├─ starmap.frag                 far sky shader
-│  ├─ starmap.frag.qsb             compiled, this is what runs
-│  └─ StarMap.qml                  3d star map. workspaces are stars, windows are planets
+├─ wallpaper/
+│  ├─ terrain.frag                 sky, moon, hills and pines. no image files
+│  ├─ terrain.frag.qsb             compiled, this is what runs
+│  ├─ Terrain.qml                  the terrain shader with theme colors
+│  └─ Wallpaper.qml                one monitor's wallpaper window, pans with workspaces
 ├─ welcome/
 │  └─ Welcome.qml                  Space's tour steps
+├─ widgets/
+│  ├─ Widget.qml                   one widget
+│  ├─ WidgetEditor.qml             strip for adding and tweaking widgets
+│  ├─ Widgets.qml                  desktop widgets with snapping
+│  ├─ WidgetsEdit.qml              edit mode overlay
+│  └─ WidgetsModel.qml             one monitor's widgets, saved per monitor shape
 ├─ lock.qml                        lock and its screen, own process with the land behind it
 └─ shell.qml                       the whole shell. overlays load lazily and drop on close
 ```

@@ -23,21 +23,21 @@ Column {
             anchors.centerIn: parent
             spacing: 8 * mc.s
 
-            Hud {
+            DecodeText {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "󰝚"
                 font.pixelSize: 26 * mc.s
                 color: Theme.accent
             }
 
-            Hud {
+            DecodeText {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Nothing playing"
                 font.pixelSize: 12 * mc.s
                 color: Theme.dim
             }
 
-            Hud {
+            DecodeText {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Open Spotify"
                 font.pixelSize: 10 * mc.s
@@ -192,14 +192,14 @@ Column {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 2
 
-            Hud {
+            DecodeText {
                 id: who
                 text: mc.player ? mc.player.identity : "nothing playing"
                 font.pixelSize: 9 * mc.s
                 color: Theme.dim
             }
 
-            Hud {
+            DecodeText {
                 id: title
                 caps: false
                 width: parent.width
@@ -209,7 +209,7 @@ Column {
                 color: mc.ink
             }
 
-            Hud {
+            DecodeText {
                 id: artist
                 caps: false
                 width: parent.width
@@ -258,7 +258,7 @@ Column {
         readonly property int ticks: Math.max(16, Math.round(width / (6 * mc.s)))
         readonly property real barY: 24 * mc.s
 
-        Hud {
+        DecodeText {
             caps: false
             anchors.left: parent.left
             anchors.top: parent.top
@@ -269,7 +269,7 @@ Column {
             color: Theme.accent
         }
 
-        Hud {
+        DecodeText {
             caps: false
             anchors.right: parent.right
             anchors.top: parent.top
@@ -280,7 +280,7 @@ Column {
             color: Theme.dim
         }
 
-        Hud {
+        DecodeText {
             caps: false
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top

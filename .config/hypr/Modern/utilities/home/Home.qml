@@ -236,7 +236,7 @@ Scope {
 
     Process {
         id: walPath
-        command: [Quickshell.shellPath("home-screen/home-wall.sh")]
+        command: [Quickshell.shellPath("home/home-wall.sh")]
         stdout: StdioCollector {
             onStreamFinished: {
                 if (!root.shown) return
@@ -252,7 +252,7 @@ Scope {
 
     Process {
         id: stats
-        command: [Quickshell.shellPath("home-screen/home-stats.sh")]
+        command: [Quickshell.shellPath("home/home-stats.sh")]
         stdout: StdioCollector { onStreamFinished: root.parseStats(text) }
     }
     Timer {

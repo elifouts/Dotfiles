@@ -18,7 +18,7 @@ Rectangle {
     Component.onCompleted: rise.start()
     SettleShared { id: rise; target: lift; property: "y"; to: 0; duration: Theme.slow }
 
-    component Chip: Hud {
+    component Chip: DecodeText {
         property bool on: false
         signal hit()
         height: 44
@@ -33,7 +33,7 @@ Rectangle {
         id: row
         anchors.centerIn: parent
 
-        Hud { text: "add"; height: 44; rightPadding: 6; color: Theme.alpha(Theme.fg, 0.3) }
+        DecodeText { text: "add"; height: 44; rightPadding: 6; color: Theme.alpha(Theme.fg, 0.3) }
         Repeater {
             model: ["clock", "stats", "media", "viz", "note", "todo"]
             Chip { required property string modelData; text: "+" + modelData; onHit: strip.model.add(modelData) }

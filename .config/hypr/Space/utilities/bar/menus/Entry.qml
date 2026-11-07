@@ -18,7 +18,7 @@ Item {
     width: parent?.width ?? 280
     height: Theme.menuRow
 
-    Kit.Line {
+    Controls.Line {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         width: parent.width - (row.gear ? 24 : 0)

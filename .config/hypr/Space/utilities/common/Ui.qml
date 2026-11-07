@@ -21,7 +21,7 @@ Singleton {
     signal request(string what)
 
     function openPanel(kind, screen, t) {
-        if (kind === "scan") return request("scan")
+        if (kind === "home") return request("home")
         t = t ?? ""
         if (panel === kind && panelScreen === screen && tab === t) return panel = ""
         panelScreen = screen

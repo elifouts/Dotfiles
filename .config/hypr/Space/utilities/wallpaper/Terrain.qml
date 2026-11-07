@@ -40,5 +40,5 @@ ShaderEffect {
     property color moon: Theme.mix(fg, accent, 0.4)
     property color shade: Theme.mix(bg, "#000000", 0.5)
     property real moonless: 0
-    fragmentShader: Qt.resolvedUrl("land.frag.qsb")
+    fragmentShader: Qt.resolvedUrl("terrain.frag.qsb")
 }

@@ -78,7 +78,7 @@ for _, ns in ipairs({ "space-bar", "space-launcher", "space-settings", "space-to
     hl.layer_rule({ name = ns .. "-blur", match = { namespace = ns }, blur = true, ignore_alpha = 0.2, no_anim = true })
 end
 hl.layer_rule({ name = "osd-blur", match = { namespace = "osd" }, blur = true, ignore_alpha = 0.05, no_anim = true })
-hl.layer_rule({ name = "space-scan-blur", match = { namespace = "space-scan" }, blur = true, ignore_alpha = 0, animation = "fade" })
-for _, ns in ipairs({ "space-wall", "space-desk", "space-overview" }) do
+hl.layer_rule({ name = "space-home-blur", match = { namespace = "space-home" }, blur = true, ignore_alpha = 0, animation = "fade" })
+for _, ns in ipairs({ "space-wall", "space-widgets", "space-overview" }) do
     hl.layer_rule({ name = ns .. "-noanim", match = { namespace = ns }, no_anim = true })
 end

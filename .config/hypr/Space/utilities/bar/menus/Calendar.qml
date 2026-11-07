@@ -8,7 +8,7 @@ Column {
     readonly property bool holdOpen: cal.holdOpen
 
     SystemClock { id: clock; precision: SystemClock.Minutes }
-    Hud {
+    DecodeText {
         caps: false
         text: Qt.formatTime(clock.date, StoreShared.values["space.clock24"] === false ? "h:mm" : "HH:mm")
         font.pixelSize: 34

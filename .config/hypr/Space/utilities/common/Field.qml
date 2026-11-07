@@ -32,5 +32,5 @@ Rectangle {
         Keys.forwardTo: field.keysTo
         onAccepted: field.accepted()
     }
-    Hud { x: 8; height: parent.height; visible: !input.text; text: field.placeholder; color: Theme.alpha(Theme.fg, 0.3) }
+    DecodeText { x: 8; height: parent.height; visible: !input.text; text: field.placeholder; color: Theme.alpha(Theme.fg, 0.3) }
 }

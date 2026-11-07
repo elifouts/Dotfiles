@@ -1,6 +1,6 @@
 import QtQuick
 
-Hud {
+DecodeText {
     id: say
     caps: false
     implicitWidth: probe.implicitWidth

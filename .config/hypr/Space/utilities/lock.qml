@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Pam
 import "common"
-import "land"
+import "wallpaper"
 
 ShellRoot {
     id: root
@@ -29,7 +29,7 @@ ShellRoot {
                 spacing: 10
                 transform: Translate { id: shake }
 
-                Hud {
+                DecodeText {
                     caps: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Qt.formatTime(clock.date, StoreShared.values["space.clock24"] === false ? "h:mm" : "HH:mm")
@@ -38,7 +38,7 @@ ShellRoot {
                     font.letterSpacing: 6
                     color: Theme.fg
                 }
-                Hud {
+                DecodeText {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Qt.formatDate(clock.date, "dddd  ·  dd MMMM")
                 }
@@ -71,7 +71,7 @@ ShellRoot {
                         Keys.onEscapePressed: text = ""
                         Component.onCompleted: forceActiveFocus()
                     }
-                    Hud {
+                    DecodeText {
                         x: 14
                         height: parent.height
                         visible: !input.text
@@ -80,7 +80,7 @@ ShellRoot {
                     }
                     MouseArea { anchors.fill: parent; onClicked: input.forceActiveFocus() }
                 }
-                Hud {
+                DecodeText {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Quickshell.env("USER")
                     color: Theme.alpha(Theme.fg, 0.3)

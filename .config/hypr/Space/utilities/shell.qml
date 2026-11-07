@@ -3,13 +3,13 @@ import Quickshell
 import Quickshell.Io
 import "common"
 import "bar"
-import "bar/panels"
-import "desk"
-import "land"
+import "bar/menus"
+import "widgets"
+import "wallpaper"
 import "launcher"
-import "scan"
+import "home"
 import "settings"
-import "starmap"
+import "overview"
 import "welcome"
 
 ShellRoot {
@@ -22,10 +22,10 @@ ShellRoot {
         Scope {
             id: per
             required property var modelData
-            DeskModel { id: dm; screen: per.modelData }
-            Land { screen: per.modelData; desk: dm }
+            WidgetsModel { id: dm; screen: per.modelData }
+            Wallpaper { screen: per.modelData; widgets: dm }
             Bar { screen: per.modelData }
-            LazyLoader { active: Ui.editing === per.modelData.name; DeskEdit { model: dm } }
+            LazyLoader { active: Ui.editing === per.modelData.name; WidgetsEdit { model: dm } }
         }
     }
 
@@ -42,8 +42,8 @@ ShellRoot {
         }
     }
     Overlay { id: launcher; Launcher { onDone: launcher.active = false } }
-    Overlay { id: overview; StarMap { onDone: overview.active = false } }
-    Overlay { id: scan; Scan { onDone: scan.active = false } }
+    Overlay { id: overview; Overview { onDone: overview.active = false } }
+    Overlay { id: home; Home { onDone: home.active = false } }
     Overlay { id: settings; Settings { onDone: settings.active = false } }
     Welcome {
         id: tour
@@ -64,11 +64,11 @@ ShellRoot {
         switch (what) {
         case "launcher": return launcher.toggle()
         case "overview": return overview.toggle()
-        case "scan": return scan.toggle()
+        case "home": return home.toggle()
         case "settings": return sheet("core")
         case "colors": return sheet("colors")
         case "motion": return sheet("animations")
-        case "desk": return Ui.editing = Ui.editing ? "" : HyprShared.focusedScreen()?.name ?? ""
+        case "widgets": return Ui.editing = Ui.editing ? "" : HyprShared.focusedScreen()?.name ?? ""
         case "bar": return Ui.bar = !Ui.bar
         case "world": return World.hop()
         case "capture": return Ui.openPanel("media", HyprShared.focusedScreen(), "capture")

@@ -12,7 +12,7 @@ Column {
     width: parent?.width ?? 280
     spacing: 4
 
-    Hud { visible: sec.title !== ""; text: sec.title; height: 16 }
+    DecodeText { visible: sec.title !== ""; text: sec.title; height: 16 }
     Flickable {
         width: parent.width
         height: Math.min(sec.maxHeight, sec.bare ? Theme.menuRow : list.implicitHeight)
@@ -21,6 +21,6 @@ Column {
         interactive: contentHeight > height
         clip: true
         Column { id: list; width: parent.width }
-        Hud { x: 8; visible: sec.bare; text: sec.empty; height: Theme.menuRow }
+        DecodeText { x: 8; visible: sec.bare; text: sec.empty; height: Theme.menuRow }
     }
 }

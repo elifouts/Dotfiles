@@ -26,8 +26,8 @@ Item {
         const day = Qt.formatDate(clock.date, "ddd · dd MMM")
         switch (d.type) {
         case "clock": return [[Qt.formatTime(clock.date, h24 ? "HH:mm" : "h:mm"), 64, 1], [day, 12, 0.6]]
-        case "stats": return [["cpu " + Math.round(Sys.cpu * 100) + "%  ·  ram " + Math.round(Sys.ram * 100) + "%", 13, 1],
-                              [Sys.net + (PowerShared.hasBattery ? "  ·  bat " + Math.round(PowerShared.charge * 100) + "%" : ""), 11, 0.6]]
+        case "stats": return [["cpu " + Math.round(SystemStats.cpu * 100) + "%  ·  ram " + Math.round(SystemStats.ram * 100) + "%", 13, 1],
+                              [SystemStats.net + (PowerShared.hasBattery ? "  ·  bat " + Math.round(PowerShared.charge * 100) + "%" : ""), 11, 0.6]]
         }
         return []
     }
@@ -69,7 +69,7 @@ Item {
 
         Repeater {
             model: w.lines
-            Hud {
+            DecodeText {
                 caps: false
                 decode: false
                 required property var modelData
@@ -84,7 +84,7 @@ Item {
             }
         }
 
-        MediaCtl {
+        MediaTab {
             visible: w.d.type === "media"
             width: 300 * w.s
             s: w.s
