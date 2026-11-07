@@ -365,6 +365,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets-edit.png" width = "50%">
 
 - **`Alt+D`** to edit them. Drag them around, add more or change their style.
+- Modern has them too. They are the same widgets, drawn in its style.
 - Layouts save per monitor shape.
   </details>
 
@@ -784,6 +785,8 @@ Uninstall:
 `Alt+Enter` - Music Player
 
 `Mod+P` - Profile Switcher
+
+`Alt+D` - Edit Desktop Widgets
 
 `Alt+A` - Toggle Bar
 

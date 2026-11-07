@@ -4,7 +4,7 @@ set -uo pipefail
 RUN="${XDG_RUNTIME_DIR:-/tmp}"
 REQ="$RUN/share-request"
 ANS="$RUN/share-answer"
-HY="$HOME/.config/hypr"
+HY="$(readlink -f "$HOME/.config/hypr")"
 
 answer() { printf '%s' "$1" > "$ANS.tmp" && mv "$ANS.tmp" "$ANS"; }
 

@@ -154,6 +154,7 @@ shells.sh <utility> [call] [args]   # default call is toggle, starts the shell i
 | profiles | `Super+P` | list comes from `hypr-settings.py saved preview` |
 | overview | `Super+Tab` | shares its tiles with the bar's workspace page |
 | osd | media keys | `osd.sh` does the action, then shows it |
+| widgets | `Alt+D` | same widgets and layouts as Space, on the bottom layer. `~/.config/space/layouts/` |
 | welcome | first run | the tour |
 
 </details>
@@ -187,7 +188,9 @@ Modules: `user` `workspaces` `media` `date` `constdate` `timer` `clock` `tray` `
 
 `lock.sh` runs `quickshell/lock.qml` as its own process, so it still comes up if the shell is dead. It quits after unlocking and ships its own pam file.
 
-Modern grabs a frame of each monitor with grim and fades from that into the blurred wallpaper. Handoff layers mapped under the lock take over on unlock.
+Both styles run the same lock from `quickshell/shared/`, so multiple monitors, music, battery, power buttons and the gear menu work the same in each. It grabs a frame of each monitor with grim and fades from that into the style's `Backdrop`: the blurred wallpaper in Modern, the land in Space. Handoff layers mapped under the lock take over on unlock.
+
+Square corners, fonts and colors come from `Theme`, `LockShared.ink` is the text color.
 
 `lock.sh --preview` shows it in windows without locking.
 
@@ -208,10 +211,10 @@ Same scripts, settings and color themes as Modern, none of the visuals. One proc
 | overview | `Super+Tab` | workspaces and special workspaces with windows are stars, windows are planets, pypr scratchpads are moons |
 | home | `Alt+Tab` | visor with system info |
 | launcher | tap `Super` | little terminal under the bar, `Tab` switches between apps and commands, `Shift+Enter` runs in the background instead of kitty |
-| widgets | `Alt+D` | layouts in `~/.config/space/layouts/` |
+| widgets | `Alt+D` | shared with Modern, layouts in `~/.config/space/layouts/` |
 | settings | `Alt+S` | hud sheet that sizes to each tab, most pages come from `SchemaShared.js`, `LAYOUT` in Space's `Schema.js` sets their columns, right click resets an option |
 | welcome | first run | the tour. the overview opens, closes itself after takeoff and moves on once it has landed. goes to one empty workspace and back so it can't jump monitors |
-| lock | `Super+L` | land dimmed behind a small hud |
+| lock | `Super+L` | the shared lock with the land behind it |
 
 Panels move on Hyprland's curves like Modern, through `Settle`, `Theme.leave` and `Theme.ms`. The star map's flights and the world hop keep their own timing, they're tied to the capture and terrain steps below. `hyprctl animations` reports `windowsIn` as `spring:easy` and a spring isn't a bezier, so `ThemeBase` falls back to `global`.
 
@@ -303,10 +306,12 @@ wallpaper/wallpapers.sh install | pull | dev-pull | push
 | add a setting | one line in `quickshell/shared/SchemaShared.js`, both styles draw it. Each style picks its pages in `common/Schema.js` |
 | add a Modern utility | new folder with a `shell.qml` and an `IpcHandler`, then a bind. if it has its own components, add `import "folder"` to `quickshell/Modern/Shell.qml` |
 | add a bar module | `quickshell/Modern/bar/Module.qml` |
+| add a widget | a `case` in `quickshell/shared/WidgetShared.qml` and its name in `WidgetEditorShared.qml` |
+| panel opacity, 24 hour clock | Windows > Opacity and System > Clock. `Theme.back()` and `Theme.clock()` use them, so use those for new panels and times |
 | add a bar style | new folder in `quickshellbar/` or `waybar/` |
 | add a color scheme | new json in `.config/wal/colorschemes/` |
 | add a machine | new `machine/<name>.lua` |
-| add a style | new `<Style>/base/` and `quickshell/<Style>/` with a `Shell.qml`, `lock/LockShell.qml`, `common/Theme.qml`, `common/Schema.js` and the `bar/menus` parts shared menus use |
+| add a style | new `<Style>/base/` and `quickshell/<Style>/` with a `Shell.qml`, `common/Theme.qml`, `common/Schema.js`, `common/Backdrop.qml` and the `bar/menus` parts shared menus use |
 | add something both styles use | new file in `quickshell/shared/`, add `import "../style/common"` if it needs `Theme` |
 
 ## Confusing stuff
@@ -345,7 +350,7 @@ Quickshell won't import files outside the folder it started in, so it starts fro
 ```text
 quickshell/
 ├─ shell.qml    import "style", Shell {}
-├─ lock.qml     import "style/lock", LockShell {}
+├─ lock.qml     import "shared", LockShellShared {}
 ├─ boot.qml     import "style/boot", BootShell {}
 ├─ style        → Modern or Space
 ├─ Modern/
@@ -478,7 +483,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - `tabs.py` decodes mozlz4 itself so I don't need `python-lz4`
 - `pypr.sh` closes fd 9 for pypr, a slow dying one used to block the next supervisor
 - `color-roles.sh` rewrites `style.css` onto itself because waybar only reloads when that file changes
-- `MediaTab` and `NowPlaying` handle Spotify's music videos, which play through its own chromium as `title • artist`
+- `MediaCardShared`, Modern's `MediaTab` and `NowPlaying` handle Spotify's music videos, which play through its own chromium as `title • artist`
 - `capture.sh` recordings are capped at 60fps because wf-recorder's default spreads the bits over 200+ frames a second on the 240Hz monitor. The bt709 tags are set by hand or colors shift in players
 - `cast.py` mirrors to Miracast tvs over Wi-Fi Direct through NetworkManager, the LG CX shows up this way. A tv on DLNA only opens the stream as a video in its media player, and the LG won't even start one with no end to it, so Wi-Fi Direct wins when a tv has both. It runs next to the normal Wi-Fi so the internet stays up. The link is UDP with no resends, so the stream keeps a keyframe every half second, paces its packets and marks them as video priority to keep a lost packet from showing for long.
 - `capture.sh` falls back to x264 when NVENC won't start. NVENC rejects tiny regions and doesn't exist without an NVIDIA card
@@ -487,7 +492,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 
 ## Every file
 
-All 259 of them.
+All 261 of them.
 
 <details>
 <summary><b>hypr/ (root)</b></summary>
@@ -594,7 +599,13 @@ quickshell/
 │  ├─ HyprShared.qml                   paths, which screen has focus or the cursor, dispatch
 │  ├─ IconButtonShared.qml             clickable icon that lights up on hover
 │  ├─ LabelShared.qml                  Text in the theme font and color
+│  ├─ LockFaceShared.qml               what you see on one monitor, with its digits, buttons and wave
+│  ├─ LockShared.qml                   lock state, pam, gear menu settings
+│  ├─ LockShellShared.qml              lock session and monitor surfaces
+│  ├─ LockToggleShared.qml             gear menu switch
+│  ├─ MediaCardShared.qml              now playing for widgets and Space's island and home
 │  ├─ MediaShared.qml                  picks the player, skip and play controls
+│  ├─ MediaViewShared.qml              tells the osd a media screen is up
 │  ├─ MiniWaveShared.qml               small bar visualizer
 │  ├─ MorphShared.qml                  the grow out of a dot open and close
 │  ├─ MotionShared.js                  animation presets and curves for both settings pages
@@ -621,6 +632,7 @@ quickshell/
 │  ├─ stats.sh                         system info from /proc and /sys, read by both home screens
 │  ├─ StoreShared.qml                  settings state, batches writes to hypr-settings.py
 │  ├─ SwapTextShared.qml               text that slides out and types back in
+│  ├─ SystemStatsShared.qml            cpu, ram and link from /proc, no processes
 │  ├─ ThemeBaseShared.qml              palette, rounding, gaps, timing. each Theme.qml extends this
 │  ├─ TimerTabShared.qml               drag ring timer ui
 │  ├─ TodosShared.qml                  todo storage in state/todos.json
@@ -630,10 +642,16 @@ quickshell/
 │  ├─ UpdatesShared.qml                pending pacman and aur count, every 30 min
 │  ├─ WatchedShared.qml                FileView that rereads when the file changes
 │  ├─ WeatherTabShared.qml             weather tab with graph
+│  ├─ WidgetBoardShared.qml            desktop widgets with snapping
+│  ├─ WidgetEditorShared.qml           strip for adding and tweaking widgets
+│  ├─ WidgetModelShared.qml            one monitor's widgets, saved per monitor shape
+│  ├─ WidgetsEditShared.qml            edit mode overlay
+│  ├─ WidgetShared.qml                 one widget
+│  ├─ WidgetStateShared.qml            which monitor is editing or typing
 │  ├─ WifiEditorShared.qml             edit a saved connection: ip, dns, security, with its fields
 │  └─ WifiShared.qml                   wifi list and connect
 ├─ boot.qml                            starts boot from the running style
-├─ lock.qml                            starts lock from the running style
+├─ lock.qml                            starts the shared lock
 ├─ shell.qml                           starts the running style's Shell.qml
 └─ style                               link to Modern or Space, gitignored
 ```
@@ -744,7 +762,6 @@ quickshell/Modern/common/
 ├─ Backdrop.qml                   blurred dark wallpaper behind home, overview and lock
 ├─ Button.qml                     text button
 ├─ Field.qml                      text input
-├─ MediaView.qml                  tells the osd a media screen is up
 ├─ Panel.qml                      Morph plus screen hop and keep warm
 ├─ Pop.qml                        quick bounce on a rename
 ├─ Say.qml                        the tour's text, plain in Modern
@@ -780,11 +797,6 @@ quickshell/Modern/
 │  ├─ shell.qml                          launcher window, tabs, search and ranking
 │  ├─ ShellPage.qml                      command runner
 │  └─ VWheel.qml                         vertical wheel for commands
-├─ lock/
-│  ├─ Face.qml                           what you see on one monitor, with its digits, buttons and wave
-│  ├─ Lock.qml                           lock state, pam, gear menu settings
-│  ├─ LockShell.qml                      lock session and monitor surfaces
-│  └─ Toggle.qml                         gear menu switch
 ├─ music/
 │  ├─ shell.qml                          music card. move, resize, tuck away
 │  └─ Visualizer.qml                     cava bars for the card
@@ -817,6 +829,8 @@ quickshell/Modern/
 │  ├─ blur.frag                          blur shader source
 │  ├─ blur.frag.qsb                      compiled blur shader, this is what runs
 │  └─ shell.qml                          full screen wallpaper picker
+├─ widgets/
+│  └─ shell.qml                          hosts the shared widgets on every monitor
 ├─ welcome/
 │  └─ shell.qml                          Modern's tour steps
 └─ Shell.qml                             the shell. loads every */shell.qml
@@ -849,12 +863,12 @@ Space/
 
 ```text
 quickshell/Space/common/
+├─ Backdrop.qml                   the land behind the lock
 ├─ Button.qml                     Modern's Button api, drawn the space way
 ├─ Controls.qml                   small hud controls every menu uses
 ├─ decode.js                      the text scramble effect
 ├─ DecodeText.qml                 the one text style, decodes on change
 ├─ Field.qml                      Modern's Field api, space look
-├─ MediaTab.qml                   now playing for the island, home screen and widgets
 ├─ orb.frag                       ball of light shader
 ├─ orb.frag.qsb                   compiled, this is what runs
 ├─ Orb.qml                        glowing ball, bar dots and stars
@@ -863,7 +877,6 @@ quickshell/Space/common/
 ├─ Schema.js                      which shared pages Space shows, plus its own keys
 ├─ Slider.qml                     segmented slider, Controls.Slide uses it too
 ├─ Switch.qml                     Controls toggle for the shared menus
-├─ SystemStats.qml                cpu, ram and link from /proc, no processes
 ├─ Theme.qml                      ThemeBase, square, Space's font, accent outlines
 ├─ Tile.qml                       outlined panel behind menu rows
 ├─ TimerForecast.qml              one timer and forecast for every monitor
@@ -911,14 +924,6 @@ quickshell/Space/
 │  └─ Wallpaper.qml                one monitor's wallpaper window, pans with workspaces
 ├─ welcome/
 │  └─ Welcome.qml                  Space's tour steps
-├─ widgets/
-│  ├─ Widget.qml                   one widget
-│  ├─ WidgetEditor.qml             strip for adding and tweaking widgets
-│  ├─ Widgets.qml                  desktop widgets with snapping
-│  ├─ WidgetsEdit.qml              edit mode overlay
-│  └─ WidgetsModel.qml             one monitor's widgets, saved per monitor shape
-├─ lock/
-│  └─ LockShell.qml                lock and its screen, own process with the land behind it
 └─ Shell.qml                       the whole shell. overlays load lazily and drop on close
 ```
 
