@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
-import Quickshell.Widgets
-import "../style/common"
+import "../../shared"
 
 Column {
     id: mc
@@ -137,7 +136,6 @@ Column {
             Rectangle {
                 anchors.fill: parent
                 visible: b.primary
-                radius: Theme.r(8)
                 color: Theme.alpha(Theme.accent, ma.pressed ? 0.28 : (ma.containsMouse ? 0.16 : 0.08))
                 border.width: 1
                 border.color: Theme.alpha(Theme.accent, ma.containsMouse ? 0.9 : 0.4)
@@ -167,10 +165,9 @@ Column {
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 12 * mc.s
 
-        ClippingRectangle {
+        Rectangle {
             width: 52 * mc.s
             height: width
-            radius: Theme.r(8)
             color: Theme.alpha(Theme.accent, 0.12)
             border.width: 1
             border.color: Theme.alpha(Theme.accent, 0.4)

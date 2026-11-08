@@ -83,7 +83,7 @@ Item {
             }
         }
 
-        MediaCardShared {
+        MediaCard {
             visible: w.d.type === "media"
             width: 300 * w.s
             s: w.s

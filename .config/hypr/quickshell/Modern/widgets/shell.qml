@@ -15,7 +15,7 @@ Scope {
         Scope {
             id: per
             required property var modelData
-            WidgetModelShared { id: dm; screen: per.modelData }
+            WidgetModelShared { id: dm; screen: per.modelData; style: "modern" }
             PanelWindow {
                 screen: per.modelData
                 anchors { top: true; bottom: true; left: true; right: true }

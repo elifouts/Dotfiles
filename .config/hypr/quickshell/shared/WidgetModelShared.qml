@@ -7,8 +7,9 @@ Scope {
     id: dm
 
     required property var screen
+    required property string style
     readonly property bool tall: (screen?.height ?? 0) > (screen?.width ?? 1)
-    readonly property string file: HyprShared.home + "/.config/space/layouts/" + role + ".json"
+    readonly property string file: HyprShared.dir + "/state/layouts/" + style + "/" + role + ".json"
     readonly property string role: {
         const s = screen
         if (!s) return "none"

@@ -24,7 +24,7 @@ PanelWindow {
     WlrLayershell.keyboardFocus: Ui.touring ? WlrKeyboardFocus.None : WlrKeyboardFocus.Exclusive
 
     property string tab: Ui.sheet
-    readonly property var tabs: ["core", "colors", "fonts"].concat(Schema.PAGES.map(p => p.id))
+    readonly property var tabs: ["core", "colors", "fonts"].concat(Schema.PAGES.map(p => p.id), "profiles")
     readonly property var page: Schema.PAGES.find(p => p.id === tab)
     property int dir: 1
     property int was: tabs.indexOf(tab)
@@ -195,7 +195,7 @@ PanelWindow {
                 y: 34
                 transform: Translate { id: shift }
                 onLoaded: sheetKeys.forceActiveFocus()
-                sourceComponent: ({ core: core, colors: colors, fonts: fonts })[sheet.tab] ?? pageView
+                sourceComponent: ({ core: core, colors: colors, fonts: fonts, profiles: profiles })[sheet.tab] ?? pageView
             }
             ParallelAnimation {
                 id: swap
@@ -227,6 +227,13 @@ PanelWindow {
                 }
                 Knob { label: "Pan distance"; key: "space.parallax"; from: 0.2; to: 2; step: 0.1; fallback: 1 }
             }
+        }
+    }
+
+    Component {
+        id: profiles
+        Row {
+            spacing: 24
             ListView {
                 id: plist
                 width: 320

@@ -32,7 +32,10 @@ Singleton {
     function surface(a) { return Math.min(1, a * shellOpacity) }
     function back(a) { return alpha(bg, surface(a)) }
     function clock(date, seconds, mark) {
-        return Qt.formatTime(date, (h24 ? "HH" : "h") + ":mm" + (seconds ? ":ss" : "") + (mark && !h24 ? " " + mark : ""))
+        const time = (seconds ? ":mm:ss" : ":mm")
+        if (h24) return Qt.formatTime(date, "HH" + time)
+        const twelve = Qt.formatTime(date, "h" + time + " " + (mark || "AP"))
+        return mark ? twelve : twelve.split(" ")[0]
     }
 
     readonly property var own: [0.2, 0.9, 0.3, 1, 1, 1]

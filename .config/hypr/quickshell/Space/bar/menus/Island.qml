@@ -20,7 +20,7 @@ Item {
         width: parent.width - 44
         height: Math.max(150, media.implicitHeight)
 
-        FadeShared { on: pm.current === "media"; maxW: Infinity; MediaCardShared { id: media; width: parent.width } }
+        FadeShared { on: pm.current === "media"; maxW: Infinity; MediaCard { id: media; width: parent.width } }
         FadeShared { on: pm.current === "timer"; TimerTabShared { anchors.fill: parent; timer: TimerForecast.timer } }
         FadeShared { on: pm.current === "color"; ColorTabShared { anchors.fill: parent; onDone: Ui.panel = "" } }
         FadeShared {

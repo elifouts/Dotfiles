@@ -232,7 +232,7 @@ Scope {
                     Block {
                         visible: !!MediaShared.pickPlayer("")
                         side: 1; order: 2; glyph: "󰎈"; title: "now playing"
-                        MediaCardShared { width: parent.width }
+                        MediaCard { width: parent.width }
                     }
                 }
             }

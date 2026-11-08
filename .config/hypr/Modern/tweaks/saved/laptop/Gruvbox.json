@@ -59,7 +59,7 @@
     "animations": false
   },
   "wallpaper": {
-    "path": "$HOME/wallpapers/library/gruvbox/gru-04.jpg"
+    "path": "$HOME/wallpapers/library/industrial/ind-04.jpg"
   },
   "waybar": {
     "style": "default"

@@ -154,7 +154,7 @@ shells.sh <utility> [call] [args]   # default call is toggle, starts the shell i
 | profiles | `Super+P` | list comes from `hypr-settings.py saved preview` |
 | overview | `Super+Tab` | shares its tiles with the bar's workspace page |
 | osd | media keys | `osd.sh` does the action, then shows it |
-| widgets | `Alt+D` | same widgets and layouts as Space, on the bottom layer. `~/.config/space/layouts/` |
+| widgets | `Alt+D` | same widgets as Space with its own layouts, on the bottom layer. `state/layouts/modern/` |
 | welcome | first run | the tour |
 
 </details>
@@ -211,7 +211,7 @@ Same scripts, settings and color themes as Modern, none of the visuals. One proc
 | overview | `Super+Tab` | workspaces and special workspaces with windows are stars, windows are planets, pypr scratchpads are moons |
 | home | `Alt+Tab` | visor with system info |
 | launcher | tap `Super` | little terminal under the bar, `Tab` switches between apps and commands, `Shift+Enter` runs in the background instead of kitty |
-| widgets | `Alt+D` | shared with Modern, layouts in `~/.config/space/layouts/` |
+| widgets | `Alt+D` | same widgets as Modern with its own layouts, `state/layouts/space/` |
 | settings | `Alt+S` | hud sheet that sizes to each tab, most pages come from `SchemaShared.js`, `LAYOUT` in Space's `Schema.js` sets their columns, right click resets an option |
 | welcome | first run | the tour. the overview opens, closes itself after takeoff and moves on once it has landed. goes to one empty workspace and back so it can't jump monitors |
 | lock | `Super+L` | the shared lock with the land behind it |
@@ -311,7 +311,7 @@ wallpaper/wallpapers.sh install | pull | dev-pull | push
 | add a bar style | new folder in `quickshellbar/` or `waybar/` |
 | add a color scheme | new json in `.config/wal/colorschemes/` |
 | add a machine | new `machine/<name>.lua` |
-| add a style | new `<Style>/base/` and `quickshell/<Style>/` with a `Shell.qml`, `common/Theme.qml`, `common/Schema.js`, `common/Backdrop.qml` and the `bar/menus` parts shared menus use |
+| add a style | new `<Style>/base/` and `quickshell/<Style>/` with a `Shell.qml`, `common/Theme.qml`, `common/Schema.js`, `common/Backdrop.qml`, `common/MediaCard.qml` and the `bar/menus` parts shared menus use |
 | add something both styles use | new file in `quickshell/shared/`, add `import "../style/common"` if it needs `Theme` |
 
 ## Confusing stuff
@@ -436,6 +436,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - `Entry.qml` hardcodes its loop time. `Theme.ms` can hit 0 and a 0ms infinite loop maxes the cpu
 - The bar surface is one fixed size, tall enough for the biggest card. Resizing it glitches and redraws the blur
 - Lock surfaces are transparent, opaque ones get a low precision format and the blur bands
+- `h` in `Qt.formatTime` is still 24 hour unless the format has `AP` too. Use `Theme.clock()`
 - Qt's js engine has no `Object.fromEntries`
 - Qt drags can't leave their surface, so past the edge the monitor under the pointer takes over
 - Bar visualizers use even pixel heights or they flicker
@@ -483,7 +484,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - `tabs.py` decodes mozlz4 itself so I don't need `python-lz4`
 - `pypr.sh` closes fd 9 for pypr, a slow dying one used to block the next supervisor
 - `color-roles.sh` rewrites `style.css` onto itself because waybar only reloads when that file changes
-- `MediaCardShared`, Modern's `MediaTab` and `NowPlaying` handle Spotify's music videos, which play through its own chromium as `title • artist`
+- Both `MediaCard`s, Modern's `MediaTab` and `NowPlaying` handle Spotify's music videos, which play through its own chromium as `title • artist`
 - `capture.sh` recordings are capped at 60fps because wf-recorder's default spreads the bits over 200+ frames a second on the 240Hz monitor. The bt709 tags are set by hand or colors shift in players
 - `cast.py` mirrors to Miracast tvs over Wi-Fi Direct through NetworkManager, the LG CX shows up this way. A tv on DLNA only opens the stream as a video in its media player, and the LG won't even start one with no end to it, so Wi-Fi Direct wins when a tv has both. It runs next to the normal Wi-Fi so the internet stays up. The link is UDP with no resends, so the stream keeps a keyframe every half second, paces its packets and marks them as video priority to keep a lost packet from showing for long.
 - `capture.sh` falls back to x264 when NVENC won't start. NVENC rejects tiny regions and doesn't exist without an NVIDIA card
@@ -603,7 +604,6 @@ quickshell/
 │  ├─ LockShared.qml                   lock state, pam, gear menu settings
 │  ├─ LockShellShared.qml              lock session and monitor surfaces
 │  ├─ LockToggleShared.qml             gear menu switch
-│  ├─ MediaCardShared.qml              now playing for widgets and Space's island and home
 │  ├─ MediaShared.qml                  picks the player, skip and play controls
 │  ├─ MediaViewShared.qml              tells the osd a media screen is up
 │  ├─ MiniWaveShared.qml               small bar visualizer
@@ -762,6 +762,7 @@ quickshell/Modern/common/
 ├─ Backdrop.qml                   blurred dark wallpaper behind home, overview and lock
 ├─ Button.qml                     text button
 ├─ Field.qml                      text input
+├─ MediaCard.qml                  now playing for widgets, built like the lock's card
 ├─ Panel.qml                      Morph plus screen hop and keep warm
 ├─ Pop.qml                        quick bounce on a rename
 ├─ Say.qml                        the tour's text, plain in Modern
@@ -869,6 +870,7 @@ quickshell/Space/common/
 ├─ decode.js                      the text scramble effect
 ├─ DecodeText.qml                 the one text style, decodes on change
 ├─ Field.qml                      Modern's Field api, space look
+├─ MediaCard.qml                  now playing for the island, home screen and widgets
 ├─ orb.frag                       ball of light shader
 ├─ orb.frag.qsb                   compiled, this is what runs
 ├─ Orb.qml                        glowing ball, bar dots and stars
