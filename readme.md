@@ -51,6 +51,11 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
 ## Styles
 
+> [!NOTE]
+> ### Post your configs for others to see and use!
+> [Discussion Here](https://github.com/elifouts/Dotfiles/discussions/40)
+
+
 <details>
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/how-it-all-fits-together-v2.svg" alt="How It All Fits Together" align="absmiddle"></picture></summary>
 
