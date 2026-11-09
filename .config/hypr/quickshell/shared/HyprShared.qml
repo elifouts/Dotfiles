@@ -48,6 +48,11 @@ Singleton {
         return Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
     }
     readonly property var moonScreen: Quickshell.screens.reduce((a, b) => b.width > a.width ? b : a, Quickshell.screens[0])
+    function rateOf(screen) { return Hyprland.monitorFor(screen)?.lastIpcObject?.refreshRate ?? 0 }
+    readonly property var fastScreen: Quickshell.screens.reduce((a, b) => rateOf(b) > rateOf(a) + 1 ? b : a, Quickshell.screens[0])
+    readonly property real fastMs: 1000 / (rateOf(fastScreen) || 60)
+    Component.onCompleted: Hyprland.refreshMonitors()
+    Connections { target: Quickshell; function onScreensChanged() { Hyprland.refreshMonitors() } }
     function scaleFor(s) {
         return s ? Math.max(0.8, Math.min(1.35, Math.min(s.width / 1920, s.height / 1080))) : 1
     }

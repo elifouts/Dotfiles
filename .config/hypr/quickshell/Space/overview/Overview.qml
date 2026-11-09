@@ -48,6 +48,7 @@ Scope {
     property var transitMoon: null
 
     readonly property var home: Ui.target ?? Quickshell.screens[0]
+    property var clock: null
     readonly property real cx: home.x + home.width / 2
     readonly property real cy: home.y + home.height / 2
     readonly property real focal: Math.max(home.width, home.height) * 0.6
@@ -247,6 +248,7 @@ Scope {
     function distFor(o) { return (o.r ?? planetR) * focal / planetPx }
 
     readonly property var aimed: {
+        if (gate || takeoff.running || descend.running) return null
         let best = null, bestD = 40
         const near = (p, o, far) => {
             if (!p || p.z > far) return
@@ -295,11 +297,9 @@ Scope {
         if (!track[1] || now - track[1].t >= 24) track = [track[1], { t: now, x: c[0], y: c[1], z: c[2], yw: y, pt: pt }]
     }
     property bool touched: false
-    property bool poseDirty: false
     property var track: [null, null]
     property real kick: 0
     function flyPath() {
-        poseDirty = false
         if (!path) return
         const s = (go - liftA) / (1 - liftA)
         ascent = 1; ground = 0; ringDraw = Math.min(1, s * 1.8); ui = Math.max(0.0015, Math.min(1, (s - 0.15) * 2))
@@ -307,12 +307,7 @@ Scope {
     }
     onGoChanged: {
         if (!path) return
-        if (go > liftA) {
-            if (ground === 1 || go >= 1) flyPath()
-            else poseDirty = true
-            return
-        }
-        poseDirty = false
+        if (go > liftA) return flyPath()
         ringDraw = 0
         ui = 0.0015
         if (ascent === 1) pose(0)
@@ -343,7 +338,7 @@ Scope {
     function openGate() {
         const a = gate
         if (!a) return
-        a.start()
+        a.play()
         gate = null
     }
     Timer { running: !!map.gate; interval: 250; onTriggered: map.openGate() }
@@ -351,7 +346,6 @@ Scope {
     function takeOver() {
         if (!takeoff.running) return true
         if (go < takeOverAt) return false
-        if (poseDirty) flyPath()
         const a = track[0], dt = a ? (Date.now() - a.t) / 1000 : 0
         takeoff.stop()
         arrive()
@@ -363,17 +357,20 @@ Scope {
         kick = cam.v
         return true
     }
-    SequentialAnimation {
+    NumberAnimation { id: veilUp; target: map; property: "veil"; to: 1; duration: 600; easing.type: Easing.OutCubic }
+    PaceShared {
         id: takeoff
-        onFinished: if (map.queued || Ui.touring) map.close()
-        ParallelAnimation {
-            NumberAnimation { target: map; property: "veil"; to: 1; duration: 600; easing.type: Easing.OutCubic }
-            SequentialAnimation {
-                PauseAnimation { duration: 130 }
-                NumberAnimation { target: map; property: "go"; from: 0; to: 1; duration: map.takeoffMs; easing.type: Easing.BezierSpline; easing.bezierCurve: map.curve.concat([1, 1]) }
-            }
+        delay: 130
+        duration: map.takeoffMs
+        curve: map.curve
+        clock: map.clock
+        frameMs: HyprShared.fastMs
+        onBegan: veilUp.restart()
+        onValueChanged: map.go = value
+        onDone: {
+            map.arrive()
+            if (map.queued || Ui.touring) map.close()
         }
-        ScriptAction { script: map.arrive() }
     }
 
     property var flyFrom: [0, 0, 0, 0, 0]
@@ -440,10 +437,26 @@ Scope {
     }
     property bool queued: false
     function close() { if (!busy) warp(currentStar()); else queued = warm || takeoff.running }
-    SequentialAnimation {
+    QtObject {
         id: descend
         property int ms: 4200
-        NumberAnimation { target: map; property: "go"; from: 1; to: 0; duration: descend.ms; easing.type: Easing.BezierSpline; easing.bezierCurve: map.landCurve.concat([1, 1]) }
+        readonly property bool running: landGo.running || landTail.running
+        function play() { landGo.play() }
+        function stop() { landGo.stop(); landTail.stop() }
+    }
+    PaceShared {
+        id: landGo
+        from: 1
+        to: 0
+        duration: descend.ms
+        curve: map.landCurve
+        clock: map.clock
+        frameMs: HyprShared.fastMs
+        onValueChanged: map.go = value
+        onDone: landTail.start()
+    }
+    SequentialAnimation {
+        id: landTail
         ScriptAction { script: map.settled = true }
         PauseAnimation { duration: map.recolored ? 150 : 0 }
         ScriptAction { script: map.veil = 0.5 }
@@ -505,6 +518,7 @@ Scope {
 
     readonly property bool busy: !!gate || takeoff.running || fly.running || descend.running
     Binding { target: Ui; property: "overview"; value: map.veil > 0.99 }
+    Binding { target: Ui; property: "covered"; value: map.veil > 0.5 }
     Binding { target: Ui; property: "holdTheme"; value: map.veil > 0.99 && !map.settled }
     readonly property bool drawn: busy || veil > 0 || ascent > 0.001
     onDrawnChanged: if (!drawn) done()
@@ -584,11 +598,11 @@ Scope {
             WlrLayershell.namespace: "space-overview"
             WlrLayershell.keyboardFocus: main && !Ui.touring ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
+            Binding { target: map; property: "clock"; value: scene.Window.window; when: win.modelData === HyprShared.fastScreen }
             Connections {
                 target: scene.Window.window
                 function onFrameSwapped() {
                     if (map.gate) map.gateFrames++
-                    else if (map.poseDirty) map.flyPath()
                     if (win.main && (takeoff.running || descend.running)) RenderScale.frame()
                 }
             }
@@ -601,7 +615,7 @@ Scope {
             Item {
             id: sky
             anchors.fill: parent
-            visible: map.warm || map.ascent > 0.01
+            visible: map.warm || map.ascent > 0.01 && (map.veil < 0.5 || map.ascent > 0.2 || map.ground < 1)
             opacity: map.warm ? 0.0015 : Math.min(1, map.ascent * 1.5)
 
             ShaderEffect {
@@ -922,6 +936,8 @@ Scope {
                 sun: map.sunDir(map.transitLight?.[0], map.transitLight?.[1])
                 moonless: win.modelData === HyprShared.moonScreen ? 0 : 1
                 moonEnd: win.main && !moonless ? map.moonEnd : Qt.vector4d(0, 0, 0, 0)
+                view: Qt.vector4d(map.yaw, map.pitch, map.cam.f, 1)
+                viewSize: Qt.vector4d(win.ox - map.cx, win.oy - map.cy, width, height)
             }
 
             }
@@ -931,7 +947,7 @@ Scope {
                 anchors.fill: parent
                 visible: false
                 sourceItem: scene
-                textureSize: Qt.size(win.width / 2, win.height / 2)
+                textureSize: Qt.size(win.width / 4, win.height / 4)
                 live: shots.visible
             }
             MultiEffect {
@@ -979,10 +995,14 @@ Scope {
                             live: shots.visible
                         }
                         ScreencopyView {
+                            id: copy
                             anchors.fill: parent
                             opacity: shot.alpha * shot.cover / (1 - shot.alpha + shot.alpha * shot.cover)
                             captureSource: shot.modelData.wayland
-                            live: map.touched && shot.visible
+                        }
+                        Connections {
+                            target: map
+                            function onTouchedChanged() { if (map.touched && shot.visible) copy.captureFrame() }
                         }
                     }
                 }

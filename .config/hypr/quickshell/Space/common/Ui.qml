@@ -8,6 +8,7 @@ Singleton {
 
     property bool bar: true
     property bool overview: false
+    property bool covered: false
     property bool holdTheme: false
     property bool touring: false
     property string sheet: "core"

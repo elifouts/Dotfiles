@@ -12,6 +12,9 @@ ShaderEffect {
     property real drift: 0
     property real skyFade: 1
     property real wipe: 0
+    property real beneath: -1
+    property vector4d view: Qt.vector4d(0, 0, 0, 0)
+    property vector4d viewSize: Qt.vector4d(0, 0, 0, 0)
     property real rise: 0
     property real clear: 0
     property real orbit: 1

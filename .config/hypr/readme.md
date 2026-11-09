@@ -234,7 +234,10 @@ Launch and landing stay smooth because the heavy work happens while nothing is m
 - `Theme.frozen` holds the qml colors and `World.heldReload` holds the Hyprland reload until the camera has stopped and the terrain still covers everything, then the reveal waits a moment so no old colors show
 - the bar and widgets fade in as the terrain lifts, that's the last `veil` animation in `descend`
 - stars get reused when the camera crosses cells instead of being rebuilt
-- the camera updates once per finished frame, so it works at any refresh rate
+- launch, landing and the world hop run on `PaceShared`. It steps once per frame of the fastest monitor (`HyprShared.fastScreen`), right after that frame's handoff, so the next frame gets worked out while the current one draws. Every frame moves the same amount and a late one slows it down for a moment instead of jumping
+- the bar and wallpaper stop drawing (`updatesEnabled`) while the overview covers them, that's `Ui.covered`. Qt steps every animation once per window that draws, so the hidden visualizer and widgets were making the shell redo the camera about 1000 times a second and starving the 240hz screen
+- nothing looks for what you're aiming at during a launch or landing, and the sky shader is off while the land fully covers it
+- the falling windows grab one frame when you pick and another on touchdown, not a live capture every frame. Live capture was the biggest cost in the landing
 
 **How the shaders work**
 
@@ -243,6 +246,7 @@ The land's colors go through `dither()` in `terrain.frag`, or the faint moon and
 The scenery has no images and there's no 3D engine. QML keeps the state and hands numbers and colors to the shaders, and a QML property reaches the shader when it has the same name as a uniform. Colors get mixed from the theme in `Terrain.qml`, so a new theme doesn't need a recompile. Editing a `.frag` does, see "I edited a shader and nothing happened".
 
 - `terrain.frag` draws the sky, moon, planets, hills and trees in one pass. Switching workspaces only animates `pan`.
+- On a launch or landing the land's stars morph into the overview's. The overview's land gets the sky camera (`view`, `viewSize`) and draws the same stars `overview.frag` does, moving with the wallpaper sky while the wallpaper stars shrink and fade, then stopping once they've taken over, so nothing pops when the sky takes over. They're cut out by the land and where the moon actually is, and only show low in the sky once it's dark
 - Drawing all of that every frame is expensive, so `Wallpaper.qml` draws it once, stars included, and keeps the result. It only redraws when something like `pan` actually changes.
 - `craters()` skips cells further than 0.83 away because a crater can't reach past that. That's the biggest radius times the 1.8 fade, so if you change either one change the number too.
 - Only `Hypr.moonScreen` gets the moon, the other monitors are `moonless`.
@@ -463,8 +467,12 @@ Things that took me a while. Worth reading before "fixing" any of them.
 <summary><b>Performance</b></summary>
 
 - The land is drawn once and kept, the stars are part of that one layer and don't twinkle. Looping the whole shader repainted every pixel at full refresh, and even redrawing only the stars made Hyprland redraw everything on top of them. Now the GPU goes back to idle when nothing is moving
-- Vsync stays on unless the monitors have different refresh rates, that's `qs_sync` in `paths.sh`. With it off the shell drew around 280 fps on a 165hz screen and none of it lined up with the display. My desktop is 240 and 75, so it still runs without vsync
-- `RenderScale.qml` watches frame times while the land, a hop, a launch or a landing is moving. Under about 40 fps it draws the terrain at lower resolution, down to half, and goes back up when frames are fast again. It only applies while moving, the land goes back to full resolution when it stops. A fast GPU never drops
+- Vsync is always on. Without it Qt drew frames in bursts that didn't line up with the screen and about a third of the 240hz frames were repeats. It used to stutter with vsync on because of the 75hz screen holding up the 240hz one, the overview pausing hidden windows and `PaceShared` fixed that
+- `RenderScale.qml` watches frame times while the land, a hop, a launch or a landing is moving. Under about 40 fps it draws the terrain at lower resolution, down to half, and goes back up when frames are fast again. It only applies while moving, the land goes back to full resolution when it stops. It decides during the motion but only switches once things stop, switching mid animation was a visible pop. A fast GPU never drops
+- During a hop `before` covers the land, so `terrain.frag` skips the land's pixels under it (`beneath`) and `before`'s pixels the wipe already cleared. Only one full land gets drawn per frame instead of two
+- `terrain.frag` skips the planet until it actually shows. It used to work out the whole planet surface for every pixel while you were still on the ground, and all the time on the second monitor
+- The frosted copy behind the falling windows is drawn at quarter size, it's blurred so much you can't tell
+- The first launch or hop after the PC sits idle starts on a sleeping GPU. Mine sits at 210MHz for about half a second before it goes up to full speed, that's the few dropped frames left at the very start
 - If everything is suddenly laggy on the laptop check the battery first. At 6% the GPU was capped to 30W instead of 125W and stuck around 500MHz, by 14% the cap was gone. `nvidia-smi -q -d POWER` shows the current limit
 - One `Cava` for every visualizer, each monitor's bar used to spawn its own
 - `Panel` frees textures after it's been closed a while
@@ -564,7 +572,7 @@ utilities/
 │  ├─ wallpaper-index.py      builds thumbs, screen copies and palettes for the picker
 │  └─ wallpapers.sh           git wrapper for the wallpaper library repo
 ├─ launcher.py                desktop entries, commands and usage counts, both launchers use it
-└─ paths.sh                   sourced by scripts. sets $HYPR $UTIL $STYLE $QS from state/profile, qs_sync picks vsync
+└─ paths.sh                   sourced by scripts. sets $HYPR $UTIL $STYLE $QS from state/profile
 ```
 
 </details>
@@ -597,7 +605,7 @@ quickshell/
 │  ├─ FadeShared.qml                   one island tab, fades and rises in when on
 │  ├─ ForecastShared.qml               wttr.in weather data, refreshes every 30 min
 │  ├─ HoverShared.qml                  MouseArea with hover and the hand cursor
-│  ├─ HyprShared.qml                   paths, which screen has focus or the cursor, dispatch
+│  ├─ HyprShared.qml                   paths, which screen has focus or the cursor, the fastest screen, dispatch
 │  ├─ IconButtonShared.qml             clickable icon that lights up on hover
 │  ├─ LabelShared.qml                  Text in the theme font and color
 │  ├─ LockFaceShared.qml               what you see on one monitor, with its digits, buttons and wave
@@ -619,6 +627,7 @@ quickshell/
 │  ├─ OopsShared.qml                   inline error text
 │  ├─ OsdShared.qml                    osd pill and media card
 │  ├─ OsdStateShared.qml               what the osd does, caps lock tracking
+│  ├─ PaceShared.qml                   animation clock locked to the fastest monitor's frames
 │  ├─ PlayButtonShared.qml             accent circle with the play/pause morph
 │  ├─ PlayPauseShared.qml              shape that morphs between play and pause
 │  ├─ PowerShared.qml                  session actions and battery

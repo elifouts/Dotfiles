@@ -5,7 +5,9 @@ import Quickshell
 import Quickshell.Hyprland
 
 Singleton {
+    id: root
     property real scale: 1
+    property real next: 1
     property real last: 0
     property real begin: 0
     property int frames: 0
@@ -19,14 +21,16 @@ Singleton {
             settled = false
         }
         last = now
+        idle.restart()
         if (++frames < 16) return
         const ms = (now - begin) / frames
         begin = now
         frames = 0
         if (!settled) return settled = true
-        if (ms > 24) scale = Math.max(0.5, scale - 0.15)
-        else if (ms < 17) scale = Math.min(1, scale + 0.15)
+        if (ms > 24) next = Math.max(0.5, next - 0.15)
+        else if (ms < 17) next = Math.min(1, next + 0.15)
     }
+    Timer { id: idle; interval: 250; onTriggered: root.scale = root.next }
     function size(w, h, screen) {
         if (scale >= 1) return Qt.size(0, 0)
         const k = scale * (Hyprland.monitorFor(screen)?.scale ?? 1)

@@ -54,13 +54,14 @@ Singleton {
         hopSwapped = true
         hopLand()
     }
-    NumberAnimation {
+    property var clock: null
+    PaceShared {
         id: hopRun
-        target: root
-        property: "hopProg"
-        to: 1
         duration: Theme.ms(root.hopRushing ? 220 : 1300)
-        onFinished: {
+        clock: root.clock
+        frameMs: HyprShared.fastMs
+        onValueChanged: root.hopProg = value
+        onDone: {
             root.hopRushing = false
             root.hopBusy = false
             Ui.holdTheme = false
@@ -70,8 +71,8 @@ Singleton {
         if (hopBusy) {
             if (hopRushing) return
             hopRushing = true
-            hopRun.stop()
-            hopRun.start()
+            hopRun.from = hopProg
+            hopRun.play()
             return
         }
         if (Ui.holdTheme) return
@@ -85,8 +86,8 @@ Singleton {
         Ui.holdTheme = true
         hopped()
         hopSwapped = false
-        hopProg = 0
-        hopRun.restart()
+        hopRun.from = 0
+        hopRun.play()
     }
     function hopLand() {
         if (!hopPending) return

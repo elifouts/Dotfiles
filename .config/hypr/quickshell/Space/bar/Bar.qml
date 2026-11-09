@@ -14,6 +14,7 @@ PanelWindow {
     implicitHeight: 28 + Math.min(640, (screen?.height ?? 900) * 0.7)
     exclusiveZone: Ui.bar ? 28 : 0
     visible: Ui.bar
+    updatesEnabled: !Ui.covered
     color: "transparent"
     WlrLayershell.namespace: "space-bar"
     WlrLayershell.keyboardFocus: Ui.panel !== "" && Ui.panelScreen === screen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None

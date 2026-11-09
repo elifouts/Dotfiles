@@ -11,6 +11,7 @@ PanelWindow {
     required property var widgets
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Ignore
+    updatesEnabled: !Ui.covered
     color: "black"
     WlrLayershell.layer: WlrLayer.Background
     WlrLayershell.namespace: "space-wall"
@@ -35,6 +36,7 @@ PanelWindow {
         fade: World.hopBusy || Ui.overview ? 0 : Theme.ms(900)
         drift: World.hopBusy ? World.hopTravel - (World.hopSwapped ? 1.2 : 0) : 0
         lift: World.hopBusy && World.hopSwapped ? 0.9 * Math.pow(1 - World.hopAfter, 3) : 0
+        beneath: World.hopBusy ? before.wipe : -1
         skyFade: !World.hopBusy ? 1 : World.hopSwapped ? World.ease(World.hopAfter) : 1 - World.ease(World.hopProg / 0.3)
         layer.enabled: true
         layer.textureSize: win.moving ? RenderScale.size(width, height, win.screen) : Qt.size(0, 0)
@@ -54,6 +56,8 @@ PanelWindow {
         layer.enabled: visible && RenderScale.scale < 1
         layer.textureSize: RenderScale.size(width, height, win.screen)
     }
+
+    Binding { target: World; property: "clock"; value: land.Window.window; when: win.screen === HyprShared.fastScreen }
 
     Connections {
         target: World

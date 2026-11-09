@@ -27,6 +27,9 @@ layout(std140, binding = 0) uniform buf {
     float moonless;
     float skyFade;
     float wipe;
+    float beneath;
+    vec4 view;
+    vec4 viewSize;
 };
 
 float h1(float n) {
@@ -69,6 +72,31 @@ float n3(vec3 p) {
     f = f * f * (3.0 - 2.0 * f);
     return mix(mix(mix(hx(i), hx(i + vec3(1, 0, 0)), f.x), mix(hx(i + vec3(0, 1, 0)), hx(i + vec3(1, 1, 0)), f.x), f.y),
                mix(mix(hx(i + vec3(0, 0, 1)), hx(i + vec3(1, 0, 1)), f.x), mix(hx(i + vec3(0, 1, 1)), hx(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+}
+float sh3(vec3 p) {
+    p = fract(p * 0.1031);
+    p += dot(p, p.zyx + 31.32);
+    return fract((p.x + p.y) * p.z);
+}
+vec3 skyStars(vec2 st) {
+    vec3 d = normalize(vec3((viewSize.x + st.x * viewSize.z) / view.z, -(viewSize.y + st.y * viewSize.w) / view.z, 1.0));
+    d = vec3(d.x, d.y * cos(view.y) + d.z * sin(view.y), -d.y * sin(view.y) + d.z * cos(view.y));
+    d = vec3(d.x * cos(view.x) + d.z * sin(view.x), d.y, -d.x * sin(view.x) + d.z * cos(view.x));
+    float band = exp(-abs(d.y + 0.2 * sin(d.x * 2.0 + d.z)) * 4.0);
+    vec3 col = vec3(0.0);
+    for (int i = 0; i < 2; i++) {
+        float sc = 110.0 + float(i) * 150.0;
+        vec3 q = d * sc, c = floor(q);
+        float r = sh3(c);
+        if (r > 0.945 - band * 0.03) {
+            vec3 pt = c + 0.2 + 0.6 * vec3(sh3(c + 3.7), sh3(c + 9.1), sh3(c + 5.3));
+            float dist = length(q - pt), k = sh3(c + 1.9);
+            vec3 tint = k < 0.6 ? vec3(1.0) : k < 0.82 ? vec3(0.82, 0.9, 1.0) : vec3(1.0, 0.9, 0.78);
+            float s = smoothstep(0.14, 0.0, dist) + exp(-dist * 7.0) * 0.12 * step(0.985, r);
+            col += tint * s * (0.4 + (r - 0.94) * 8.0) / (1.0 + float(i));
+        }
+    }
+    return col;
 }
 vec3 dither() {
     float a = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
@@ -204,10 +232,19 @@ void main() {
     vec2 uv = c + (qt_TexCoord0 - c) / zoom;
     float y0 = 1.0 - uv.y;
     float x = (uv.x - 0.5) * aspect;
+    float edge = mix(aspect * 0.5 + 0.7, -aspect * 0.5 - 0.7, wipe);
+    if (x > edge + 0.7 || (beneath >= 0.0 && x < mix(aspect * 0.5, -aspect * 0.5 - 1.4, beneath))) {
+        fragColor = vec4(0.0);
+        return;
+    }
     float r2 = rise * 2.4;
     float y = y0 + r2 * 0.15;
     vec3 col = vec3(0.0);
     float cover = 0.0;
+    float mq = smoothstep(0.3, 1.0, rise);
+    vec2 mc = mix(vec2(pan * 0.02, 0.56 - rise * 0.36), moonEnd.xy, mq);
+    float mR = exp(mix(log(0.31), log(max(moonEnd.z, 0.001)), mq));
+    float morph = smoothstep(0.02, 0.22, rise);
     if (rise < 0.5) {
     col = mix(horizon.rgb, zenith.rgb, smoothstep(0.16, 0.9, y));
     col += warm.rgb * 0.55 * exp(-length(vec2(x * 0.55, (y - 0.27) * 2.4)) * 3.0);
@@ -229,14 +266,15 @@ void main() {
     float starOn = step(mix(0.72, 0.28, clusters) - moonless * 0.14, r);
     vec2 p = f - (vec2(h2(cell + 3.1), h2(cell + 7.7)) - 0.5) * 0.7;
     float dist = length(p);
-    float size = mix(0.009, 0.022, h2(cell + 1.3));
-    float starDot = exp(-3.2 * (dist / size) * (dist / size)) * starOn * skyFade;
-    col += starDot * 0.88 * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 1.2 * (1.0 - glow * 0.6);
+    float size = mix(0.009, 0.022, h2(cell + 1.3)) * mix(1.0, 0.35, morph);
+    float cut = mix(disc, step(0.5, moonEnd.w) * orbit * smoothstep(1.03, 0.97, length(vec2(x, y0) - mc) / mR), handed);
+    float starDot = exp(-3.2 * (dist / size) * (dist / size)) * starOn * skyFade * (1.0 - morph);
+    col += starDot * 0.88 * smoothstep(0.38, 0.78, y) * (1.0 - cut) * 1.2 * (1.0 - glow * 0.6);
     vec2 s0 =vec2((h1(5.0) - 0.2) * aspect * 0.6, 0.8), dir = normalize(vec2(1.0, 0.28));
     vec2 sp = vec2(x, y) - s0;
     float along = dot(sp, dir), off = abs(dot(sp, vec2(-dir.y, dir.x)));
     col += (1.0 - smoothstep(0.0, 0.0015, off)) * smoothstep(0.0, 0.08, along) * (1.0 - smoothstep(0.06, 0.1, along))
-         * smoothstep(0.38, 0.78, y) * (1.0 - disc) * 0.7 * skyFade;
+         * smoothstep(0.38, 0.78, y) * (1.0 - cut) * 0.7 * skyFade * (1.0 - morph);
     float sxw = x + pan * 0.3;
     float sc = floor(sxw / 7.0 + 0.5);
     vec2 sp0 = vec2(sxw - (sc * 7.0 + (h1(sc + 7.0) - 0.5) * 2.4), y - (0.5 + 0.25 * h1(sc + 13.0)));
@@ -301,7 +339,7 @@ void main() {
     if (rise > 0.0) {
         vec3 space = mix(vec3(0.015, 0.02, 0.05), zenith.rgb * 0.4, 0.3);
         float sp2 = smoothstep(0.22, 0.5, rise);
-        col = mix(col, space + vec3(step(0.997, h2(floor(vec2(x, y0) * 260.0)))) * 0.7, sp2);
+        col = mix(col, space, sp2);
         col *= 1.0 - sp2 * clear;
         float t = clamp((rise - 0.45) / 0.55, 0.0, 1.0), p = t * t * (2.65 - 1.65 * t);
         float R = exp(mix(log(3.5), log(endR), p));
@@ -313,9 +351,6 @@ void main() {
 
         float aa = fwidth(rr) * 1.2;
 
-        float mq = smoothstep(0.3, 1.0, rise);
-        vec2 mc = mix(vec2(pan * 0.02, 0.56 - rise * 0.36), moonEnd.xy, mq);
-        float mR = exp(mix(log(0.31), log(max(moonEnd.z, 0.001)), mq));
         vec2 md = vec2(x, y0) - mc;
         float mr = length(md) / mR, maa = fwidth(mr) * 1.2;
         vec3 mn = vec3(md / mR, sqrt(max(0.0, 1.0 - mr * mr)));
@@ -328,12 +363,15 @@ void main() {
             mo = mix(k, 1.0, mfull);
             mcol = mix(moon.rgb * k, light(moonSurf(mn, mL, mpx, mfull), mn, mL, 0.0), mfull) / mo;
         }
-        float ma = smoothstep(1.0 + maa, 1.0 - maa, mr) * step(0.5, moonEnd.w) * orbit * mo * (1.0 - cover);
+        float mcov = smoothstep(1.0 + maa, 1.0 - maa, mr) * step(0.5, moonEnd.w) * orbit * (1.0 - cover);
+        float ma = mcov * mo;
         float front = step(1.5, moonEnd.w);
+        float skyOp = rise > 0.2 ? min(1.0, rise * 1.5) : 0.0;
+        vec3 stars = view.w > 0.5 ? skyStars(qt_TexCoord0 + vec2(0.0, 0.36 * max(0.0, 0.22 - rise))) * morph * (1.0 - mcov) * (1.0 - cover) * mix(smoothstep(0.38, 0.78, y0 + r2 * 0.15), 1.0, sp2) : vec3(0.0);
 
-        if (rr > 1.6) {
-            float a0 = mix(1.0, ma, sp2 * clear);
-            fragColor = vec4((mix(col, mcol, ma) + dither()) * a0, a0) * qt_Opacity;
+        if (rr > 1.6 || show <= 0.0) {
+            float a0 = mix(1.0, mcov, sp2 * clear);
+            fragColor = vec4((mix(col, mcol, ma) + dither()) * a0 + stars * (1.0 - (1.0 - a0) * skyOp), a0) * qt_Opacity;
             return;
         }
         float ball = smoothstep(1.0 + aa, 1.0 - aa, rr) * show;
@@ -352,10 +390,9 @@ void main() {
         vec2 dn = d / max(length(d), 1e-4);
         float halo = 0.5 * (1.0 - kind) * exp(-max(rr - 1.0, 0.0) * 22.0) * step(1.0, rr) * show * smoothstep(-0.4, 0.5, dot(dn, L.xy));
         body += mix(horizon.rgb, warm.rgb, 0.4) * halo;
-        float a = mix(1.0, clamp(ball + halo + ma, 0.0, 1.0), sp2 * clear);
-        fragColor = vec4((body + dither()) * a, a) * qt_Opacity;
+        float a = mix(1.0, clamp(ball + halo + mcov, 0.0, 1.0), sp2 * clear);
+        fragColor = vec4((body + dither()) * a + stars * (1.0 - ball) * (1.0 - (1.0 - a) * skyOp), a) * qt_Opacity;
         return;
     }
-    float edge = mix(aspect * 0.5 + 0.7, -aspect * 0.5 - 0.7, wipe);
     fragColor = vec4(col + dither(), 1.0) * qt_Opacity * (1.0 - smoothstep(edge - 0.7, edge + 0.7, x));
 }
