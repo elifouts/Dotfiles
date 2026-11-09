@@ -1,0 +1,11 @@
+{
+    "//": [
+        "left, center, right: module lists, an empty list hides that pill",
+        "modules: user workspaces media timer updates network audio battery tray notifications clock power, | is a divider",
+        "attached: true/false"
+    ],
+    "left": [],
+    "center": ["user", "workspaces", "media", "timer", "network", "clock", "tray", "power"],
+    "right": [],
+    "attached": true
+}

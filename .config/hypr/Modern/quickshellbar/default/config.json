@@ -1,4 +1,13 @@
 {
+    "//": [
+        "left, center, right: module lists. only center gives one big pill",
+        "modules: user workspaces media date constdate timer clock tray updates notifications network audio battery power, | is a divider",
+        "strip: true/false, full width strip the cards grow out of",
+        "background: true/false, draws the pill background",
+        "attached: true/false, pills hang from the top edge",
+        "height, gap: sizes in px",
+        "shape: round, capsule, square"
+    ],
     "left": ["user", "workspaces"],
     "center": ["media", "date", "timer", "clock"],
     "right": ["tray", "|", "updates", "network", "audio", "|", "power"],

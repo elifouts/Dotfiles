@@ -227,6 +227,14 @@ PanelWindow {
                 }
                 Knob { label: "Pan distance"; key: "space.parallax"; from: 0.2; to: 2; step: 0.1; fallback: 1 }
             }
+            Column {
+                Pick {
+                    label: "Bar"
+                    options: (StoreShared.quickshell.styles || []).map(s => s.id)
+                    current: StoreShared.quickshellActive
+                    onChose: v => { if (v !== StoreShared.quickshellActive) StoreShared.applyQuickshell(v) }
+                }
+            }
         }
     }
 

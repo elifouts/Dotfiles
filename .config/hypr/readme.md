@@ -179,6 +179,8 @@ shells.sh <utility> [call] [args]   # default call is toggle, starts the shell i
 
 Modules: `user` `workspaces` `media` `date` `constdate` `timer` `clock` `tray` `updates` `notifications` `network` `audio` `battery` `power`, and `|` for a divider.
 
+Every `config.json`, Modern's and Space's, starts with a `"//"` list of its options. JSON has no comments and both bars ignore that key.
+
 `InstallScripts/bars/quickshellbarinstall.sh` and `waybarinstall.sh` install either bar alone. The standalone quickshell bar reads `style.json` next to its `shell.qml`. The installer copies `shared/` and the parts of Modern it needs into `style/`, so the imports work the same.
 
 </details>
@@ -212,6 +214,7 @@ Same scripts, settings and color themes as Modern, none of the visuals. One proc
 | home | `Alt+Tab` | visor with system info |
 | launcher | tap `Super` | little terminal under the bar, `Tab` switches between apps and commands, `Shift+Enter` runs in the background instead of kitty |
 | widgets | `Alt+D` | same widgets as Modern with its own layouts, `state/layouts/space/` |
+| bar | `Alt+A` | styles are `Space/quickshellbar/<name>/config.json`, same `left` `center` `right` `attached` and module names as Modern, so a new folder shows up in the bar picker on the core tab. unknown modules are skipped |
 | settings | `Alt+S` | hud sheet that sizes to each tab, most pages come from `SchemaShared.js`, `LAYOUT` in Space's `Schema.js` sets their columns, right click resets an option |
 | welcome | first run | the tour. the overview opens, closes itself after takeoff and moves on once it has landed. goes to one empty workspace and back so it can't jump monitors |
 | lock | `Super+L` | the shared lock with the land behind it |
@@ -858,6 +861,11 @@ Space/
 │  ├─ shortcuts.lua      Space's keybinds, most go through `shells.sh space toggle`
 │  ├─ startup.lua        only pulls in session.lua
 │  └─ style.lua          hyprland look for the hud
+├─ quickshellbar/
+│  ├─ attached/config.json  pills hang from the top edge
+│  ├─ default/config.json   user and workspaces left, everything else right
+│  ├─ split/config.json     media and clock in a center pill
+│  └─ zen/config.json       workspaces, sound, notifications, clock
 └─ tweaks/
    ├─ saved/
    │  └─ desktop/

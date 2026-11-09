@@ -3,6 +3,9 @@
     "colors": {
       "theme": "dark/space"
     },
+    "quickshell": {
+      "style": "default"
+    },
     "space": {
       "world": {
         "hue": 0.4362777769565582,

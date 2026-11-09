@@ -13,14 +13,14 @@ Item {
     property bool decode: true
     property real room: 0
     signal wheel(int dir)
-    readonly property var pill: parent?.parent
+    readonly property var pill: { let p = parent; while (p && !("openCount" in p)) p = p.parent; return p }
     readonly property bool open: Ui.panel === panel && Ui.panelScreen === pill?.scr && (tab === "" || Ui.tab === tab)
 
     property real reveal: show ? 1 : 0
     Behavior on reveal { SettleShared { duration: Theme.ms(260) } }
     visible: reveal > 0.001
     opacity: reveal
-    property real natW: row.width + 14 + room
+    property real natW: row.width + room
     Behavior on natW { SettleShared { id: resize; duration: Theme.open } }
     clip: reveal < 0.999 || resize.running
     width: natW * reveal

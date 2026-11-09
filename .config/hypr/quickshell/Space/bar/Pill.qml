@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Shapes
 import "../../shared"
 import "../common"
 
@@ -14,6 +13,7 @@ Item {
         Rectangle { width: 1; height: 7; x: parent.atRight ? 6 : 0; color: Theme.accent; opacity: 0.9 }
     }
     property int lean: 1
+    property bool attached: false
     property real padL: 14
     property real padR: 14
     property real introDelay: 0
@@ -31,8 +31,9 @@ Item {
     onLiveChanged: if (live !== "") { kind = live }
     property real extraW: dropped ? panelW - natW : 0
     property real drop: dropped ? body.height + 22 : 0
-    Behavior on extraW { SettleShared { duration: Theme.open } }
-    Behavior on drop { SettleShared { duration: Theme.open } }
+    readonly property int speed: dropped ? Theme.open : Theme.fast
+    Behavior on extraW { SettleShared { duration: pill.speed } }
+    Behavior on drop { SettleShared { duration: pill.speed } }
 
     width: natW + extraW
     height: 28 + drop
@@ -43,35 +44,31 @@ Item {
         SettleShared { to: 1; duration: Theme.open }
     }
 
-    function fx(v) { return lean > 0 ? v : width - v }
-
-    Shape {
-        anchors.fill: parent
-        preferredRendererType: Shape.CurveRenderer
-        ShapePath {
-            strokeWidth: 1
-            strokeColor: Theme.alpha(Theme.accent, 0.4)
-            fillGradient: LinearGradient {
-                y2: pill.height
-                GradientStop { position: 0; color: Theme.back(0.72) }
-                GradientStop { position: 1; color: Theme.back(0.42) }
-            }
-            startX: pill.fx(8); startY: 0
-            PathLine { x: pill.fx(pill.width); y: 0 }
-            PathLine { x: pill.fx(pill.width); y: pill.height - 8 }
-            PathLine { x: pill.fx(pill.width - 8); y: pill.height }
-            PathLine { x: pill.fx(0); y: pill.height }
-            PathLine { x: pill.fx(0); y: 8 }
-            PathLine { x: pill.fx(8); y: 0 }
+    Rectangle {
+        y: pill.attached ? -1 : 0
+        width: pill.width
+        height: pill.height - y
+        border.width: 1
+        border.color: Theme.alpha(Theme.accent, 0.4)
+        gradient: Gradient {
+            GradientStop { position: 0; color: Theme.back(0.72) }
+            GradientStop { position: 1; color: Theme.back(0.42) }
         }
     }
 
-    Bracket { x: pill.lean > 0 ? pill.width - 7 : 0; y: 0; atRight: pill.lean > 0; atBottom: false }
-    Bracket { x: pill.lean > 0 ? 0 : pill.width - 7; y: pill.height - 7; atRight: pill.lean < 0; atBottom: true }
+    Repeater {
+        model: 4
+        Bracket {
+            required property int index
+            atRight: index % 2 === 1
+            atBottom: index > 1
+            visible: atBottom || !pill.attached
+            x: atRight ? pill.width - 7 : 0
+            y: atBottom ? pill.height - 7 : 0
+        }
+    }
 
-    Rectangle { x: 8; y: pill.height - 1; width: pill.width - 16; height: 1; color: Theme.alpha(Theme.accent, 0.28) }
-
-    Row { id: inner; x: pill.padL + (pill.lean < 0 ? pill.extraW : 0); height: 28 }
+    Row { id: inner; x: pill.padL + (pill.lean < 0 ? pill.extraW : pill.lean === 0 ? pill.extraW / 2 : 0); height: 28; spacing: 14 }
 
     HoverHandler { id: hh }
     Connections {
@@ -80,7 +77,7 @@ Item {
         function onRun(cmd) { HyprShared.run(cmd) }
         function onDone() { Ui.panel = "" }
     }
-    Timer { interval: 260; running: pill.dropped && !hh.hovered && !body.item?.holdOpen; onTriggered: Ui.panel = "" }
+    Timer { interval: 90; running: pill.dropped && !hh.hovered && !body.item?.holdOpen; onTriggered: Ui.panel = "" }
 
     Item {
         x: 0; y: 28
@@ -94,7 +91,7 @@ Item {
             y: 11 + Math.min(0, parent.height - height - 22)
             width: pill.panelW - 24
             opacity: pill.dropped ? 1 : 0
-            Behavior on opacity { SettleShared { duration: Theme.open } }
+            Behavior on opacity { SettleShared { duration: pill.speed } }
             source: pill.kind ? ({ audio: "../../shared/SoundShared", media: "menus/Island", net: "../../shared/NetworkShared", notifs: "../../shared/NotificationsShared", power: "menus/Session", time: "menus/Calendar", tray: "menus/Tray", updates: "../../shared/UpdateMenuShared" })[pill.kind] + ".qml" : ""
             onLoaded: if ("open" in item) item.open = Qt.binding(() => pill.dropped)
         }
