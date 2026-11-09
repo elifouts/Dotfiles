@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/common.sh"
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../common.sh"
 NAME="dotfiles-bar"
 DEST="$HOME/.config/quickshell/$NAME"
 UTIL="$REPO/.config/hypr/quickshell"

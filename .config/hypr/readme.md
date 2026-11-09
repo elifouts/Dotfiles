@@ -179,7 +179,7 @@ shells.sh <utility> [call] [args]   # default call is toggle, starts the shell i
 
 Modules: `user` `workspaces` `media` `date` `constdate` `timer` `clock` `tray` `updates` `notifications` `network` `audio` `battery` `power`, and `|` for a divider.
 
-`InstallScripts/quickshellbarinstall.sh` and `waybarinstall.sh` install either bar alone. The standalone quickshell bar reads `style.json` next to its `shell.qml`. The installer copies `shared/` and the parts of Modern it needs into `style/`, so the imports work the same.
+`InstallScripts/bars/quickshellbarinstall.sh` and `waybarinstall.sh` install either bar alone. The standalone quickshell bar reads `style.json` next to its `shell.qml`. The installer copies `shared/` and the parts of Modern it needs into `style/`, so the imports work the same.
 
 </details>
 
@@ -934,7 +934,7 @@ quickshell/Space/
 
 | Path | What it is |
 |---|---|
-| `InstallScripts/` | `install.sh` is the menu, `apply.sh` relinks after a pull, `common.sh` is shared helpers, plus each install and uninstall path |
+| `InstallScripts/` | `install.sh` is the menu, `apply.sh` relinks after a pull, `common.sh` is shared helpers. `full/` is the full install and uninstall, `bars/` is the standalone bars, `NoMansSky-Background-and-Map/` is the standalone Space wallpaper and star map |
 | `.githooks/pre-commit` | syncs favorite wallpapers into `wallpapers/library`. The installer sets `core.hooksPath` |
 | `.config/waybar/` | the live waybar config, see overwritten files above. `scripts/` is the color picker |
 | `.config/wal/` | color schemes and pywal templates |

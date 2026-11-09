@@ -483,6 +483,7 @@ Install
   - `1. Full install` - everything
   - `2. Waybar` - just my waybar
   - `3. Quickshell bar` - just my quickshell bar
+  - `4. No Man's Sky background + star map` - if you dont want everything and just want the planet wallpaper and the star map overview. Works on any distro with Quickshell, it tells you how to bind the keys at the end. Or run `InstallScripts/NoMansSky-Background-and-Map/install.sh` straight
   - `p. Package manager TUI` - see below
 
 Update:
@@ -508,7 +509,7 @@ Uninstall:
 </details>
 
 ```
-~/Dotfiles/InstallScripts/uninstall.sh
+~/Dotfiles/InstallScripts/full/uninstall.sh
 ```
 
 

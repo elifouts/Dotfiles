@@ -22,13 +22,18 @@ Scope {
     property int picked: -1
     property real shown: 1
 
+    readonly property var defaults: ({
+        modern: [[{ type: "clock", x: 0.025, y: 0.044, s: 1.99, style: "glow", align: "left" },
+                  { type: "stats", x: 0.025, y: 0.244, s: 1, style: "glow", align: "left" }],
+                 [{ type: "media", x: 0.294, y: 0.213, s: 1.48, style: "plain", align: "left" },
+                  { type: "viz", x: 0.339, y: 0.138, s: 1.71, style: "plain", align: "left" }]],
+        space: [[{ type: "clock", x: 0.013, y: 0.067, s: 2.4, style: "glow", align: "left" },
+                 { type: "stats", x: 0.013, y: 0.311, s: 1.46, style: "glow", align: "left" }],
+                [{ type: "viz", x: 0.29, y: 0.488, s: 2.24, style: "plain", align: "left" },
+                 { type: "media", x: 0.272, y: 0.35, s: 1.64, style: "plain", align: "left" }]]
+    })
     function fallback() {
-        return tall ? [{ type: "clock", x: 0.08, y: 0.08, s: 1, style: "plain", align: "left" },
-                       { type: "stats", x: 0.08, y: 0.2, s: 1, style: "plain", align: "left" },
-                       { type: "media", x: 0.08, y: 0.8, s: 1, style: "frame", align: "left" }]
-                    : [{ type: "clock", x: 0.05, y: 0.1, s: 1.2, style: "plain", align: "left" },
-                       { type: "stats", x: 0.05, y: 0.28, s: 1, style: "plain", align: "left" },
-                       { type: "media", x: 0.05, y: 0.74, s: 1, style: "frame", align: "left" }]
+        return JSON.parse(JSON.stringify((defaults[style] ?? defaults.modern)[tall ? 1 : 0]))
     }
 
     FileView {

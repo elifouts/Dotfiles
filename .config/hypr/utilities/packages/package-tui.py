@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
-MANIFEST = ROOT / "InstallScripts" / "fullinstall-packages.sh"
+MANIFEST = ROOT / "InstallScripts" / "full" / "fullinstall-packages.sh"
 
 
 def run(*args):

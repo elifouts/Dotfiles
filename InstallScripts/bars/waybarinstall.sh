@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/common.sh"
+source "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../common.sh"
 DEST="$HOME/.config/waybar"
 STYLE_DIR=""
 
