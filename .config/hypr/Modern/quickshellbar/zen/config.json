@@ -1,9 +1,9 @@
 {
     "left": [],
-    "center": ["workspaces", "constdate", "clock"],
+    "center": ["workspaces", "constdate", "network","updates", "clock"],
     "right": [],
     "strip": false,
-    "background": true,
+    "background": false,
     "height": 30,
     "gap": 6,
     "shape": "round"

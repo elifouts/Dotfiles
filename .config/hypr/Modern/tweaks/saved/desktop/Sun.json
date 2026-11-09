@@ -1,0 +1,17 @@
+{
+  "bar": {
+    "kind": "quickshell"
+  },
+  "colors": {
+    "theme": "pywal"
+  },
+  "quickshell": {
+    "style": "zen"
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/nature/nat-09.jpg"
+  },
+  "waybar": {
+    "style": "default"
+  }
+}
