@@ -41,7 +41,7 @@
     },
     "general": {
       "border_size": 0,
-      "gaps_in": 8,
+      "gaps_in": 6,
       "gaps_out": 0,
       "gaps_workspaces": 0
     },
