@@ -216,6 +216,7 @@ Same scripts, settings and color themes as Modern, none of the visuals. One proc
 | widgets | `Alt+D` | same widgets as Modern with its own layouts, `state/layouts/space/` |
 | bar | `Alt+A` | styles are `Space/quickshellbar/<name>/config.json`, same `left` `center` `right` `attached` and module names as Modern, so a new folder shows up in the bar picker on the core tab. unknown modules are skipped |
 | settings | `Alt+S` | hud sheet that sizes to each tab, most pages come from `SchemaShared.js`, `LAYOUT` in Space's `Schema.js` sets their columns, right click resets an option |
+| land tab | `Alt+S` | `LAND` in Space's `Schema.js`, saved as `space.land.*` in the profile. `Terrain.qml` binds each one straight to a shader uniform so it changes live. per world change rolls them a bit per seed, planets too. atlas swaps the home moon only, shooting stars is a count up to 6, each one gets its own spot left or right of the moon and its own size. reset puts every land option back |
 | welcome | first run | the tour. the overview opens, closes itself after takeoff and moves on once it has landed. goes to one empty workspace and back so it can't jump monitors |
 | lock | `Super+L` | the shared lock with the land behind it |
 
@@ -248,7 +249,7 @@ The land's colors go through `dither()` in `terrain.frag`, or the faint moon and
 
 The scenery has no images and there's no 3D engine. QML keeps the state and hands numbers and colors to the shaders, and a QML property reaches the shader when it has the same name as a uniform. Colors get mixed from the theme in `Terrain.qml`, so a new theme doesn't need a recompile. Editing a `.frag` does, see "I edited a shader and nothing happened".
 
-- `terrain.frag` draws the sky, moon, planets, hills and trees in one pass. Switching workspaces only animates `pan`.
+- `terrain.frag` draws the sky, moon, planets, hills and trees in one pass. Switching workspaces only animates `pan`. Trees come in scenes on the thirds of the main hill (forest or group, then a lone tree or nothing), bases come small, medium or large with random parts, landed ships and bases can have a little camp around them (bases sometimes with a ship parked), small rocks sit around scenes, ships, bases and the close astronaut, the rocks setting scatters more along the hills, a tiny astronaut stands on the tallest far mountain in view, and some worlds add a close one scanning a bush or sitting on a crate by the landed ship.
 - On a launch or landing the land's stars morph into the overview's. The overview's land gets the sky camera (`view`, `viewSize`) and draws the same stars `overview.frag` does, moving with the wallpaper sky while the wallpaper stars shrink and fade, then stopping once they've taken over, so nothing pops when the sky takes over. They're cut out by the land and where the moon actually is, and only show low in the sky once it's dark
 - Drawing all of that every frame is expensive, so `Wallpaper.qml` draws it once, stars included, and keeps the result. It only redraws when something like `pan` actually changes.
 - `craters()` skips cells further than 0.83 away because a crater can't reach past that. That's the biggest radius times the 1.8 fade, so if you change either one change the number too.
@@ -399,11 +400,15 @@ There are no `qmldir` files, Quickshell makes them from these. A singleton just 
 <details>
 <summary><b>I edited a shader and nothing happened</b></summary>
 
-Qt runs the `.qsb`, not the `.frag`. Recompile it:
+Qt runs the `.qsb`, not the `.frag`. This rebuilds every shader and restarts the shell:
 
 ```bash
-/usr/lib/qt6/bin/qsb --qt6 -o terrain.frag.qsb terrain.frag
+utilities/session/shells.sh shaders
 ```
+
+`terrain.frag` is only the setup, the parts live in `wallpaper/terrain/` and get pulled in with `#include`. `sky`, `land` and `space` are pasted inside `main()`, so they share its variables like `col`, `y` and `cover`.
+
+Each section is labeled with a one or two word comment like `// trees` so you can find things. Those labels are the only comments in the repo.
 
 </details>
 
@@ -473,6 +478,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - Vsync is always on. Without it Qt drew frames in bursts that didn't line up with the screen and about a third of the 240hz frames were repeats. It used to stutter with vsync on because of the 75hz screen holding up the 240hz one, the overview pausing hidden windows and `PaceShared` fixed that
 - `RenderScale.qml` watches frame times while the land, a hop, a launch or a landing is moving. Under about 40 fps it draws the terrain at lower resolution, down to half, and goes back up when frames are fast again. It only applies while moving, the land goes back to full resolution when it stops. It decides during the motion but only switches once things stop, switching mid animation was a visible pop. A fast GPU never drops
 - During a hop `before` covers the land, so `terrain.frag` skips the land's pixels under it (`beneath`) and `before`'s pixels the wipe already cleared. Only one full land gets drawn per frame instead of two
+- Land options that are off cost nothing, `terrain.frag` skips them on the uniform. The galaxy only runs on sky pixels. Nothing animates while idle, so the land only redraws when something changes
 - `terrain.frag` skips the planet until it actually shows. It used to work out the whole planet surface for every pixel while you were still on the ground, and all the time on the second monitor
 - The frosted copy behind the falling windows is drawn at quarter size, it's blurred so much you can't tell
 - The first launch or hop after the PC sits idle starts on a sleeping GPU. Mine sits at 210MHz for about half a second before it goes up to full speed, that's the few dropped frames left at the very start
@@ -562,7 +568,7 @@ utilities/
 │  ├─ lock.sh                 grabs monitor frames, runs lock.qml as its own process
 │  ├─ osd.sh                  brightness and volume keys, then shows the osd
 │  ├─ session.sh              start or stop a style's shell and daemons
-│  ├─ shells.sh               start, stop or call the quickshell process over ipc
+│  ├─ shells.sh               start, stop or call the quickshell process over ipc, `shaders` rebuilds them
 │  ├─ TransitionShared.qml    blurred frame and loading bar that hide a style switch
 │  └─ transition.sh           starts it, holds the old layout, then reveals
 ├─ settings/
@@ -937,7 +943,16 @@ quickshell/Space/
 ├─ settings/
 │  └─ Settings.qml                 hud settings sheet from the bottom
 ├─ wallpaper/
-│  ├─ terrain.frag                 sky, moon, hills and pines. no image files
+│  ├─ terrain.frag                 setup and main, includes the parts below. no image files
+│  ├─ terrain/
+│  │  ├─ uniforms.glsl             every value Terrain.qml hands in
+│  │  ├─ noise.glsl                hashes, noise, dither
+│  │  ├─ orbit.glsl                planet and moon surfaces, space stars
+│  │  ├─ atlas.glsl                the atlas
+│  │  ├─ shapes.glsl               hills, rocks, trees, grass, bases, ships
+│  │  ├─ sky.glsl                  sky, moon, galaxy, stars, flying ships
+│  │  ├─ land.glsl                 mountains, ridges, hill, landed ship, foreground
+│  │  └─ space.glsl                launch and landing, planet in orbit
 │  ├─ terrain.frag.qsb             compiled, this is what runs
 │  ├─ Terrain.qml                  the terrain shader with theme colors
 │  └─ Wallpaper.qml                one monitor's wallpaper window, pans with workspaces

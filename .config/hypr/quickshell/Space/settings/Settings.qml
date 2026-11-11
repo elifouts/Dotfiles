@@ -310,9 +310,11 @@ PanelWindow {
                                     height: item?.implicitHeight ?? 0
                                     visible: Schema.shown(def, StoreShared.values, StoreShared.caps)
                                     active: visible
-                                    sourceComponent: ({ slider: slider, toggle: flip, choice: choice, bezier: bezier, animpreset: preset, cursors: cursors })[def.type]
-                                    Component { id: slider; Knob { key: ctl.def.key; label: ctl.def.label; unit: ctl.def.unit; from: ctl.def.min; to: ctl.def.max; step: ctl.def.step } }
-                                    Component { id: flip; Toggle { key: ctl.def.key; label: ctl.def.label; raises: ctl.def.raises } }
+                                    sourceComponent: ({ slider: slider, toggle: flip, choice: choice, bezier: bezier, animpreset: preset, cursors: cursors, reland: reland, resetland: resetland })[def.type]
+                                    Component { id: slider; Knob { key: ctl.def.key; label: ctl.def.label; unit: ctl.def.unit; from: ctl.def.min; to: ctl.def.max; step: ctl.def.step; fallback: ctl.def.dflt ?? ctl.def.min } }
+                                    Component { id: flip; Toggle { key: ctl.def.key; label: ctl.def.label; raises: ctl.def.raises; fallback: ctl.def.dflt ?? true } }
+                                    Component { id: reland; Item { implicitHeight: 30; Button { y: 4; label: ctl.def.label; onPressed: World.reland() } } }
+                                    Component { id: resetland; Item { implicitHeight: 30; Button { y: 4; label: ctl.def.label; onPressed: StoreShared.reset(...Schema.LAND_DEFS.map(c => c.key)) } } }
                                     Component { id: choice; Pick { key: ctl.def.key; label: ctl.def.label; options: ctl.def.options } }
                                     Component { id: bezier; SettingBezierShared {} }
                                     Component {
@@ -336,7 +338,7 @@ PanelWindow {
                                     MouseArea {
                                         anchors.fill: parent
                                         acceptedButtons: Qt.RightButton
-                                        onClicked: StoreShared.reset(ctl.def.key ?? (ctl.def.type === "cursors" ? "cursor.theme" : "animation"))
+                                        onClicked: if (ctl.def.key || !ctl.def.type.endsWith("land")) StoreShared.reset(ctl.def.key ?? (ctl.def.type === "cursors" ? "cursor.theme" : "animation"))
                                     }
                                 }
                             }

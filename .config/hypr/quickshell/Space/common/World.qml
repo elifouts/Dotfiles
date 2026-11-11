@@ -227,6 +227,11 @@ Singleton {
         Theme.saved = palette(hue)
         save()
     }
+    function reland() {
+        landSeed = Math.round(Math.random() * 997)
+        seed = landSeed
+        save()
+    }
     function paint(h) {
         const id = Hyprland.focusedWorkspace?.id
         if (id > 0) stars = Object.assign({}, stars, { [id]: starOf(id).slice(0, 3).concat([h]) })

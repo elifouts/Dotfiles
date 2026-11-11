@@ -39,8 +39,15 @@ case "${1:-}" in
         "$0" start
         exit 0
         ;;
+    shaders)
+        for f in $(find "$QS" -name "*.frag" -not -path "*/terrain/*"); do
+            /usr/lib/qt6/bin/qsb --qt6 -o "$f.qsb" "$f" || exit 1
+        done
+        "$0" restart
+        exit 0
+        ;;
     "")
-        echo "usage: shells.sh start|stop|restart | <utility> [call [args...]]" >&2
+        echo "usage: shells.sh start|stop|restart|shaders | <utility> [call [args...]]" >&2
         exit 2
         ;;
 esac

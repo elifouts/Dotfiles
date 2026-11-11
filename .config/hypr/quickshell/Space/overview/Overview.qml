@@ -794,6 +794,7 @@ Scope {
                         clear: 1
                         endR: 0.4
                         kind: bd.modelData.kind === "moon" ? 1 : 0
+                        atlasOk: !!bd.modelData.natural
                         hue: bd.modelData.hue
                         seed: bd.modelData.seed
                         sun: map.sunDir(map.shown(bd.modelData), bd.modelData.star)

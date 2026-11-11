@@ -333,6 +333,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
 - **`Alt+W`** to change colors.
 - It's a shader, not an image, so it moves when you switch workspaces.
+- The land tab in settings changes mountains, trees, rocks, bases, stars, shooting stars, galaxy, ships and swaps the moon for the Atlas. Each world rolls its own tree scenes, ship camp and the odd traveler on a peak.
   </details>
 
   <details>

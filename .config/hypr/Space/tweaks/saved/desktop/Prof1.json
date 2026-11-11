@@ -1,0 +1,49 @@
+{
+  "bar": {
+    "kind": "waybar"
+  },
+  "colors": {
+    "theme": "dark/space"
+  },
+  "quickshell": {
+    "style": "zen"
+  },
+  "space": {
+    "parallax": 0.3,
+    "world": {
+      "hue": 0.2566666603088379,
+      "palette": {
+        "colors": {
+          "color0": "#2e3440",
+          "color1": "#bf616a",
+          "color10": "#a3be8c",
+          "color11": "#ebcb8b",
+          "color12": "#81a1c1",
+          "color13": "#88c0d0",
+          "color14": "#88c0d0",
+          "color15": "#d8dee9",
+          "color2": "#a3be8c",
+          "color3": "#ebcb8b",
+          "color4": "#81a1c1",
+          "color5": "#b48ead",
+          "color6": "#88c0d0",
+          "color7": "#d8dee9",
+          "color8": "#4c566a",
+          "color9": "#a3be8c"
+        },
+        "custom": true,
+        "name": "Space",
+        "special": {
+          "background": "#2e3440",
+          "cursor": "#d8dee9",
+          "foreground": "#d8dee9"
+        }
+      },
+      "random": false,
+      "theme": "nord"
+    }
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/nature/nat-09.jpg"
+  }
+}
