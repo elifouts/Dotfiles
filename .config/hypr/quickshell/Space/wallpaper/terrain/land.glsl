@@ -58,7 +58,7 @@
                 cover = max(cover, cp.x);
                 float ce = 0.07 + hsz.x * 1.5 + hsz.y * 0.035 + step(0.5, hsz.z) * 0.04 + 0.1;
                 float rk = max(pebbles(xx / xs, y, h, hcx / xs + cs * ce, 0.03, 0.003, hcx * 3.0 + 1.0, fwidth(y)), pebbles(xx / xs, y, h, hcx / xs - cs * (ce + 0.03), 0.03, 0.003, hcx * 3.0 + 7.0, fwidth(y)));
-                col = mix(col, lc * 0.88, rk);
+                col = mix(col, lc, rk);
                 cover = max(cover, rk);
                 // parked ship
                 if (hship > 0.0) {
@@ -71,10 +71,8 @@
         }
         // ridge trees
         if (i == 2) {
-            vec2 tq = trees(xx, y, h, 0.3 * F, 50.0, 0.5 * treeSize, xs, hcx, hon * 0.36, clamp((mc.x - x) * 1.5, -1.0, 1.0));
-            float tr = max(max(tq.x, grass(xx, y, h, min(0.12 * G, 0.9), 55.0)), rockBed(xx / xs, y, h, RK, 0.3, 0.005, 140.0, hcx / xs, hon * 0.3, fwidth(y)));
-            vec3 tc = mix(lc, mix(lc * 0.9, horizon.rgb, 0.06), smoothstep(h, h + 0.012, y));
-            col = mix(col, tc * (1.0 + tq.y * 0.12 * tq.x) + horizon.rgb * max(tq.y, 0.0) * 0.04 * tq.x, tr);
+            float tr = max(max(trees(xx, y, h, 0.3 * F, 50.0, 0.5 * treeSize, xs, hcx, hon * 0.36, vec3(1.0, R, H)), grass(xx, y, h, min(0.12 * G, 0.9), 55.0)), rockBed(xx / xs, y, h, RK, 0.3, 0.005, 140.0, hcx / xs, hon * 0.3, fwidth(y)));
+            col = mix(col, lc, tr);
             cover = max(cover, tr);
         }
     }
@@ -88,7 +86,7 @@
     float padH = max(hillRaw(gcx, R, H), 0.19);
     float dx = xm - gcx;
     float hill = mix(hillRaw(xm, R, H), padH, here * smoothstep(0.42, 0.16, abs(dx)));
-    vec3 hillCol = near.rgb + warm.rgb * (0.07 + glow * 0.2) * exp(-abs(y - hill) * 90.0) * smoothstep(1.2, 0.0, abs(x));
+    vec3 hillCol = near.rgb + warm.rgb * (0.07 + glow * 0.2) * exp(-max(hill - y, 0.0) * 90.0) * smoothstep(1.2, 0.0, abs(x));
     hillCol += warm.rgb * 0.14 * here * exp(-abs(dx) * 7.0) * exp(-abs(y - padH) * 70.0);
     float groundShip = 0.0;
     // landed ship
@@ -103,26 +101,17 @@
     float exr = step(0.5, here) * 0.38;
     float scrub = grass(xm, y, hill, min(0.12 * G, 0.9) * mix(1.0, step(0.3, abs(dx)), here), 30.0);
     float lx = clamp((mc.x - x) * 1.5, -1.0, 1.0);
-    vec2 tree = trees(xm, y, hill, 0.55 * F, 0.0, treeSize, 1.0, gcx, exr, lx);
-    float hc = max(under(y, hill), max(tree.x, scrub));
-    hillCol = mix(near.rgb + (hillCol - near.rgb) * (1.0 - tree.x), far.rgb, (0.08 + tree.y * 0.14) * tree.x * smoothstep(hill, hill + 0.015, y));
+    float caa = fwidth(y);
+    float hrk = max(rockBed(xm, y, hill, RK, 0.6, 0.013, 120.0, gcx, here * 0.5, caa), here > 0.0 ? max(pebbles(xm, y, hill, gcx + 0.24, 0.035, 0.0045, c5 * 7.0 + 1.0, caa), pebbles(xm, y, hill, gcx - 0.25, 0.035, 0.0045, c5 * 7.0 + 9.0, caa)) : 0.0);
+    float hc = max(max(under(y, hill), hrk), max(trees(xm, y, hill, 0.55 * F, 0.0, treeSize, 1.0, gcx, exr, vec3(0.0)), scrub));
     col = mix(col, hillCol, hc);
     cover = max(cover, max(hc, groundShip));
-    float caa = fwidth(y);
     // ship camp
     if (here > 0.0 && abs(dx) < 0.26) {
         vec3 cp = camp(2.0, xm, y, 1.0, gcx, padH, 0.42, 0.16, h1(c5 + 63.0) < 0.5 ? -1.0 : 1.0, 1.0, step(0.25, h1(c5 + 61.0)) * (0.3 + 0.7 * h1(c5 + 62.0)), 0.075, 0.009, c5, 0.0, 0.0, 0.0, R, H, caa, 0.0, 3.0);
         col = mix(col, mix(near.rgb * 1.1, mix(near.rgb, far.rgb, 0.45), cp.z), cp.x);
         col += mix(warm.rgb, vec3(1.0), 0.25) * cp.y * 0.7;
         cover = max(cover, cp.x);
-    }
-    float hrk = rockBed(xm, y, hill, RK, 0.6, 0.013, 120.0, gcx, here * 0.5, caa);
-    col = mix(col, mix(near.rgb, far.rgb, 0.14) * (0.9 + 0.2 * smoothstep(hill, hill + 0.015, y)), hrk);
-    cover = max(cover, hrk);
-    if (here > 0.0) {
-        float rk = max(pebbles(xm, y, hill, gcx + 0.24, 0.035, 0.0045, c5 * 7.0 + 1.0, caa), pebbles(xm, y, hill, gcx - 0.25, 0.035, 0.0045, c5 * 7.0 + 9.0, caa));
-        col = mix(col, mix(near.rgb, far.rgb, 0.06), rk);
-        cover = max(cover, rk);
     }
     // near astronaut
     if (tvM == 1.0 || tvM == 2.0) {
@@ -157,13 +146,13 @@
                 col += accent * 0.18 * exp(-max(pd, 0.0) * 20.0) * (1.0 - pcv);
                 cover = max(cover, pcv);
                 float rk = pebbles(xm, y, hill, bx0 + face * 0.04, 0.018, 0.0035, bc * 5.0 + 3.0, caa);
-                col = mix(col, mix(near.rgb, far.rgb, 0.06), rk);
+                col = mix(col, hillCol, rk);
                 cover = max(cover, rk);
             }
             // crate seat
             if (tvM == 2.0) {
                 vec2 bq = vec2((xm - ax0) * face, y - ag) / 0.036;
-                float bcv = smoothstep(caa / 0.036, -caa / 0.036, sdBox(bq - vec2(-0.03, 0.17), vec2(0.17, 0.17), 0.02));
+                float bcv = smoothstep(caa / 0.036, -caa / 0.036, sdBox(bq - vec2(-0.03, 0.15), vec2(0.17, 0.19), 0.02));
                 col = mix(col, mix(near.rgb * 1.1, mix(near.rgb, far.rgb, 0.45), smoothstep(0.0, 0.34, bq.y)), bcv);
                 cover = max(cover, bcv);
             }
@@ -176,7 +165,6 @@
     y = y0 + r2 * 1.5;
     float fx = x * 0.7 + pan * 1.1;
     float fg = 0.09 + roll(fx, 21.0) * 0.04 * H - x * 0.02;
-    vec2 ft = trees(fx, y, fg, 0.14 * F, 70.0, 1.5 * treeSize, 0.7, 0.0, 0.0, lx);
-    float fc = max(max(under(y, fg), rockBed(fx, y, fg, RK, 1.4, 0.025, 160.0, 0.0, 0.0, fwidth(y))), max(ft.x, grass(fx, y, fg, min(0.14 * G, 0.9), 75.0)));
-    col = mix(col, near.rgb * (0.68 + 0.12 * smoothstep(fg - 0.08, fg, y)) + (far.rgb - near.rgb) * max(ft.y, 0.0) * 0.08 * ft.x, fc);
+    float fc = max(max(under(y, fg), rockBed(fx, y, fg, RK, 1.4, 0.025, 160.0, 0.0, 0.0, fwidth(y))), max(trees(fx, y, fg, 0.14 * F, 70.0, 1.5 * treeSize, 0.7, 0.0, 0.0, vec3(0.0)), grass(fx, y, fg, min(0.14 * G, 0.9), 75.0)));
+    col = mix(col, near.rgb * (0.68 + 0.12 * smoothstep(fg - 0.08, fg, y)), fc);
     cover = max(cover, fc);

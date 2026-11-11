@@ -17,16 +17,14 @@ float under(float y, float h) {
     return smoothstep(h + aa, h - aa, y);
 }
 // rocks
-float rockD(vec2 p, float k, float nf, float lx, out float lit) {
+float rockD(vec2 p, float k, float nf) {
     float best = -1e3, tl = (h1(k + 30.0) - 0.5) * 0.5;
-    vec2 L = normalize(vec2(lx, 1.2));
-    lit = 0.0;
     for (int i = 0; i < 9; i++) {
         if (float(i) >= nf) break;
         float a = 3.14159 * (float(i) + 0.5 + (h1(k + float(i)) - 0.5) * 0.7) / nf + tl;
         vec2 n = vec2(cos(a), sin(a));
         float di = dot(p - vec2(0.0, 0.22), n) - (0.5 + 0.28 * h1(k + float(i) + 7.0));
-        if (di > best) { best = di; lit = dot(n, L); }
+        best = max(best, di);
     }
     return max(best, -p.y);
 }
@@ -37,8 +35,8 @@ float pebbles(float x, float y, float ground, float cx, float span, float sz, fl
         float fi = float(i);
         if (h1(key + fi * 3.1) > 0.7) continue;
         float r = sz * (0.4 + 0.7 * h1(key + fi * 5.3 + 1.0)), px = cx + (h1(key + fi * 7.7 + 2.0) - 0.5) * 2.0 * span;
-        float rl, sq = 1.0 + 0.7 * h1(key + fi + 4.0);
-        d = min(d, rockD(vec2((x - px) / sq, lift + r * 0.08) / r, key + fi * 13.0, 4.0 + floor(h1(key + fi + 6.0) * 4.0), 0.0, rl) * r);
+        float sq = 1.0 + 0.7 * h1(key + fi + 4.0);
+        d = min(d, rockD(vec2((x - px) / sq, lift + r * 0.08 + aa * 2.0) / r, key + fi * 13.0, 4.0 + floor(h1(key + fi + 6.0) * 4.0)) * r);
     }
     return smoothstep(aa, -aa, d) * smoothstep(-aa * 3.0, -aa, lift);
 }
@@ -76,10 +74,10 @@ float lump(vec2 p, vec2 c, vec2 r, float k) {
     return d - m * 0.07 * abs(sin(atan(q.y, q.x) * 9.0 + k));
 }
 // trees
-vec2 trees(float x, float y, float ground, float dens, float s, float sc, float xs, float ex, float er, float lx) {
+float trees(float x, float y, float ground, float dens, float s, float sc, float xs, float ex, float er, vec3 oc) {
     float cw = 0.033 * sc * xs, ax = fwidth(x) * 1.2 / xs, ay = fwidth(y) * 0.9, lift = y - ground;
-    if (lift < -ay * 2.0 || lift > sc * 0.2 || dens <= 0.0) return vec2(0.0);
-    float ci = floor(x / cw), cov = 0.0, sh = 0.0, L = 0.6, par = floor(h1(s + 0.7) * 2.0);
+    if (lift < -ay * 2.0 || lift > sc * 0.23 + ay || dens <= 0.0) return 0.0;
+    float ci = floor(x / cw), cov = 0.0, L = 0.6, par = floor(h1(s + 0.7) * 2.0);
     for (int j = -2; j <= 2; j++) {
         float c = ci + float(j), k = c + s, at = (c + 0.5) * cw / xs;
         float dd = 9.0, T = 0.0, g = 0.0, cxs = 0.0;
@@ -99,6 +97,7 @@ vec2 trees(float x, float y, float ground, float dens, float s, float sc, float 
         float isB = step(h1(k + 40.0), T == 2.0 ? 0.5 * step(dd, 2.2) : 0.3 * step(dd, 1.5) * step(0.9, dd)) * (1.0 - isT) * (1.0 - isBo);
         float isR = step(h1(k + 45.0), T == 2.0 ? 0.55 * step(dd, 4.0) : 0.35 * step(dd, 1.7) * step(0.8, dd)) * (1.0 - isT) * (1.0 - isB) * (1.0 - isBo);
         if ((isT + isB + isR + isBo) * step(er, abs(at * xs - ex) / xs) < 0.5) continue;
+        if (oc.x > 0.0 && ridgeH(at * xs, 1.0, 6.0, oc.y * 0.5, oc.z) < 0.18 + 0.03 * oc.z) continue;
         float hr = h1(k + 4.0), sp = h1(k + 30.0) < 0.8 ? floor(h1(g + s + 5.0) * 2.99) : floor(h1(k + 31.0) * 2.99);
         sp = T == 1.0 ? sp : T == 2.0 ? 1.0 : max(sp, 1.0);
         float pf = T == 0.0 ? 1.0 - clamp(dd, 0.0, 1.0) : 0.5;
@@ -106,31 +105,21 @@ vec2 trees(float x, float y, float ground, float dens, float s, float sc, float 
         float cx = (c + 0.5 + (h1(k + 7.0) - 0.5) * (isBo > 0.5 ? 0.2 : 0.8)) * cw;
         float u = lift / th, an = ax / th * 1.3;
         vec2 p = vec2((x - cx) / xs / th, u);
-        float d, l;
+        float d;
         if (isBo > 0.5) {
-            float bl, sl2;
-            vec2 bq = vec2(p.x / 1.35, p.y + 0.05);
-            d = rockD(bq, k + 50.0, 8.0, lx, bl);
-            l = 0.42 * bl + 0.18 * p.y - 0.1;
-            vec2 cn = normalize(vec2(1.0, 0.35 + 0.6 * h1(k + 51.0)));
-            l -= 0.35 * exp(-abs(dot(p - vec2(0.1, 0.45), cn)) / 0.025) * smoothstep(0.0, -0.08, d) * step(0.2, p.y);
-            vec2 sq2 = (p - vec2(bsd * 1.25, -0.04)) / 0.42;
-            float d2 = rockD(sq2, k + 60.0, 6.0, lx, sl2) * 0.42;
-            if (d2 < d) { d = d2; l = 0.42 * sl2 + 0.1 * p.y - 0.12; }
+            d = min(rockD(vec2(p.x / 1.35, p.y + 0.05), k + 50.0, 8.0), rockD((p - vec2(bsd * 1.25, -0.04)) / 0.42, k + 60.0, 6.0) * 0.42);
         } else if (isR > 0.5) {
-            d = 1e3; l = 0.0;
+            d = 1e3;
             for (int ri = 0; ri < 3; ri++) {
                 float fr = float(ri), kr = k * 3.0 + fr * 17.0;
                 if (ri > 0 && h1(kr + 1.0) > 0.6) continue;
-                float rs = ri == 0 ? 1.0 : 0.35 + 0.4 * h1(kr + 2.0), sq = 0.9 + 0.8 * h1(kr + 3.0), rl;
+                float rs = ri == 0 ? 1.0 : 0.35 + 0.4 * h1(kr + 2.0), sq = 0.9 + 0.8 * h1(kr + 3.0);
                 vec2 rp = vec2((p.x - (ri == 0 ? 0.0 : (h1(kr + 4.0) - 0.5) * 3.2)) / sq, p.y + 0.08) / rs;
-                float rd = rockD(rp, kr, 4.0 + floor(h1(kr + 5.0) * 5.0), lx, rl) * rs;
-                if (rd < d) { d = rd; l = 0.35 * rl + 0.15 * p.y - 0.12; }
+                d = min(d, rockD(rp, kr, 4.0 + floor(h1(kr + 5.0) * 5.0)) * rs);
             }
         } else if (isB > 0.5) {
             vec2 r = vec2(1.0 + 0.6 * h1(k + 5.0), 0.6);
             d = smin(lump(p, vec2(0.0, 0.4), r, k), sdBox(p - vec2(0.0, 0.15), vec2(r.x * 0.7, 0.2), 0.0), 0.15);
-            l = 0.4 * (p.y - 0.4) / r.y + 0.35 * clamp(p.x / r.x * lx, -1.0, 1.0) - 0.2;
         } else {
             vec3 W3 = sp == 0.0 ? vec3(0.085, 0.04, 0.55) : sp == 1.0 ? vec3(0.13, 0.12, 0.75) : vec3(0.24, 0.08, 1.0);
             float sx = p.x - (h1(k + 13.0) - 0.5) * (sp == 2.0 ? 0.2 : 0.08) * u * u, dx = abs(sx), side = step(0.0, sx);
@@ -141,7 +130,6 @@ vec2 trees(float x, float y, float ground, float dens, float s, float sc, float 
             float hw = W * body * (0.86 + 0.22 * h1(floor(tb) * 1.7 + side * 31.0 + k * 3.1)) * (1.0 - 0.2 * smoothstep(0.0, 1.0, v));
             float bot = base + (0.01 + 0.05 * n1(dx / W * 5.0 + side * 7.0 + k)) * smoothstep(0.25, 1.0, dx / W);
             d = max(min(max(dx - hw, (bot - u) * 0.6), max(dx - 0.012, u - base - 0.1)), u - 1.0);
-            l = 0.3 * u + 0.45 * smoothstep(0.2, 1.0, sx / max(hw, 0.01) * lx) - 0.12 * v - 0.2;
         }
         if (isR < 0.5) {
         float mw = isBo > 0.5 ? 1.9 : isB > 0.5 ? 1.5 : 0.34 + 0.12 * h1(k + 26.0), mh = isBo > 0.5 ? 0.08 : isB > 0.5 ? 0.1 : 0.04 + 0.03 * h1(k + 27.0), ax2 = abs(p.x) / mw;
@@ -158,10 +146,9 @@ vec2 trees(float x, float y, float ground, float dens, float s, float sc, float 
         }
         }
         float t = smoothstep(an, -an, d) * smoothstep(-ay * 3.0, -ay, lift);
-        sh = mix(sh, clamp(l, -0.6, 0.6), step(cov, t));
         cov = max(cov, t);
     }
-    return vec2(cov, sh);
+    return cov;
 }
 // habitats
 vec3 habSize(float k) {
@@ -396,7 +383,7 @@ vec3 camp(float L, float xx, float y, float xs, float cx, float padH, float f0, 
         float ix = cx + sd * (off + (0.028 * sl + 0.012 * h1(kk + 65.0)) * u0 / 0.009) * xs;
         float gh = mix(groundH(L, ix, k, s, m, R, H), padH, smoothstep(f0, f1, abs(ix - cx) / xs));
         if (L < 1.5 && frontH(L, k, (ix - pan * (0.12 + k * 0.25)) / xs, R, H) > gh - u0 * 0.3) continue;
-        vec2 q = vec2((xx - ix) / xs * (h1(kk + 67.0) < 0.5 ? -1.0 : 1.0), y - gh);
+        vec2 q = vec2((xx - ix) / xs * (h1(kk + 67.0) < 0.5 ? -1.0 : 1.0), y - gh + aa * 2.0);
         float t = floor(h1(kk + 66.0) * (4.99 + big * 4.0));
         t = sl > 0.5 && t == 2.0 ? 0.0 : t;
         vec2 it = campItem(q, u0 * (1.0 + 0.33 * h1(kk + 68.0)), t, kk, aa);

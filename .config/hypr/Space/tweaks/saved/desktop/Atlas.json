@@ -9,9 +9,12 @@
     "style": "zen"
   },
   "space": {
+    "land": {
+      "atlas": true
+    },
     "parallax": 0.3,
     "world": {
-      "hue": 0.2566666603088379,
+      "hue": 0.9840555787086487,
       "palette": {
         "colors": {
           "color0": "#2e3440",
@@ -19,7 +22,7 @@
           "color10": "#a3be8c",
           "color11": "#ebcb8b",
           "color12": "#81a1c1",
-          "color13": "#88c0d0",
+          "color13": "#b48ead",
           "color14": "#88c0d0",
           "color15": "#d8dee9",
           "color2": "#a3be8c",
@@ -29,7 +32,7 @@
           "color6": "#88c0d0",
           "color7": "#d8dee9",
           "color8": "#4c566a",
-          "color9": "#a3be8c"
+          "color9": "#bf616a"
         },
         "custom": true,
         "name": "Space",
