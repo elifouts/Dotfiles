@@ -16,6 +16,8 @@
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/SpaceRice5.png" width="32%">
 </p>
 
+[![Watch the video](https://img.youtube.com/vi/hvQFp-NKg04/maxresdefault.jpg)](https://www.youtube.com/watch?v=hvQFp-NKg04)
+
 > [!TIP]
 > Check out [MyFetch](https://github.com/elifouts/MyFetch)!!!!
 > 
