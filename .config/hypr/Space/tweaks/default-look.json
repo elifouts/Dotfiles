@@ -4,7 +4,7 @@
       "theme": "dark/space"
     },
     "quickshell": {
-      "style": "attached"
+      "style": "default"
     },
     "space": {
       "world": {
