@@ -16,7 +16,11 @@
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/SpaceRice5.png" width="32%">
 </p>
 
-[![Watch the video](https://img.youtube.com/vi/hvQFp-NKg04/maxresdefault.jpg)](https://www.youtube.com/watch?v=hvQFp-NKg04)
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=hvQFp-NKg04">
+    <img src="https://markdown-videos-api.jorgenkh.no/youtube/hvQFp-NKg04" alt="Watch the video">
+  </a>
+</p>
 
 > [!TIP]
 > Check out [MyFetch](https://github.com/elifouts/MyFetch)!!!!
