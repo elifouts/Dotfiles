@@ -16,12 +16,6 @@
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/SpaceRice5.png" width="32%">
 </p>
 
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=hvQFp-NKg04">
-    <img src="https://markdown-videos-api.jorgenkh.no/youtube/hvQFp-NKg04" alt="Watch the video">
-  </a>
-</p>
-
 > [!TIP]
 > Check out [MyFetch](https://github.com/elifouts/MyFetch)!!!!
 > 
@@ -54,6 +48,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 >   If you do not want this, **you can pick a fixed color scheme in the settings panel (`Alt+S` > Colors)** or remove it in the given applications `style.css` and add valid color values. Although I highly recommend `Pywal` It's Pretty cool!
 >
 > </details>
+
 
 ## Styles
 
@@ -521,7 +516,14 @@ Uninstall:
 
 
 
-## My Applications
+
+## Want a closer look?
+
+<p align="left">
+  <a href="https://www.youtube.com/watch?v=hvQFp-NKg04">
+    <img src="https://markdown-videos-api.jorgenkh.no/youtube/hvQFp-NKg04" alt="Watch the video">
+  </a>
+</p>
 
 
 <details>
