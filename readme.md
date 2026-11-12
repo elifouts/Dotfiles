@@ -1,19 +1,5 @@
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&size=30&letterSpacing=tiny&duration=2000&pause=3000&color=F7F7F7&center=true&vCenter=true&width=435&lines=Eli's+Dotfiles)](https://git.io/typing-svg)
-
 <p align="center">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/rice-default.png" width="32%">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/rice-zen.png" width="32%">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/SpaceRice1.png" width="32%">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/ModernRice1.png" width="32%">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/rice1.png" width="32%">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/SpaceRice4.png" width="32%">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/rice5.png" width="32%">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/rice6.png" width="32%">
-  <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/SpaceRice5.png" width="32%">
+  <img src="https://github.com/elifouts/Dotfiles/blob/images/banner/eli-dots-slide.gif" width="100%">
 </p>
 
 > [!TIP]
