@@ -162,7 +162,7 @@ shells.sh <utility> [call] [args]   # default call is toggle, starts the shell i
 <details>
 <summary><b>The two bars</b></summary>
 
-`state/bar` says which one runs, `bar.sh` handles it, `Alt+A` toggles it.
+`state/bar` says which one runs, `bar.sh` handles it, `Alt+A` toggles it. A style with no `waybar/` folder (Space) always gets the quickshell bar, even if a profile says waybar.
 
 **Waybar:** a style is `<Style>/waybar/<name>/` with `style.css`, `preview.png` and a `config`, or it uses `default/config`. `waybar-style.sh` copies it into `~/.config/waybar/`.
 
@@ -192,7 +192,9 @@ Every `config.json`, Modern's and Space's, starts with a `"//"` list of its opti
 
 Both styles run the same lock from `quickshell/shared/`, so multiple monitors, music, battery, power buttons and the gear menu work the same in each. It grabs a frame of each monitor with grim and fades from that into the style's `Backdrop`: the blurred wallpaper in Modern, the land in Space. Handoff layers mapped under the lock take over on unlock.
 
-Square corners, fonts and colors come from `Theme`, `LockShared.ink` is the text color.
+The clock and password field only go on the monitor you locked from. The others just show the album art big in the middle with the song name, or nothing if no music is playing.
+
+Square corners, fonts and colors come from `Theme`, `LockShared.ink` is the text color. Text also follows `Theme.caps` and `Theme.tracking` and art gets a `Theme.lines` edge, so Space's lock is uppercase, spaced out and outlined like the rest of Space.
 
 `lock.sh --preview` shows it in windows without locking.
 
@@ -426,6 +428,7 @@ So a bind has to fit on one line to show up, and that's why `binds.lua` spells o
 
 - `notifications` is the notification host, so it's always running. Home isn't, so a notification can't depend on it
 - The shell is the notification server, so switching styles kills it. `NotifsShared.qml` keeps history and dnd in `$XDG_RUNTIME_DIR/notifications.json` and loads them back on start. Notifications that come back from the file have lost their action buttons, the app on the other end is gone from the server's point of view. They last until you log out
+- The dotfiles' own notifications (profile switch, focus timer, capture, cast) are sent transient with `notify-send -e`. They still pop up but never land in the history or the bar count
 - Popups are bottom left and hide while the home screen is open
 - Wallpapers live in `~/wallpapers/library`, only favorites are in this repo. The pre-commit hook copies them in from `favorites.txt`
 - Spotify always opens through `spotify.sh`
@@ -483,8 +486,10 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - The frosted copy behind the falling windows is drawn at quarter size, it's blurred so much you can't tell
 - The first launch or hop after the PC sits idle starts on a sleeping GPU. Mine sits at 210MHz for about half a second before it goes up to full speed, that's the few dropped frames left at the very start
 - If everything is suddenly laggy on the laptop check the battery first. At 6% the GPU was capped to 30W instead of 125W and stuck around 500MHz, by 14% the cap was gone. `nvidia-smi -q -d POWER` shows the current limit
+- With `QSG_USE_SIMPLE_ANIMATION_DRIVER` any running animation, `FrameAnimation` included, redraws every shell window every frame. `SeekShared` used one to poll the song position, so while music played all 9 windows drew at full refresh and the shell gained about 1GB an hour from Wayland events the NVIDIA driver never hands back. It polls with a `Timer` now, which only redraws its own window. Keep anything that runs while idle on a `Timer`
 - One `Cava` for every visualizer, each monitor's bar used to spawn its own
 - `Panel` frees textures after it's been closed a while
+- The launcher, music, settings and overview windows only exist while they're open.
 - Wifi scanning stops while typing and only runs while the menu is open
 - Workspace data only polls Hyprland while something is showing
 
@@ -716,7 +721,11 @@ Modern/
 ├─ tweaks/
 │  ├─ saved/
 │  │  ├─ desktop/
+│  │  │  ├─ Aurora.json   northern lights, soft round corners
+│  │  │  ├─ Dusk.json     catppuccin sunset, attached bar, big gaps
 │  │  │  ├─ Gruvbox.json  saved profile, desktop
+│  │  │  ├─ Neon.json     gas station at night, square, gradient border
+│  │  │  ├─ Sun.json      saved profile, desktop
 │  │  │  └─ Zen.json      saved profile, desktop
 │  │  └─ laptop/
 │  │     ├─ Gruvbox.json  saved profile, laptop
@@ -875,7 +884,10 @@ Space/
 └─ tweaks/
    ├─ saved/
    │  └─ desktop/
-   │     └─ Space.json   saved profile, desktop
+   │     ├─ Atlas.json   atlas instead of a planet
+   │     ├─ Bloom.json   rose pine, flat and full of trees
+   │     ├─ Frost.json   nord, snowy mountains, big galaxy
+   │     └─ Mars.json    gruvbox red, dry rocky sunset
    ├─ default-look.json  what Default remembers
    └─ desktop.json       live tweaks for the desktop variant
 ```

@@ -19,7 +19,7 @@ def sh(cmd, inp=None):
 
 
 def note(title, body=""):
-    subprocess.run(["notify-send", "-a", "Cast", "-i", "video-display", title, body])
+    subprocess.run(["notify-send", "-e", "-a", "Cast", "-i", "video-display", title, body])
 
 
 def state(s):

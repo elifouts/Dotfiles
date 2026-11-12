@@ -180,6 +180,7 @@ ShellRoot {
 
         PanelWindow {
             id: ov
+            visible: root.open || root.t > 0
             required property var modelData
             screen: modelData
 

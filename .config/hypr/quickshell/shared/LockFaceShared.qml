@@ -118,6 +118,29 @@ Item {
         }
     }
 
+    component Art: Item {
+        property real u: 1
+        property int res: 256
+        CoverShared {
+            id: cover
+            anchors.fill: parent
+            radius: LockShared.corner(width, parent.u)
+            fill: Theme.alpha(Theme.info, 0.12)
+            glyph: ""
+            glyphColor: Theme.info
+            res: parent.res
+            url: LockShared.track.art
+        }
+        Rectangle {
+            anchors.fill: parent
+            visible: Theme.lines > 0
+            radius: cover.radius
+            color: "transparent"
+            border.width: Theme.lines
+            border.color: Theme.edge
+        }
+    }
+
     component Digit: Item {
         id: d
 
@@ -248,6 +271,8 @@ Item {
             text: "Hello, <b>" + LockShared.user + "</b>"
             textFormat: Text.StyledText
             font.pixelSize: 22 * face.u
+            font.capitalization: Theme.caps
+            font.letterSpacing: Theme.tracking * face.u
             color: LockShared.ink
         }
     }
@@ -260,7 +285,7 @@ Item {
         Reveal {
             anchors.horizontalCenter: parent.horizontalCenter
             delay: 0.02
-            on: LockShared.cfg.clock
+            on: LockShared.cfg.clock && face.main
             u: face.u
 
             Column {
@@ -294,8 +319,10 @@ Item {
                 }
                 LabelShared {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: Qt.formatDate(clock.date, "dddd, d MMMM")
+                    text: Qt.formatDate(clock.date, Theme.lines ? "ddd  ·  d MMM" : "dddd, d MMMM")
                     font.pixelSize: 24 * face.u
+                    font.capitalization: Theme.caps
+                    font.letterSpacing: Theme.tracking * face.u
                     color: Theme.alpha(LockShared.ink, 0.8)
                 }
             }
@@ -408,6 +435,34 @@ Item {
     }
 
     Reveal {
+        anchors.centerIn: parent
+        delay: 0.1
+        on: !face.main && LockShared.cfg.music && !!LockShared.player && face.awake
+        u: face.u
+
+        Column {
+            spacing: 26 * face.u
+            Art {
+                id: bigArt
+                width: Math.round(Math.min(face.width, face.height) * 0.42)
+                height: width
+                u: face.u
+                res: 768
+            }
+            SwapTextShared {
+                width: bigArt.width
+                horizontalAlignment: Text.AlignHCenter
+                value: LockShared.track.title || ""
+                elide: Text.ElideRight
+                font.pixelSize: 26 * face.u
+                font.capitalization: Theme.caps
+                font.letterSpacing: Theme.tracking * face.u
+                color: LockShared.ink
+            }
+        }
+    }
+
+    Reveal {
         x: face.portrait ? (face.width - width) / 2 : face.width - width - face.margin
         y: face.height - height - face.margin
         delay: 0.24
@@ -422,17 +477,13 @@ Item {
 
             Card { anchors.fill: parent; u: face.u }
 
-            CoverShared {
+            Art {
                 id: art
                 x: 18 * face.u
                 anchors.verticalCenter: parent.verticalCenter
                 width: 120 * face.u
                 height: width
-                radius: LockShared.corner(width, face.u)
-                fill: Theme.alpha(Theme.info, 0.12)
-                glyph: ""
-                glyphColor: Theme.info
-                url: LockShared.track.art
+                u: face.u
             }
 
             Column {
@@ -451,6 +502,8 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Now Playing"
                         font.pixelSize: 12 * face.u
+                        font.capitalization: Theme.caps
+                        font.letterSpacing: Theme.tracking * face.u
                         color: Theme.alpha(LockShared.ink, 0.5)
                     }
                     Wave {
@@ -464,6 +517,8 @@ Item {
                     value: card.p ? LockShared.track.title || "Unknown" : ""
                     elide: Text.ElideRight
                     font.pixelSize: 17 * face.u
+                    font.capitalization: Theme.caps
+                    font.letterSpacing: Theme.tracking * face.u
                     color: LockShared.ink
                 }
                 SwapTextShared {
@@ -471,6 +526,8 @@ Item {
                     value: LockShared.track.artist
                     elide: Text.ElideRight
                     font.pixelSize: 13 * face.u
+                    font.capitalization: Theme.caps
+                    font.letterSpacing: Theme.tracking * face.u
                     color: Theme.alpha(LockShared.ink, 0.6)
                 }
 
@@ -486,6 +543,7 @@ Item {
                 Item { width: 1; height: 4 * face.u }
 
                 Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
                     spacing: 8 * face.u
                     SkipButtonShared { anchors.verticalCenter: parent.verticalCenter; player: card.p; dir: -1; size: 34 * face.u; tint: LockShared.ink }
                     PlayButtonShared { anchors.verticalCenter: parent.verticalCenter; player: card.p; size: 34 * face.u }

@@ -1,5 +1,22 @@
 [
   {
+    "name": "nvim",
+    "renamed": false,
+    "w": 1920,
+    "h": 1080,
+    "windows": [
+      {
+        "cmd": "'kitty' sh -c 'cd \"$HOME\" && '\\''nvim'\\''; exec \"$SHELL\"'",
+        "app": "nvim",
+        "floating": true,
+        "x": 340,
+        "y": 209,
+        "w": 1152,
+        "h": 720
+      }
+    ]
+  },
+  {
     "name": "Rice 1",
     "w": 1920,
     "h": 1080,
@@ -35,73 +52,55 @@
     "renamed": true
   },
   {
-    "name": "Rice 2 (Fun)",
+    "name": "Rice 2",
     "renamed": true,
-    "w": 1600,
-    "h": 900,
+    "w": 1920,
+    "h": 1080,
     "windows": [
-      {
-        "cmd": "'kitty' sh -c 'cd \"$HOME\" && '\\''cmatrix'\\'' '\\''-ab'\\''; exec \"$SHELL\"'",
-        "app": "cmatrix",
-        "floating": true,
-        "x": 1144,
-        "y": 72,
-        "w": 428,
-        "h": 223
-      },
-      {
-        "cmd": "'kitty' sh -c 'cd \"$HOME\" && '\\''perl'\\'' '\\''/usr/bin/asciiquarium'\\''; exec \"$SHELL\"'",
-        "app": "asciiquarium",
-        "floating": true,
-        "x": 26,
-        "y": 74,
-        "w": 552,
-        "h": 626
-      },
-      {
-        "cmd": "'kitty' sh -c 'cd \"$HOME\" && '\\''cbonsai'\\'' '\\''-li'\\'' '\\''-t'\\'' '\\''0.01'\\'' '\\''-w'\\'' '\\''0.3'\\'' '\\''-L'\\'' '\\''25'\\'' '\\''-M'\\'' '\\''5'\\''; exec \"$SHELL\"'",
-        "app": "cbonsai",
-        "floating": true,
-        "x": 1138,
-        "y": 308,
-        "w": 440,
-        "h": 359
-      },
       {
         "cmd": "'kitty' sh -c 'cd \"$HOME\" && '\\''clock-rs'\\''; exec \"$SHELL\"'",
         "app": "clock-rs",
         "floating": true,
-        "x": 1139,
-        "y": 675,
-        "w": 436,
-        "h": 206
-      },
-      {
-        "cmd": "'kitty' sh -c 'cd \"$HOME\" && '\\''cava'\\''; exec \"$SHELL\"'",
-        "app": "cava",
-        "floating": true,
-        "x": 27,
-        "y": 721,
-        "w": 552,
-        "h": 160
+        "x": 1169,
+        "y": 616,
+        "w": 664,
+        "h": 416
       },
       {
         "cmd": "'kitty' sh -c 'cd \"$HOME\" && '\\''genact'\\''; exec \"$SHELL\"'",
         "app": "genact",
         "floating": true,
-        "x": 602,
-        "y": 539,
-        "w": 505,
-        "h": 346
+        "x": 59,
+        "y": 689,
+        "w": 975,
+        "h": 326
+      },
+      {
+        "cmd": "'kitty' sh -c 'cd \"$HOME\"; exec \"$SHELL\"'",
+        "app": "kitty",
+        "floating": true,
+        "x": 973,
+        "y": 90,
+        "w": 691,
+        "h": 266
+      },
+      {
+        "cmd": "'kitty' sh -c 'cd \"$HOME\" && '\\''cava'\\''; exec \"$SHELL\"'",
+        "app": "cava",
+        "floating": true,
+        "x": 866,
+        "y": 409,
+        "w": 959,
+        "h": 158
       },
       {
         "cmd": "'kitty' sh -c 'cd \"$HOME\" && '\\''pipes-rs'\\'' '\\''-p'\\'' '\\''10'\\'' '\\''-d'\\'' '\\''20'\\'' '\\''-t'\\'' '\\''0.18'\\'' '\\''-k'\\'' '\\''heavy,curved'\\'' '\\''--bold'\\'' '\\''true'\\'' '\\''-i'\\'' '\\''true'\\'' '\\''-r'\\'' '\\''1.0'\\''; exec \"$SHELL\"'",
         "app": "pipes-rs",
         "floating": true,
-        "x": 598,
-        "y": 71,
-        "w": 513,
-        "h": 443
+        "x": 122,
+        "y": 105,
+        "w": 706,
+        "h": 434
       }
     ]
   }

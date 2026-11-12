@@ -195,6 +195,7 @@ ShellRoot {
 
     PanelWindow {
         id: win
+        visible: root.active
         screen: root.targetScreen ?? Quickshell.screens[0]
         anchors {
             top: true

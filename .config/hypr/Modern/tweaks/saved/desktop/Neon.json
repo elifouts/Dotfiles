@@ -1,0 +1,35 @@
+{
+  "bar": {
+    "kind": "quickshell"
+  },
+  "border": {
+    "gradient": true
+  },
+  "colors": {
+    "theme": "pywal"
+  },
+  "config": {
+    "decoration": {
+      "active_opacity": 0.88,
+      "blur": {
+        "enabled": true,
+        "passes": 4,
+        "size": 6,
+        "vibrancy": 0.5
+      },
+      "inactive_opacity": 0.75,
+      "rounding": 0
+    },
+    "general": {
+      "border_size": 2,
+      "gaps_in": 4,
+      "gaps_out": 8
+    }
+  },
+  "quickshell": {
+    "style": "attached"
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/industrial/ind-05.jpg"
+  }
+}

@@ -28,8 +28,10 @@ Item {
 
     height: px(36)
 
-    FrameAnimation {
+    Timer {
         running: sk.active && sk.visible && sk.playing
+        interval: 33
+        repeat: true
         onTriggered: if (sk.player) sk.player.positionChanged()
     }
 

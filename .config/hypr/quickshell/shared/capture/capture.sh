@@ -6,7 +6,7 @@ SHOTS="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
 VIDEOS="${XDG_VIDEOS_DIR:-$HOME/Videos}/Recordings"
 stamp="$(date +%Y-%m-%d_%H-%M-%S)"
 
-note() { notify-send -a Capture -i "$3" "$1" "$2"; }
+note() { notify-send -e -a Capture -i "$3" "$1" "$2"; }
 
 thumb() {
     local t="${XDG_CACHE_HOME:-$HOME/.cache}/capture-thumb.png"

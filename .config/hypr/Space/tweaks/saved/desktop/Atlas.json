@@ -6,13 +6,13 @@
     "theme": "dark/space"
   },
   "quickshell": {
-    "style": "zen"
+    "style": "attached"
   },
   "space": {
     "land": {
       "atlas": true
     },
-    "parallax": 0.3,
+    "parallax": 1,
     "world": {
       "hue": 0.9840555787086487,
       "palette": {

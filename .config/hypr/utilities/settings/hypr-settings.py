@@ -419,7 +419,7 @@ def cmd_reset():
 def cmd_sync():
     settings = live_settings()
     write_lua(settings)
-    kind = dig(settings, "bar.kind") or DEFAULT_BAR
+    kind = bar_kind(settings)
     if kind in ("waybar", "quickshell") and load_text(BAR_FILE) != kind:
         write_atomic(BAR_FILE, kind + "\n")
     look = dig(settings, "quickshell.style")
@@ -466,7 +466,7 @@ def saved_preview():
         else:
             scheme = (theme == "dark/space" and dig(world_of(s) or {}, "palette.colors")) or load(SCHEMES / f"{theme}.json", {}).get("colors", {})
             colors = [scheme.get(f"color{i}") for i in range(16)]
-        kind = dig(s, "bar.kind") or DEFAULT_BAR
+        kind = bar_kind(s)
         look = dig(s, "quickshell.style") or DEFAULT_QUICKSHELL if kind == "quickshell" else dig(s, "waybar.style") or DEFAULT_WAYBAR
         out.append({**e, "colors": [c for c in colors if c], "thumb": thumb, "bar": f"{kind} / {look}",
                     "rounding": 10 if (r := dig(s, "config.decoration.rounding")) is None else r,
@@ -490,6 +490,11 @@ WALLPAPER_FILE = HOME / ".cache/wallpaper-picker/current"
 
 def current_wallpaper():
     return WALLPAPER_FILE.read_text().strip() if WALLPAPER_FILE.exists() else ""
+
+
+def bar_kind(settings):
+    kind = dig(settings, "bar.kind") or DEFAULT_BAR
+    return kind if kind != "waybar" or (style_dir() / "waybar").is_dir() else "quickshell"
 
 
 def current_bar():
@@ -554,7 +559,7 @@ def cmd_appearance():
         detached(str(HYPR / "utilities/colors/color-apply.sh"), theme)
     if not any((style_dir() / d).is_dir() for d in ("waybar", "quickshellbar")):
         return
-    kind = dig(settings, "bar.kind") or DEFAULT_BAR
+    kind = bar_kind(settings)
     if kind != current_bar():
         subprocess.run([str(HYPR / "utilities/bars/bar.sh"), "apply", kind], env={**os.environ, "HYPR_SETTINGS_NO_RECORD": "1"},
                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

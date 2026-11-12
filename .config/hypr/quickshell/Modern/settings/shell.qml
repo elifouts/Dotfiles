@@ -23,7 +23,9 @@ ShellRoot {
     property bool dragging: false
     property string page: "profile"
     readonly property var current: Schema.PAGES.find(p => p.id === page) || Schema.PAGES[0]
-    readonly property real screenW: (win.screen ? win.screen.width : 1600)
+    // sized off the long side so portrait monitors don't get a skinny 360px strip
+    readonly property real screenW: win.screen ? Math.max(win.screen.width, win.screen.height) : 1600
+    readonly property real fitFrac: win.screen ? Math.min(maxFrac, win.screen.width / screenW) : maxFrac
 
     FileView {
         id: uiFile
@@ -38,33 +40,22 @@ ShellRoot {
             if (ui.page && Schema.PAGES.some(p => p.id === ui.page)) page = ui.page
         } catch (e) {}
         dragFrac = frac
-        targetScreen = usableScreen(HyprShared.focusedScreen())
+        targetScreen = HyprShared.focusedScreen()
         StoreShared.refresh()
     }
 
-    function landscape(scr) {
-        return !!scr && scr.width >= scr.height
-    }
-
-    function usableScreen(scr) {
-        if (landscape(scr)) return scr
-        if (landscape(targetScreen)) return targetScreen
-        return Quickshell.screens.find(s => landscape(s)) ?? scr
-    }
-
     function showOn(scr) {
-        scr = usableScreen(scr)
         if (active && !leaving && scr === targetScreen) return
         morph.show(scr)
     }
     function toggleOn(scr) {
-        if (active && !leaving && usableScreen(scr) === targetScreen) close()
+        if (active && !leaving && scr === targetScreen) close()
         else showOn(scr)
     }
 
     function followCursor(scr) {
         if (!active || leaving || dragging) return
-        if (landscape(scr) && scr !== targetScreen) showOn(scr)
+        if (scr && scr !== targetScreen) showOn(scr)
     }
 
     Timer {
@@ -170,6 +161,7 @@ ShellRoot {
 
     PanelWindow {
         id: win
+        visible: root.active
         screen: root.targetScreen ?? Quickshell.screens[0]
         anchors {
             top: true
@@ -216,7 +208,7 @@ ShellRoot {
                     Item {
                         id: card
                         visible: root.active
-                        width: Math.round(root.screenW * (root.dragging ? root.dragFrac : root.frac))
+                        width: Math.round(root.screenW * Math.min(root.fitFrac, root.dragging ? root.dragFrac : root.frac))
                         height: parent.height
                         x: (root.t - 1) * width
 
@@ -430,7 +422,7 @@ ShellRoot {
                                 onPositionChanged: mouse => {
                                     if (!pressed) return
                                     const w = startWidth + (windowX(mouse) - startX)
-                                    root.dragFrac = Math.max(0.08, Math.min(root.maxFrac, w / root.screenW))
+                                    root.dragFrac = Math.max(0.08, Math.min(root.fitFrac, w / root.screenW))
                                 }
 
                                 onReleased: {

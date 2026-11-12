@@ -89,7 +89,7 @@ ShellRoot {
                 onFinished: {
                     const p = root.pillFor("alarm")
                     if (p) p.show("alarm")
-                    else root.run("notify-send -a 'Focus timer' -i alarm-symbolic 'Time is up' " +
+                    else root.run("notify-send -e -a 'Focus timer' -i alarm-symbolic 'Time is up' " +
                                   "'Your " + words(total) + " session has finished.'")
                 }
             }

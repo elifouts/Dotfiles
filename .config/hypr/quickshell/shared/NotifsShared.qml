@@ -18,7 +18,7 @@ Singleton {
     property var arrived: ({})
     property var saved: []
     property bool ready: false
-    readonly property var notifs: server.trackedNotifications.values.slice().reverse().concat(saved)
+    readonly property var notifs: server.trackedNotifications.values.filter(n => !n.transient).reverse().concat(saved)
     onNotifsChanged: save()
     readonly property int count: notifs.length
 

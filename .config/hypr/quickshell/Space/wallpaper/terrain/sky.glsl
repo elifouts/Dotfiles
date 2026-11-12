@@ -39,8 +39,21 @@
         gI = body * (0.35 + 0.65 * fbm2(vec2(u * 9.0, v * 26.0))) * (1.0 - 0.4 * dust) * GL;
         vec3 gcol = mix(mix(horizon.rgb, moon.rgb, 0.5), warm.rgb, exp(-u * u * 3.0) * 0.6);
         col += gcol * gI * 0.32 * skyMask;
-    }
 
+        // --- milky way star field ---
+        // density follows the band, clumps via noise, thins out in dust lanes
+        float clump = smoothstep(0.30, 0.80, fbm2(vec2(u * 11.0, v * 34.0) + 21.0));
+        float sd    = body * (1.0 - 0.7 * dust);
+        float dens  = clamp(sd * (0.25 + 1.1 * clump), 0.0, 1.0) * 0.55;
+
+        vec2 sp = vec2(u, v);
+        float st = starLayer(sp,               260.0, dens)
+                + starLayer(sp + 0.37,        420.0, dens * 0.9) * 0.7
+                + starLayer(sp + 0.71,        650.0, dens * 0.8) * 0.5;
+
+        vec3 stCol = mix(vec3(0.80, 0.90, 1.00), warm.rgb, exp(-u * u * 3.0) * 0.5);
+        col += stCol * st * 0.55 * GL * skyMask;
+    }
     // stars
     vec2 g = vec2(x * 12.0 + pan * 0.05, y * 12.0);
     vec2 cell = floor(g), f = fract(g) - 0.5;

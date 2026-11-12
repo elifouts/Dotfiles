@@ -1,0 +1,58 @@
+{
+  "bar": {
+    "kind": "quickshell"
+  },
+  "colors": {
+    "theme": "dark/space"
+  },
+  "quickshell": {
+    "style": "split"
+  },
+  "space": {
+    "land": {
+      "comets": 4,
+      "dusk": 0.15,
+      "flora": 0.6,
+      "galaxy": 0.9,
+      "galaxyTilt": 40,
+      "haze": 0.35,
+      "height": 0.75,
+      "relief": 1,
+      "snow": 1,
+      "starSize": 1.3,
+      "stars": 1.6
+    },
+    "world": {
+      "hue": 0.5370370370370371,
+      "palette": {
+        "colors": {
+          "color0": "#2e3440",
+          "color1": "#bf616a",
+          "color10": "#a3be8c",
+          "color11": "#ebcb8b",
+          "color12": "#81a1c1",
+          "color13": "#81a1c1",
+          "color14": "#88c0d0",
+          "color15": "#d8dee9",
+          "color2": "#a3be8c",
+          "color3": "#ebcb8b",
+          "color4": "#81a1c1",
+          "color5": "#b48ead",
+          "color6": "#88c0d0",
+          "color7": "#d8dee9",
+          "color8": "#4c566a",
+          "color9": "#88c0d0"
+        },
+        "custom": true,
+        "name": "Space",
+        "special": {
+          "background": "#2e3440",
+          "cursor": "#d8dee9",
+          "foreground": "#d8dee9"
+        }
+      },
+      "random": false,
+      "theme": "nord"
+    }
+  }
+}

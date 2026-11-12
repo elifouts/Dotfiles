@@ -61,3 +61,12 @@ float keep(float f, float px) {
 float fbm2(vec2 p) {
     return n2(p) * 0.55 + n2(p * 2.3 + 3.1) * 0.3 + n2(p * 5.1 + 7.7) * 0.15;
 }
+
+// tiny point stars on a jittered grid; dens = fraction of cells that hold a star
+float starLayer(vec2 p, float scale, float dens) {
+    vec2 g = p * scale, id = floor(g), f = fract(g) - 0.5;
+    float on  = step(h2(id), dens);
+    vec2 off  = (vec2(h2(id + 7.1), h2(id + 13.7)) - 0.5) * 0.6;
+    float pt  = smoothstep(0.30, 0.0, length(f - off));
+    return on * pt * (0.35 + 0.65 * h2(id + 3.3));
+}

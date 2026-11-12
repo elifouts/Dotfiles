@@ -49,7 +49,7 @@ apply() {
     "$UTIL/session/transition.sh" reveal
     trap - EXIT
     sleep 0.35
-    notify-send "Hyprland Profile" "Loaded $style / $variant" 2>/dev/null || true
+    notify-send -e "Hyprland Profile" "Loaded $style / $variant" 2>/dev/null || true
 }
 
 case "${1:-}" in
