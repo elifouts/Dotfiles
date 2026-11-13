@@ -7,7 +7,6 @@ ThemeBaseShared {
     readonly property string font: StoreShared.values["space.font"] || "JetBrainsMono Nerd Font"
     sans: font
     frozen: Ui.holdTheme
-    clock24Default: true
     rounding: 0
     round: 0
     lines: 1

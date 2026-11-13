@@ -5,54 +5,64 @@
   "colors": {
     "theme": "dark/space"
   },
+  "config": {
+    "misc": {
+      "key_press_enables_dpms": true,
+      "mouse_move_enables_dpms": true,
+      "vrr": 0
+    }
+  },
+  "cursor": {
+    "theme": "Qogir-Dark"
+  },
   "quickshell": {
     "style": "split"
   },
   "space": {
     "land": {
-      "comets": 4,
-      "dusk": 0.15,
-      "flora": 0.6,
-      "galaxy": 0.9,
-      "galaxyTilt": 40,
-      "haze": 0.35,
-      "height": 0.75,
-      "relief": 1,
+      "comets": 3,
+      "dusk": 0.75,
+      "flora": 2,
+      "height": 1,
+      "relief": 0.65,
+      "rocks": 2,
       "snow": 1,
-      "starSize": 1.3,
-      "stars": 1.6
+      "treeSize": 1.1
     },
     "world": {
-      "hue": 0.5370370370370371,
+      "hue": 0.5615277886390686,
       "palette": {
         "colors": {
-          "color0": "#2e3440",
-          "color1": "#bf616a",
-          "color10": "#a3be8c",
-          "color11": "#ebcb8b",
-          "color12": "#81a1c1",
-          "color13": "#81a1c1",
-          "color14": "#88c0d0",
-          "color15": "#d8dee9",
-          "color2": "#a3be8c",
-          "color3": "#ebcb8b",
-          "color4": "#81a1c1",
-          "color5": "#b48ead",
-          "color6": "#88c0d0",
-          "color7": "#d8dee9",
-          "color8": "#4c566a",
-          "color9": "#88c0d0"
+          "color0": "#24283b",
+          "color1": "#f7768e",
+          "color10": "#9ece6a",
+          "color11": "#e0af68",
+          "color12": "#7aa2f7",
+          "color13": "#7aa2f7",
+          "color14": "#7dcfff",
+          "color15": "#c0caf5",
+          "color2": "#9ece6a",
+          "color3": "#e0af68",
+          "color4": "#7aa2f7",
+          "color5": "#bb9af7",
+          "color6": "#7dcfff",
+          "color7": "#c0caf5",
+          "color8": "#565f89",
+          "color9": "#7dcfff"
         },
         "custom": true,
         "name": "Space",
         "special": {
-          "background": "#2e3440",
-          "cursor": "#d8dee9",
-          "foreground": "#d8dee9"
+          "background": "#24283b",
+          "cursor": "#c0caf5",
+          "foreground": "#c0caf5"
         }
       },
       "random": false,
-      "theme": "nord"
+      "theme": "tokyonight"
     }
+  },
+  "utilities": {
+    "clock24": false
   }
 }

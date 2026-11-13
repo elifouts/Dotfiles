@@ -302,7 +302,7 @@ FALLBACKS = {
     "animation.preset": "theme",
     "utilities.animations": False,
     "utilities.opacity": 1.0,
-    "utilities.clock24": style_dir().name == "Space",
+    "utilities.clock24": False,
     "animation.speed": 1.0,
     "animation.curve": [0.15, 0.85, 0.25, 1.0],
     "animation.window": "popin 90%",
