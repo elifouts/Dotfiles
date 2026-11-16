@@ -72,7 +72,7 @@ The block at the top of `hyprland.lua` moves state out of the old `.active-*` fi
 3. writes `state/profile` and points `quickshell/style` at the new style
 4. `hypr-settings.py sync` writes `state/settings.lua` and `state/bar`
 5. waits for the old shell to die, then `hyprctl reload`. Both styles run from the same path, so a new shell started early would see the old one and quit
-6. `session.sh start` and `hypr-settings.py colors` run together, then the wallpaper
+6. `session.sh start` and `hypr-settings.py colors` run together, then the wallpaper. `session.sh start` kills awww when the new style doesn't use it, like pypr
 7. `transition.sh reveal` fades into the new style
 
 A style counts if it has `<Style>/base/style.lua` and `quickshell/<Style>/`. Variants are whatever is in `machine/`. It gets the transition for free, nothing in it knows about styles.
@@ -622,7 +622,7 @@ utilities/
 │  ├─ hypr-profile.sh         switch or list Style/variant
 │  └─ hypr-settings.py        settings backend: tweaks, saved entries, settings.lua
 ├─ wallpaper/
-│  ├─ awww.sh                 shows an image with awww, starts the daemon if it died. skips styles without awww
+│  ├─ awww.sh                 shows an image with awww, starts the daemon if it died. skips styles without awww. no image shows the current one for the style (through `wallpaper.sh` if it has one). the daemon runs `--no-cache` so it never brings back the last style's wallpaper
 │  ├─ wallpaper-apply.sh      sets the wallpaper, then recolors everything
 │  ├─ wallpaper-fav.sh        toggles a wallpaper in favorites.txt
 │  ├─ wallpaper-fix-names.py  renames files to <prefix>-NN.<ext>, has --dry-run

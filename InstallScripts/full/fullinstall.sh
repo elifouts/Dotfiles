@@ -90,12 +90,6 @@ apply_colors() {
     $INSTALLING || [[ ! -f "$HOME/.cache/wal/colors.json" ]] || return 0
     section "Applying Colors"
 
-    local daemon
-    daemon="$(command -v awww-daemon || true)"
-    if [[ -n "${WAYLAND_DISPLAY:-}" && -n $daemon ]] && ! pgrep -x "${daemon##*/}" >/dev/null; then
-        setsid -f "$daemon" >/dev/null 2>&1
-        sleep 0.5
-    fi
     if "$HOME/.config/hypr/utilities/wallpaper/wallpaper-apply.sh" "$DOTFILES_DIR/wallpapers/pywallpaper.jpg" >/dev/null; then
         success "Colors generated from the dotfiles wallpaper."
     else
@@ -116,6 +110,15 @@ setup_space() {
         [[ -f $f ]] && "$qsb" --qt6 -o "$f.qsb" "$f"
     done
     success "Shaders compiled."
+}
+
+update_packages() {
+    local missing
+    mapfile -t missing < <(pacman -T "${CORE_PACKAGES[@]}" 2>/dev/null)
+    ((${#missing[@]})) || return 0
+    section "New Dependencies"
+    ask "Install ${missing[*]}?" || return 0
+    yay -S --needed "${missing[@]}" || warn "Some packages failed."
 }
 
 setup_mirrors() {

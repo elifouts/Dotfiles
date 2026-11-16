@@ -8,5 +8,6 @@ source "$SCRIPT_DIR/full/fullinstall.sh"
 [[ -d "$DOTFILES_DIR" ]] || { error "Dotfiles directory not found: $DOTFILES_DIR"; exit 1; }
 
 select_hyprland_style
+update_packages
 apply_dotfiles
 cast_firewall allow

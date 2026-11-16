@@ -204,6 +204,13 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 </details>
 
 <details>
+<summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/desktop-widgets-modern-v3.svg" alt="Desktop Widgets" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/widgets-plain.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/widgets-frame.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/v2/widgets-glow.png" width = "33%">
+
+- **`Alt+D`** to edit them. Same widgets as Space, in Modern's style.
+</details>
+
+<details>
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/old-stuff-no-longer-used-v2.svg" alt="Old Stuff (no longer used)" align="absmiddle"></picture></summary>
 
   I replaced all of these with my Quickshell stuff. The configs are still on the [`archive` branch](https://github.com/elifouts/Dotfiles/tree/archive) if you want them.
@@ -355,7 +362,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/desktop-widgets-space-v3.svg" alt="Desktop Widgets" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets.png" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets-edit.png" width = "50%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets-plain.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets-frame.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/widgets-glow.png" width = "33%">
 
 - **`Alt+D`** to edit them. Drag them around, add more or change their style.
 - Modern has them too. They are the same widgets in its style, with their own layout.
@@ -369,7 +376,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-retro-v3.svg" alt="Launcher" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/launcher-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/launcher-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/launcher-wallpaper.png" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/launcher-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/launcher-car.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/launcher-wallpaper.png" width = "33%">
 
 - **Tap `Super`** to open it.
 - A numbered menu. Type the number to launch it, `Tab` for commands.
@@ -377,7 +384,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/home-screen-retro-v3.svg" alt="Home Screen" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/home-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/home-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/home-wallpaper.png" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/home-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/home-car.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/home-wallpaper.png" width = "33%">
 
 - **`Alt+Tab`** to open it.
 - Shares functionality, just laid out like a status screen.
@@ -385,7 +392,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/settings-panel-retro-v3.svg" alt="Settings Panel" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/settings-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/settings-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/settings-wallpaper.png" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/settings-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/settings-car.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/settings-wallpaper.png" width = "33%">
 
 - **`Alt+S`** to open it.
 - Shares functionality. `1-9` jumps pages, and `screen` is Retro's own page for the crt and filter.
@@ -393,7 +400,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/overview-retro-v3.svg" alt="Overview" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/overview-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/overview-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/overview-wallpaper.png" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/overview-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/overview-car.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/overview-wallpaper.png" width = "33%">
 
 - **`Super+Tab`** to open it.
 - Every window as a table. `Enter` goes there, `x` closes it.
@@ -401,7 +408,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-picker-retro-v3.svg" alt="Wallpaper Picker" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/picker-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/picker-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/picker-wallpaper.png" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/picker-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/picker-car.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/picker-wallpaper.png" width = "33%">
 
 - **`Alt+W`** to open it.
 - Shares functionality with Modern's. The preview runs the filter on what you pick.
@@ -409,9 +416,9 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-retro-v3.svg" alt="Wallpaper" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/wall-default.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/wall-windows.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/wall-wallpaper.jpg" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/wall-default.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/wall-car.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/wall-wallpaper.jpg" width = "33%">
 
-- Same wallpapers, run through the filter. Default has it off so it's just black.
+- Same wallpapers, run through the filter.
   </details>
 
   <details>
@@ -424,45 +431,46 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/osd-retro-v3.svg" alt="OSD" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/osd-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/osd-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/osd-wallpaper.png" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/osd-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/osd-car.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/osd-wallpaper.png" width = "33%">
 
 - Shares functionality.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/notifications-retro-v3.svg" alt="Notifications" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/notify-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/notify-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/notify-wallpaper.png" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/notify-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/notify-car.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/notify-wallpaper.png" width = "33%">
 
 - Shares functionality.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/lock-screen-retro-v3.svg" alt="Lock Screen" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/lock-default.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/lock-windows.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/lock-wallpaper.jpg" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/lock-default.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/lock-car.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/lock-wallpaper.jpg" width = "33%">
 
 - Shares functionality. `Mod+L` to lock.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/quickshell-bar-retro-v3.svg" alt="Quickshell Bar" align="absmiddle"></picture></summary>
+![bar-boxes](https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/bar-boxes.png)
+
 ![bar-default](https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/bar-default.png)
 
-![bar-windows](https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/bar-windows.png)
+![bar-zen](https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/bar-zen.png)
 
-![bar-wallpaper](https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/bar-wallpaper.png)
-
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/dropdown-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/dropdown-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/dropdown-wallpaper.png" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/dropdown-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/dropdown-car.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/dropdown-wallpaper.png" width = "33%">
 
 - **`Alt+A`** turns it on and off.
 - Text readouts instead of icons. Hover one to open its menu.
+- Three styles, `boxes`, `default` and `zen`.
   </details>
 
   <details>
     <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/desktop-widgets-retro-v3.svg" alt="Desktop Widgets" align="absmiddle"></picture></summary>
-<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/widgets-default.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/widgets-windows.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/widgets-wallpaper.jpg" width = "33%">
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/widgets-plain.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/widgets-frame.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/widgets-glow.png" width = "33%">
 
 - **`Alt+D`** to edit them.
-- Shares functionality. Retro has a real terminal on the wallpaper by default.
+- Shares functionality. Plain, frame and glow styles, and a real terminal on the wallpaper.
   </details>
 
 </details>
@@ -571,7 +579,7 @@ Install
   ./install.sh
   ```
 
-  - `1. Full install` - everything
+  - `1. Full install` - everything. You pick `Modern`, `Space` or `Retro`, then `desktop` or `laptop`
   - `2. Waybar` - just my waybar
   - `3. Quickshell bar` - just my quickshell bar
   - `4. No Man's Sky background + star map` - if you dont want everything and just want the planet wallpaper and the star map overview. Works on any distro with Quickshell, it tells you how to bind the keys at the end. Or run `InstallScripts/NoMansSky-Background-and-Map/install.sh` straight
@@ -584,6 +592,8 @@ git -C ~/Dotfiles pull && ~/Dotfiles/InstallScripts/apply.sh
 ```
 
 Or if you have the bash alias `dotpull` that works too
+
+It asks to install any new dependencies first.
 
 Uninstall:
 

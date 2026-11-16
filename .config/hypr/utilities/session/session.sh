@@ -7,6 +7,7 @@ case "${1:-}" in
     start)
         "$UTIL/session/shells.sh" start
         [ -x "$STYLE/base/session.sh" ] && "$STYLE/base/session.sh"
+        grep -qs awww "$STYLE/base/session.sh" || pkill -x awww-daemon
         grep -qs pypr "$STYLE/base/session.sh" || { pkill -f "hypr/utilities/pypr/pypr\.sh"; pkill -f "hypr/utilities/pypr/pypr\.py"; }
         ;;
     stop)
