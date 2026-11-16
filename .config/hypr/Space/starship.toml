@@ -1,25 +1,89 @@
-format = "[✦ ](bold blue)$directory$git_branch$git_status$cmd_duration$line_break$character"
+"$schema" = 'https://starship.rs/config-schema.json'
+
 add_newline = true
+command_timeout = 500
 
-[directory]
-format = "[$path]($style) "
-style = "bold cyan"
-truncation_length = 2
-truncation_symbol = "…/"
+format = """
+[╭─](bright-black)[ ◉ ](cyan)$username$hostname[ ⌖ ](bright-black)$directory$git_branch$git_status$python$nodejs$rust$golang$c$cmd_duration
+[╰─](bright-black)$character"""
 
-[git_branch]
-symbol = "☄ "
-format = "[$symbol$branch]($style) "
-style = "bold magenta"
-
-[git_status]
-format = "([$all_status$ahead_behind]($style) )"
-style = "yellow"
-
-[cmd_duration]
-format = "[◷ $duration]($style) "
-style = "bright-black"
+right_format = "$time"
 
 [character]
-success_symbol = "[❯](bold cyan)"
-error_symbol = "[❯](bold red)"
+success_symbol = "[▸](bold cyan)"
+error_symbol = "[▸](bold red)"
+vimcmd_symbol = "[◂](bold purple)"
+
+[username]
+show_always = true
+style_user = "bold cyan"
+style_root = "bold red"
+format = "[$user]($style)"
+
+[hostname]
+ssh_only = false
+style = "bright-black"
+format = "[@$hostname]($style)"
+
+[directory]
+style = "bold blue"
+truncation_length = 3
+truncation_symbol = "…/"
+read_only = " ⊘"
+read_only_style = "red"
+format = "[$path]($style)[$read_only]($read_only_style)"
+
+[git_branch]
+symbol = "⎇ "
+style = "purple"
+format = "[ $symbol$branch]($style)"
+
+[git_status]
+style = "yellow"
+format = "[ ($all_status$ahead_behind)]($style)"
+conflicted = "✖"
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇕"
+untracked = "?"
+stashed = "≡"
+modified = "!"
+staged = "+"
+renamed = "»"
+deleted = "✘"
+
+[cmd_duration]
+min_time = 2000
+style = "yellow"
+format = "[ T+$duration]($style)"
+
+[time]
+disabled = false
+time_format = "%H:%M"
+style = "bright-black"
+format = "[$time]($style)"
+
+[python]
+symbol = "py "
+style = "bright-black"
+format = '[ $symbol($version)( \($virtualenv\))]($style)'
+
+[nodejs]
+symbol = "node "
+style = "bright-black"
+format = "[ $symbol($version)]($style)"
+
+[rust]
+symbol = "rs "
+style = "bright-black"
+format = "[ $symbol($version)]($style)"
+
+[golang]
+symbol = "go "
+style = "bright-black"
+format = "[ $symbol($version)]($style)"
+
+[c]
+symbol = "c "
+style = "bright-black"
+format = "[ $symbol($version)]($style)"
