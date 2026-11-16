@@ -9,7 +9,16 @@ Scope {
     required property var screen
     required property string style
     readonly property bool tall: (screen?.height ?? 0) > (screen?.width ?? 1)
-    readonly property string file: HyprShared.dir + "/state/layouts/" + style + "/" + role + ".json"
+    readonly property string profile: profileFile.text().trim()
+    readonly property string entry: {
+        let marks = {}
+        try { marks = JSON.parse(marksFile.text()) } catch (e) {}
+        return (marks[profile] || "default").replace(":", "-")
+    }
+    readonly property string file: profile ? HyprShared.state + "/layouts/" + style + "/" + profile.split("/")[1] + "/" + entry + "/" + role + ".json" : ""
+    WatchedShared { id: profileFile; path: HyprShared.state + "/profile"; blockLoading: true }
+    WatchedShared { id: marksFile; path: HyprShared.state + "/saved.json"; blockLoading: true }
+    FileView { id: legacy; path: HyprShared.state + "/layouts/" + dm.style + "/" + dm.role + ".json"; printErrors: false; blockLoading: true }
     readonly property string role: {
         const s = screen
         if (!s) return "none"
@@ -30,7 +39,9 @@ Scope {
         space: [[{ type: "clock", x: 0.013, y: 0.067, s: 2.4, style: "glow", align: "left" },
                  { type: "stats", x: 0.013, y: 0.311, s: 1.46, style: "glow", align: "left" }],
                 [{ type: "viz", x: 0.29, y: 0.488, s: 2.24, style: "plain", align: "left" },
-                 { type: "media", x: 0.272, y: 0.35, s: 1.64, style: "plain", align: "left" }]]
+                 { type: "media", x: 0.272, y: 0.35, s: 1.64, style: "plain", align: "left" }]],
+        retro: [[{ type: "term", x: 0.018, y: 0.7, s: 1, style: "plain", align: "left" }],
+                [{ type: "term", x: 0.03, y: 0.8, s: 1, style: "plain", align: "left" }]]
     })
     function fallback() {
         return JSON.parse(JSON.stringify((defaults[style] ?? defaults.modern)[tall ? 1 : 0]))
@@ -42,10 +53,21 @@ Scope {
         atomicWrites: true
         printErrors: false
         onLoaded: { try { dm.show(JSON.parse(text())) } catch (e) { dm.show(dm.fallback()) } }
-        onLoadFailed: dm.show(dm.fallback())
+        onLoadFailed: dm.seed()
     }
-    property var pending: []
-    function show(list) { pending = list; swap.restart() }
+    property var pending: null
+    function seed() {
+        if (pending) return layout.setText(JSON.stringify(pending))
+        let list = null
+        try { list = JSON.parse(legacy.text()) } catch (e) {}
+        show(list ?? fallback())
+        layout.setText(JSON.stringify(pending))
+    }
+    function show(list) {
+        if (pending && JSON.stringify(list) === JSON.stringify(pending)) return
+        pending = list
+        swap.restart()
+    }
     SequentialAnimation {
         id: swap
         SettleShared { target: dm; property: "shown"; to: 0; duration: Theme.quick }
@@ -53,7 +75,7 @@ Scope {
         SettleShared { target: dm; property: "shown"; to: 1; duration: Theme.quick * 1.5 }
     }
 
-    Timer { id: saveTimer; interval: 300; onTriggered: layout.setText(JSON.stringify(dm.items)) }
+    Timer { id: saveTimer; interval: 300; onTriggered: { dm.pending = dm.items; layout.setText(JSON.stringify(dm.items)) } }
     function change(i, patch) {
         const next = items.slice()
         next[i] = Object.assign({}, next[i], patch)

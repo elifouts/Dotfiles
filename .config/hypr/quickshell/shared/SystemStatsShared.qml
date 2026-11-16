@@ -29,9 +29,9 @@ Singleton {
             if (root.last[0]) root.cpu = 1 - (idle - root.last[1]) / Math.max(1, total - root.last[0])
             root.last = [total, idle]
             const kb = k => Number((mem.text().match(new RegExp(k + ":\\s+(\\d+)")) || [0, 0])[1])
-            root.ram = 1 - kb("MemAvailable") / Math.max(1, kb("MemTotal"))
+            if (kb("MemTotal")) root.ram = 1 - kb("MemAvailable") / kb("MemTotal")
             const dev = (route.text().split("\n").find(l => l.split("\t")[1] === "00000000") || "").split("\t")[0]
-            root.net = !dev ? "OFFLINE" : wifi.text().includes(dev + ":") ? "WLAN" : "LINK"
+            if (route.text()) root.net = !dev ? "OFFLINE" : wifi.text().includes(dev + ":") ? "WLAN" : "LINK"
         }
     }
 }

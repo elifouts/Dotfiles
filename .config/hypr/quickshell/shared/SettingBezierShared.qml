@@ -13,6 +13,10 @@ Item {
     readonly property int previewMs: Math.max(600, realMs)
     readonly property bool custom: StoreShared.values["animation.preset"] !== "theme"
 
+    property bool flat: false
+    property int textSize: 12
+    readonly property color fill: flat ? "transparent" : Theme.alpha(Theme.fg, 0.045)
+
     property real t: 0
     property real p: 0
 
@@ -122,6 +126,7 @@ Item {
                 t: control.t
                 p: control.p
                 playing: loop.running
+                fill: control.fill
                 onEdited: c => control.edit(c)
                 onResetRequested: StoreShared.reset("animation")
             }
@@ -135,7 +140,7 @@ Item {
                     width: parent.width
                     height: plot.height - 74
                     radius: Theme.r(12)
-                    color: Theme.alpha(Theme.fg, 0.045)
+                    color: control.fill
                     border.width: Theme.lines
                     border.color: Theme.edge
                     clip: true
@@ -172,14 +177,14 @@ Item {
                     width: parent.width
                     height: 90
 
-                    Text { x: 6; y: 2; text: "linear"; font.family: Theme.sans; font.pixelSize: 12; font.capitalization: Theme.caps; font.letterSpacing: Theme.tracking;  color: Theme.dim }
+                    Text { x: 6; y: 2; text: "linear"; font.family: Theme.sans; font.pixelSize: control.textSize; font.capitalization: Theme.caps; font.letterSpacing: Theme.tracking;  color: Theme.dim }
                     Rectangle { x: 6; y: 26; width: parent.width - 12; height: 2; radius: 1; color: Theme.alpha(Theme.fg, 0.14) }
                     Rectangle {
                         x: 6 + (parent.width - 12) * control.t - 5; y: 22; width: 10; height: 10; radius: 5 * Theme.round
                         color: Theme.alpha(Theme.fg, 0.5)
                     }
 
-                    Text { x: 6; y: 48; text: "this curve"; font.family: Theme.sans; font.pixelSize: 12; font.capitalization: Theme.caps; font.letterSpacing: Theme.tracking;  color: Theme.dim }
+                    Text { x: 6; y: 48; text: "this curve"; font.family: Theme.sans; font.pixelSize: control.textSize; font.capitalization: Theme.caps; font.letterSpacing: Theme.tracking;  color: Theme.dim }
                     Rectangle { x: 6; y: 72; width: parent.width - 12; height: 2; radius: 1; color: Theme.alpha(Theme.fg, 0.14) }
                     Rectangle {
                         x: 6 + (parent.width - 12) * control.p - 6; y: 67; width: 12; height: 12; radius: 6 * Theme.round
@@ -205,7 +210,7 @@ Item {
                     width: (fields.width - fields.spacing * 3) / 4
                     height: 32
                     radius: Theme.r(9)
-                    color: Theme.alpha(Theme.fg, input.activeFocus ? 0.14 : 0.07)
+                    color: input.activeFocus ? Theme.alpha(control.flat ? Theme.accent : Theme.fg, control.flat ? 0.18 : 0.14) : control.flat ? "transparent" : Theme.alpha(Theme.fg, 0.07)
                     border.width: input.activeFocus ? 1 : Theme.lines
                     border.color: input.activeFocus ? Theme.alpha(Theme.accent, 0.8) : Theme.edge
                     Behavior on color { ColorAnimation { duration: Theme.fast } }
@@ -214,7 +219,7 @@ Item {
                         x: 10
                         anchors.verticalCenter: parent.verticalCenter
                         text: field.modelData
-                        font.pixelSize: 10
+                        font.pixelSize: control.textSize - 2
                         font.capitalization: Theme.caps
                         font.letterSpacing: Theme.tracking
                         color: Theme.dim
@@ -230,7 +235,7 @@ Item {
                         selectByMouse: true
                         clip: true
                         font.family: Theme.sans
-                        font.pixelSize: 12
+                        font.pixelSize: control.textSize
                         color: Theme.bright
                         selectionColor: Theme.alpha(Theme.accent, 0.5)
                         text: field.val
@@ -251,7 +256,7 @@ Item {
 
         Item {
             width: parent.width
-            height: 34
+            height: Math.max(34, control.textSize * 2 + 10)
 
             LabelShared {
                 anchors.left: parent.left
@@ -262,7 +267,7 @@ Item {
                 maximumLineCount: 2
                 wrapMode: Text.WordWrap
                 text: control.css + "\n" + (control.custom ? "opens windows in ~" + control.realMs + " ms" : "")
-                font.pixelSize: 11
+                font.pixelSize: control.textSize - 1
                 color: Theme.fg
             }
 

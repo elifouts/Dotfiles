@@ -11,6 +11,7 @@ case "${1:-}" in
         ;;
     stop)
         "$UTIL/session/shells.sh" stop
+        "$UTIL/desk.sh" stop
         pkill -x waybar
         pkill -x awww-daemon
         ;;

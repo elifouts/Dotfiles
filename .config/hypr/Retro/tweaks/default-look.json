@@ -1,0 +1,54 @@
+{
+  "desktop": {
+    "bar": {
+      "kind": "quickshell"
+    },
+    "colors": {
+      "theme": "dark/phosphor"
+    },
+    "config": {
+      "decoration": {
+        "dim_strength": 0,
+        "glow": {
+          "enabled": false,
+          "range": 0
+        }
+      }
+    },
+    "crt": {
+      "bend": 1,
+      "corners": 0.65,
+      "glow": 0.5,
+      "grain": 0.25,
+      "lines": 0.35,
+      "mono": 0.5,
+      "on": true,
+      "vignette": 0
+    },
+    "cursor": {
+      "theme": "whiteglass"
+    },
+    "filter": {
+      "dither": "bayer",
+      "on": false,
+      "tone": "lines"
+    },
+    "quickshell": {
+      "style": "default"
+    },
+    "wallpaper": {
+      "path": "$HOME/wallpapers/library/industrial/ind-01.jpg"
+    }
+  },
+  "laptop": {
+    "bar": {
+      "kind": "quickshell"
+    },
+    "colors": {
+      "theme": "dark/phosphor"
+    },
+    "quickshell": {
+      "style": "default"
+    }
+  }
+}

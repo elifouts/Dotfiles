@@ -20,5 +20,5 @@ git clone https://github.com/elifouts/MyNvim ~/.config/nvim
 nvim
 ```
 
-Plugins install themselves on first launch.
+Plugins install themselves on first launch, ripgrep and tree-sitter too.
 

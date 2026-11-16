@@ -133,7 +133,7 @@ Scope {
             Rectangle {
                 anchors.fill: parent
                 radius: Theme.round * Math.max(10, root.dotSize / 2 - (root.dotSize / 2 - 10) * Math.min(1, root.w))
-                color: Theme.back(0.45)
+                color: Theme.back(Theme.osdFill)
                 border.width: Theme.lines
                 border.color: Theme.edge
             }
@@ -285,7 +285,7 @@ Scope {
                 Rectangle {
                     anchors.fill: parent
                     radius: Math.min(height / 2, Theme.rounding * 1.4)
-                    color: Theme.back(0.55)
+                    color: Theme.back(Theme.osdFill + 0.1)
                     border.width: 1
                     border.color: Theme.lines ? Theme.edge : Theme.alpha(Theme.fg, 0.08)
                 }

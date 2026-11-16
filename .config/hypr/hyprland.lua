@@ -19,4 +19,7 @@ local style, variant = profile:match("([^/]+)/(.+)")
 os.execute("cd '" .. hypr .. "quickshell' && [ \"$(readlink style)\" = " .. style .. " ] || ln -sfn " .. style .. " style")
 package.path = hypr .. style .. "/base/?.lua;" .. hypr .. "state/?.lua;" .. package.path
 package.loaded.machine = dofile(hypr .. "machine/" .. variant .. ".lua")
+local look = io.open(hypr .. style .. "/starship.toml")
+if look then look:close() end
+hl.env("STARSHIP_CONFIG", look and hypr .. style .. "/starship.toml" or os.getenv("HOME") .. "/.config/starship.toml")
 for _, name in ipairs({ "startup", "style", "shortcuts", "overrides" }) do require(name) end

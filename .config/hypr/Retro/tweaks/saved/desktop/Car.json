@@ -1,0 +1,40 @@
+{
+  "bar": {
+    "kind": "quickshell"
+  },
+  "colors": {
+    "theme": "dark/gruvbox"
+  },
+  "config": {
+    "decoration": {
+      "active_opacity": 0.75,
+      "blur": {
+        "enabled": true
+      },
+      "inactive_opacity": 0.58
+    }
+  },
+  "crt": {
+    "bend": 0.2,
+    "corners": 0.7,
+    "glow": 1.5,
+    "grain": 0.3,
+    "lines": 0.9,
+    "mono": 0.3,
+    "vignette": 0.6
+  },
+  "filter": {
+    "bright": 0.5,
+    "contrast": 0.8,
+    "levels": 12,
+    "on": true,
+    "pixel": 1,
+    "tone": "lines"
+  },
+  "quickshell": {
+    "style": "zen"
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/cars/car-03.jpg"
+  }
+}

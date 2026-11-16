@@ -1,0 +1,51 @@
+{
+  "bar": {
+    "kind": "quickshell"
+  },
+  "colors": {
+    "theme": "pywal"
+  },
+  "config": {
+    "decoration": {
+      "blur": {
+        "enabled": true
+      },
+      "dim_strength": 0,
+      "glow": {
+        "enabled": false,
+        "range": 0
+      }
+    }
+  },
+  "crt": {
+    "bend": 1,
+    "corners": 0.55,
+    "glow": 1.5,
+    "grain": 1,
+    "lines": 0.1,
+    "mono": 0,
+    "on": true,
+    "vignette": 0.2
+  },
+  "cursor": {
+    "theme": "whiteglass"
+  },
+  "filter": {
+    "bright": 0.35,
+    "contrast": 0.8,
+    "dither": "bayer",
+    "levels": 5,
+    "on": true,
+    "pixel": 4,
+    "tone": "palette"
+  },
+  "quickshell": {
+    "style": "default"
+  },
+  "retro": {
+    "size": 14
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/catppuccin/cat-08.jpg"
+  }
+}

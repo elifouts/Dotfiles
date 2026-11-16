@@ -1,0 +1,49 @@
+{
+  "bar": {
+    "kind": "quickshell"
+  },
+  "colors": {
+    "theme": "dark/github-dark-dimmed"
+  },
+  "config": {
+    "decoration": {
+      "active_opacity": 0.69,
+      "blur": {
+        "enabled": true,
+        "passes": 4,
+        "popups": true,
+        "size": 12
+      },
+      "inactive_opacity": 0.69
+    }
+  },
+  "crt": {
+    "bend": 0,
+    "corners": 0,
+    "glow": 0.7,
+    "grain": 0,
+    "lines": 0.25,
+    "mono": 0,
+    "vignette": 0.6
+  },
+  "cursor": {
+    "theme": "Adwaita"
+  },
+  "filter": {
+    "bright": 0.5,
+    "contrast": 0.8,
+    "levels": 12,
+    "on": true,
+    "pixel": 1,
+    "tone": "source"
+  },
+  "quickshell": {
+    "style": "default"
+  },
+  "utilities": {
+    "opacity": 0.7
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/other/oth-03.jpg"
+  }
+}

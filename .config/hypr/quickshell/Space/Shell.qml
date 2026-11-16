@@ -22,13 +22,12 @@ ShellRoot {
         Scope {
             id: per
             required property var modelData
-            WidgetModelShared { id: dm; screen: per.modelData; style: "space" }
-            Wallpaper { screen: per.modelData; widgets: dm }
+            Wallpaper { screen: per.modelData }
             Bar { screen: per.modelData }
-            LazyLoader { active: WidgetStateShared.editing === per.modelData.name; WidgetsEditShared { model: dm } }
         }
     }
 
+    WidgetHostShared { style: "space"; covered: Ui.covered }
     OsdShared {}
     NotificationPopupsShared {}
     Binding { target: MediaShared; property: "side"; value: "left" }

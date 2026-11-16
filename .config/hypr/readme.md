@@ -12,7 +12,7 @@ Everything is three layers stacked on each other:
 
 | Layer | What it is | Where it lives | Example |
 |---|---|---|---|
-| **Style** | the whole look, its own shell | `<Style>/` | `Modern`, `Space` |
+| **Style** | the whole look, its own shell | `<Style>/` | `Modern`, `Space`, `Retro` |
 | **Variant** | what changes per machine | `machine/<variant>.lua` | `desktop`, `laptop` |
 | **Tweaks** | settings panel changes on top | `<Style>/tweaks/` | `saved/desktop/Zen.json` |
 
@@ -24,7 +24,7 @@ session.lua, wal.lua
 machine/                          monitors and defaults per machine
 utilities/                        scripts any style can use
 quickshell/                       the shell, one folder per style plus shared/
-Modern/  Space/                   each style's hyprland config, bars and tweaks
+Modern/  Space/  Retro/           each style's hyprland config, bars and tweaks
 state/                            what's live right now, gitignored
 ```
 
@@ -33,7 +33,7 @@ state/                            what's live right now, gitignored
 ## What happens at login
 
 ```text
-hyprland.lua                 reads state/profile, points quickshell/style at the style, sets package.path: base, state, then loads
+hyprland.lua                 reads state/profile, points quickshell/style at the style, picks the starship prompt, sets package.path: base, state, then loads
    ├─ machine/<variant>.lua  monitors and defaults
    ├─ startup.lua            pulls in session.lua, Modern also starts the boot animation
    ├─ style.lua              look, curves, rules
@@ -46,6 +46,7 @@ session.lua, on hyprland.start
    └─ <Style>/base/session.sh
                              Modern: awww, bar.sh boot, pypr
                              Space:  pypr
+                             Retro:  awww, pypr
 ```
 
 ## How it works
@@ -131,6 +132,10 @@ In Space each profile keeps its color in `space.world`, with the finished palett
 
 Default slots: `color9` is the accent, `color7` is text.
 
+A style can have `base/wallpaper.sh`. It gets the picked image and prints the path of the one to actually show. `wallpaper-apply.sh` runs colors first for those styles, then shows what it printed. `color-apply.sh` runs it again on the current wallpaper after a theme change, so the picture follows the colors. `hypr-settings.py` runs `wallpaper.sh --apply` when a `filter.*` key changes. Retro is the only one with it right now.
+
+`hypr-settings.py` writes `state/settings.json` next to `settings.lua`, so scripts can read the live settings with jq.
+
 </details>
 
 <details>
@@ -215,7 +220,7 @@ Same scripts, settings and color themes as Modern, none of the visuals. One proc
 | overview | `Super+Tab` | workspaces and special workspaces with windows are stars, windows are planets, pypr scratchpads are moons |
 | home | `Alt+Tab` | visor with system info |
 | launcher | tap `Super` | little terminal under the bar, `Tab` switches between apps and commands, `Shift+Enter` runs in the background instead of kitty |
-| widgets | `Alt+D` | same widgets as Modern with its own layouts, `state/layouts/space/` |
+| widgets | `Alt+D` | same widgets as Modern with its own layouts, `state/layouts/space/`. they're on the shared widget host now, not drawn in the wallpaper, so frames can blur the land. the host stops drawing while `Ui.covered` like the wallpaper |
 | bar | `Alt+A` | styles are `Space/quickshellbar/<name>/config.json`, same `left` `center` `right` `attached` and module names as Modern, so a new folder shows up in the bar picker on the core tab. unknown modules are skipped |
 | settings | `Alt+S` | hud sheet that sizes to each tab, most pages come from `SchemaShared.js`, `LAYOUT` in Space's `Schema.js` sets their columns, right click resets an option |
 | land tab | `Alt+S` | `LAND` in Space's `Schema.js`, saved as `space.land.*` in the profile. `Terrain.qml` binds each one straight to a shader uniform so it changes live. per world change rolls them a bit per seed, planets too. atlas swaps the home moon only, shooting stars is a count up to 6, each one gets its own spot left or right of the moon and its own size. reset puts every land option back |
@@ -258,6 +263,33 @@ The scenery has no images and there's no 3D engine. QML keeps the state and hand
 - Only `Hypr.moonScreen` gets the moon, the other monitors are `moonless`.
 - `overview.frag` is only the backdrop, nebula and far stars worked out from where the camera is looking. Everything you can fly to is a normal QML item, and `project()` in `Overview.qml` does the 3D math by hand to get its screen position and size.
 - `common/orb.frag` is the small orb used by `Orb.qml`.
+
+</details>
+
+<details>
+<summary><b>Retro</b></summary>
+
+Same scripts, settings, lock, widgets, notifications and color themes as the other two. One process, `quickshell/Retro/Shell.qml`, set up like Space: each monitor gets the bar and the desktop prompt, everything else is a `LazyLoader` thrown away when it closes.
+
+| Part | Key | What it is |
+|---|---|---|
+| crt | `Alt+C` | Hyprland's `screen_shader`, so it covers every window, layer and game. `base/crt.lua` fills the `// defs` in `crt.frag` from `crt.*` and the accent, writes it to `$XDG_RUNTIME_DIR/retro-crt/<hash>.frag` and points Hyprland at it. A new name every time because Hyprland only recompiles when the path changes. `overrides.lua` calls it, so a setting change only needs `hyprctl eval`. No `time` uniform on purpose, that would redraw every frame |
+| wallpaper filter | `Alt+W` | `base/wallpaper.sh`, imagemagick. tones are lines (edge trace), tube (dithered duotone), palette (remapped to the 16 colors) and source (dithered, own colors). turning it off shows pure #000000. cached in `~/.cache/retro-wall`, `current` links to the shown one for the lock |
+| picker | `Alt+W` | same index, indexer and favorites as Modern's. the big preview runs the real filter on the picked image |
+| launcher | tap `Super` | numbered menu, digits launch, `Tab` switches to commands, `Shift+Enter` runs in the background. uses the same usage counts as Modern (`~/.cache/launcher/apps`) |
+| home | `Alt+Tab` | status screen with load cells, system, tasks and media |
+| overview | `Super+Tab` | every window as a table. `Enter` goes, `x` or middle click closes, `1-9` jumps |
+| settings | `Alt+S` | numbered pages, `1-9` jumps, `Tab` cycles, right click resets. `screen` is Retro's own page from `Schema.js`, the rest come from `SchemaShared.js` |
+| colors | `Alt+S` 2 | the four tubes are `dark/phosphor` `amber` `cyan` `paper`. pywal works too, the crt tints with whatever the accent is. set phosphor tint to 0 for full color. each tile has 12 swatches for the accent, saved per scheme through `color-roles.sh` like the role picks everywhere else, then the wallpaper gets redrawn in it |
+| bar | `Alt+A` | `Retro/quickshellbar/<name>/config.json`, same keys as the others. `attached` is one strip. adds `cpu` and `mem` modules, `media` is the song and artist (cut at 36), `audio` is just the number, `clock` is the date and time in one. one dropdown per bar, owned by the readout that opened it. if it doesn't fit it drops readouts in the order of `spare` in `Bar.qml`. the dropdown's title sits on its border, a menu can set `card` to change it (tray shows the app). `menus/Header.qml` hides the shared Sound, Updates and Notifications headers so they don't show twice |
+| terminal widget | `Alt+D` | a real bash on the wallpaper. it's the `term` widget, so every style can add one, Retro just has it in its default layout. `desk.sh` runs each one as a kitty panel. it only gets rebuilt when it moves, a font or size change goes over kitty's socket (`load-config`), so saved profiles and variants inside the same style keep the shell going (`hold`/`release` around a shell restart). switching styles kills it |
+| screenshots | `Print` | `utilities/shot.sh` (region, window, output) runs hyprshot like normal. when the crt is on it grabs each monitor with grim instead, since Hyprland leaves `screen_shader` out of screencopy, runs it through `base/crt-shot.py` (the same math as `crt.frag` in numpy, reads the defines from the live shader) and crops after. takes about 2s. the wallpaper filter is already in the image so it always shows up |
+| blur | | the bar, panels, notifications, osd and welcome have blur rules in `base/style.lua`, off by default since Retro's blur is off. turn on blur and drop shell opacity in a tweak (like `Windows`) and they frost. the wallpaper and widget layers don't blur, widget frames do (below). the osd is 0.86 here (`osdFill` in `Theme.qml`) instead of 0.45 so it doesn't look see-through without blur
+| starship | | `Retro/starship.toml`. `hyprland.lua` sets `STARSHIP_CONFIG` to `<Style>/starship.toml` when the style has one, else `~/.config/starship.toml`, so every terminal opened after a switch gets it |
+
+`Type` is the one text style. It types itself in with a block cursor when it changes. Anything that ticks sets `type: false`. Opens and closes use `Tube`, the old crt power on line.
+
+Nothing loops while idle. Blinking cursors are `Blink`, a `Timer`, and only run while something is focused or warning.
 
 </details>
 
@@ -317,11 +349,16 @@ wallpaper/wallpapers.sh install | pull | dev-pull | push
 | add a Modern utility | new folder with a `shell.qml` and an `IpcHandler`, then a bind. if it has its own components, add `import "folder"` to `quickshell/Modern/Shell.qml` |
 | add a bar module | `quickshell/Modern/bar/Module.qml` |
 | add a widget | a `case` in `quickshell/shared/WidgetShared.qml` and its name in `WidgetEditorShared.qml` |
+| widget frame blur | the `frame` style's fill is drawn on its own layer, `quickshell-widget-frames`, under `quickshell-widgets`, and only that layer has a blur rule in each `style.lua`. so frames follow Hyprland's blur setting and text or glow never gets blurred behind. a framed terminal is the exception, it sits on the background layer so a fill above would hide it. kitty draws its own frame instead: it covers the padding, uses the frame tint as its background, and its layer gets `-frame` on the name so `desk-frame-blur` only blurs framed ones. square corners there, layers can't be rounded. kitty ignores `--columns`/`--lines` with `--edge=none` and stretches to the screen edge, so `desk.sh` sizes it with all four margins from `hyprctl monitors`. the widgets window only loads after the frames window drew once, Hyprland stacks a layer by when it showed up |
+| widget layouts | one per profile, `state/layouts/<style>/<variant>/<entry>/<monitor shape>.json`, entry is `default`, `variant-desktop` or `saved-Car`. a profile with no layout yet copies whatever's on screen when you switch to it. the old `state/layouts/<style>/<shape>.json` is only the starting point for the very first one. deleting a saved profile deletes its layouts |
+| the terminal widget | `term` in `WidgetShared.qml` only reports where it is. `utilities/desk.sh` keeps a `kitten panel` there, one per monitor, transparent on the background layer so other widgets sit on top of it, focus on click. the widget window only takes clicks on the widgets themselves (`hits` in `WidgetBoardShared.qml`), so the terminal under it still works. its size is a third of the screen times its scale, so scale 3 fills the screen, and it gets clipped to the room left from where it sits. text size stays the same. it only restarts when the spot or size changes, switching to a profile that has it in the same spot keeps it (`drop` waits a second for the new layout to claim it), opening the widget editor leaves it alone unless you move it, `exit` gives you a fresh one, `session.sh stop` closes them all |
 | panel opacity, 24 hour clock | Windows > Opacity and System > Clock. `Theme.back()` and `Theme.clock()` use them, so use those for new panels and times |
 | add a bar style | new folder in `quickshellbar/` or `waybar/` |
 | add a color scheme | new json in `.config/wal/colorschemes/` |
 | add a machine | new `machine/<name>.lua` |
 | add a style | new `<Style>/base/` and `quickshell/<Style>/` with a `Shell.qml`, `common/Theme.qml`, `common/Schema.js`, `common/Backdrop.qml`, `common/MediaCard.qml` and the `bar/menus` parts shared menus use |
+| crt filter, wallpaper filter | `Retro/base/crt.frag`, `crt.lua`, `wallpaper.sh`. their options are `SCREEN` in `quickshell/Retro/common/Schema.js` |
+| starship prompt per style | `<Style>/starship.toml` |
 | add something both styles use | new file in `quickshell/shared/`, add `import "../style/common"` if it needs `Theme` |
 
 ## Confusing stuff
@@ -455,6 +492,8 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - Qt's js engine has no `Object.fromEntries`
 - Qt drags can't leave their surface, so past the edge the monitor under the pointer takes over
 - Bar visualizers use even pixel heights or they flicker
+- A `Binding` inside a `Loader` has no `parent`, give the Loader an id and use that
+- A window `mask` Region never picks up an item that starts out hidden. Retro's bar dropdown masks an always there `dropHit` that's zero sized while closed, and it also covers the gap under the bar so the hover doesn't drop crossing it
 - Avoid looping `Behavior`s on hidden things. One never settled and redrew the 240hz screen nonstop at about 55W
 
 </details>
@@ -467,6 +506,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - Can't close the visible workspace, so the overview switches off it first
 - Stop a window capture before closing the window or it errors
 - `cm_auto_hdr = 0` stops fullscreen apps flipping the screen into hdr
+- A curved `screen_shader` moves pixels, so damage tracking leaves stale strips. `crt.lua` sets `debug.damage_tracking = 1` (whole monitor) only while the curve is on. Clicks near the edges land a bit off with the curve, that's the price
 - `spotify-launcher` forks so it never floats right without its window rule
 - Blur `ignore_alpha` on the bar is half the pill opacity or the blur halos
 - Mouse sensitivity is also set per device, per device beats global
@@ -488,6 +528,8 @@ Things that took me a while. Worth reading before "fixing" any of them.
 - If everything is suddenly laggy on the laptop check the battery first. At 6% the GPU was capped to 30W instead of 125W and stuck around 500MHz, by 14% the cap was gone. `nvidia-smi -q -d POWER` shows the current limit
 - With `QSG_USE_SIMPLE_ANIMATION_DRIVER` any running animation, `FrameAnimation` included, redraws every shell window every frame. `SeekShared` used one to poll the song position, so while music played all 9 windows drew at full refresh and the shell gained about 1GB an hour from Wayland events the NVIDIA driver never hands back. It polls with a `Timer` now, which only redraws its own window. Keep anything that runs while idle on a `Timer`
 - One `Cava` for every visualizer, each monitor's bar used to spawn its own
+- The crt never lifts black, its grain fades out on black too, so black stays #000000
+- Retro's crt is 5 texture reads a pixel, 8 with the curve. It only runs when Hyprland redraws, it has no clock
 - `Panel` frees textures after it's been closed a while
 - The launcher, music, settings and overview windows only exist while they're open.
 - Wifi scanning stops while typing and only runs while the menu is open
@@ -515,7 +557,7 @@ Things that took me a while. Worth reading before "fixing" any of them.
 
 ## Every file
 
-All 261 of them.
+All 334 of them.
 
 <details>
 <summary><b>hypr/ (root)</b></summary>
@@ -580,11 +622,14 @@ utilities/
 │  ├─ hypr-profile.sh         switch or list Style/variant
 │  └─ hypr-settings.py        settings backend: tweaks, saved entries, settings.lua
 ├─ wallpaper/
+│  ├─ awww.sh                 shows an image with awww, starts the daemon if it died. skips styles without awww
 │  ├─ wallpaper-apply.sh      sets the wallpaper, then recolors everything
 │  ├─ wallpaper-fav.sh        toggles a wallpaper in favorites.txt
 │  ├─ wallpaper-fix-names.py  renames files to <prefix>-NN.<ext>, has --dry-run
 │  ├─ wallpaper-index.py      builds thumbs, screen copies and palettes for the picker
 │  └─ wallpapers.sh           git wrapper for the wallpaper library repo
+├─ shot.sh                    screenshots, runs the crt over them when Retro's is on
+├─ desk.sh                    keeps the terminal widget's kitty panel where the widget is
 ├─ launcher.py                desktop entries, commands and usage counts, both launchers use it
 └─ paths.sh                   sourced by scripts. sets $HYPR $UTIL $STYLE $QS from state/profile
 ```
@@ -651,6 +696,7 @@ quickshell/
 │  ├─ SettleShared.qml                 NumberAnimation on hyprland's window curve
 │  ├─ SkipButtonShared.qml             prev/next that kicks when it skips
 │  ├─ SoundShared.qml                  speakers, mics, volume rows and device picking
+│  ├─ StatsShared.qml                  runs stats.sh and parses it, Space and Retro home screens
 │  ├─ spotify.sh                       opens spotify's scratchpad, or a normal window without pypr
 │  ├─ stats.sh                         system info from /proc and /sys, read by both home screens
 │  ├─ StoreShared.qml                  settings state, batches writes to hypr-settings.py
@@ -667,7 +713,8 @@ quickshell/
 │  ├─ WeatherTabShared.qml             weather tab with graph
 │  ├─ WidgetBoardShared.qml            desktop widgets with snapping
 │  ├─ WidgetEditorShared.qml           strip for adding and tweaking widgets
-│  ├─ WidgetModelShared.qml            one monitor's widgets, saved per monitor shape
+│  ├─ WidgetHostShared.qml             widgets on every monitor's bottom layer, every style, frame fills on their own layer under it
+│  ├─ WidgetModelShared.qml            one monitor's widgets, saved per profile and monitor shape
 │  ├─ WidgetsEditShared.qml            edit mode overlay
 │  ├─ WidgetShared.qml                 one widget
 │  ├─ WidgetStateShared.qml            which monitor is editing or typing
@@ -881,6 +928,7 @@ Space/
 │  ├─ default/config.json   user and workspaces left, everything else right
 │  ├─ split/config.json     media and clock in a center pill
 │  └─ zen/config.json       workspaces, sound, notifications, clock
+├─ starship.toml          the space prompt
 └─ tweaks/
    ├─ saved/
    │  └─ desktop/
@@ -974,6 +1022,67 @@ quickshell/Space/
 ```
 
 </details>
+<details>
+<summary><b>Retro/ config</b></summary>
+
+```text
+Retro/
+├─ base/
+│  ├─ crt.frag           the screen filter. crt.lua fills in the // defs line
+│  ├─ crt.lua            writes the filter with your settings and points hyprland at it
+│  ├─ crt-shot.py        crt.frag again in numpy, for screenshots
+│  ├─ session.sh         awww and pypr
+│  ├─ shortcuts.lua      Retro's keybinds, most go through `shells.sh retro toggle`
+│  ├─ startup.lua        only pulls in session.lua
+│  ├─ style.lua          hyprland look: thin borders, no blur, snappy curves
+│  └─ wallpaper.sh       draws the wallpaper for the tube, --apply redoes the current one
+├─ quickshellbar/
+│  ├─ boxes/config.json    floating framed boxes
+│  ├─ default/config.json  one strip, everything
+│  └─ zen/config.json      workspaces, sound, messages, clock
+├─ tweaks/
+│  └─ default-look.json  phosphor and the quickshell bar
+└─ starship.toml         the READY > prompt
+```
+
+</details>
+
+<details>
+<summary><b>quickshell/Retro/</b></summary>
+
+```text
+quickshell/Retro/
+├─ bar/
+│  ├─ Bar.qml                      bar window, the one dropdown, fits itself to narrow monitors
+│  ├─ menus/                       Calendar, Chips, Entry, Group, Header, Island, Round, Session, Tray. same parts as Space's
+│  ├─ Module.qml                   readout, inverts when open
+│  ├─ Pill.qml                     row of readouts, framed in boxes mode
+│  └─ Workspaces.qml               numbered cells, the focused one inverted
+├─ common/
+│  ├─ Backdrop.qml                 filtered wallpaper behind the lock
+│  ├─ Blink.qml                    cursor blink on a Timer
+│  ├─ Box.qml                      framed panel with a title in the border
+│  ├─ Button.qml Field.qml Slider.qml Switch.qml Tile.qml   the parts shared menus need
+│  ├─ Controls.qml                 Title, Line, Slide, Toggle
+│  ├─ MediaCard.qml                now playing with a block seek bar
+│  ├─ Say.qml                      the tour's text
+│  ├─ Schema.js                    Retro's pages, the screen page and its presets
+│  ├─ Theme.qml                    ThemeBase, square, Terminess if you have it
+│  ├─ TimerForecast.qml            one timer and forecast for every monitor
+│  ├─ Tube.qml                     crt power on and off
+│  ├─ Type.qml                     the one text style, types itself in
+│  └─ Ui.qml                       what's open and who opened it
+├─ home/Home.qml                   alt tab status screen
+├─ launcher/Launcher.qml           program menu
+├─ overview/Overview.qml           task table
+├─ settings/Settings.qml           setup sheet
+├─ wallpaper/Picker.qml            wallpaper picker with the filter preview
+├─ welcome/Welcome.qml             Retro's tour steps
+└─ Shell.qml                       the whole shell. overlays load lazily and drop on close
+```
+
+</details>
+
 ## Outside hypr/
 
 | Path | What it is |

@@ -1,0 +1,51 @@
+{
+  "bar": {
+    "kind": "quickshell"
+  },
+  "colors": {
+    "theme": "pywal"
+  },
+  "config": {
+    "decoration": {
+      "blur": {
+        "enabled": false,
+        "passes": 2,
+        "size": 7
+      },
+      "glow": {
+        "enabled": false,
+        "range": 11,
+        "render_power": 3
+      }
+    }
+  },
+  "crt": {
+    "bend": 1,
+    "corners": 0.25,
+    "glow": 1.05,
+    "grain": 0.3,
+    "lines": 0.25,
+    "mono": 0.3,
+    "on": true,
+    "vignette": 0.05
+  },
+  "cursor": {
+    "size": 12,
+    "theme": "whiteglass"
+  },
+  "filter": {
+    "dither": "fine",
+    "pixel": 2,
+    "tone": "source"
+  },
+  "quickshell": {
+    "style": "default"
+  },
+  "retro": {
+    "font": "Terminess Nerd Font Mono",
+    "size": 16
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/catppuccin/cat-10.png"
+  }
+}

@@ -32,6 +32,7 @@ Singleton {
     }
 
     function focusWs(id) { Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })") }
+    function focusWindow(a) { a = String(a); Hyprland.dispatch("hl.dsp.focus({ window = \"address:" + (a.startsWith("0x") ? a : "0x" + a) + "\" })") }
 
     function run(cmd) {
         Quickshell.execDetached(["sh", "-c", cmd])

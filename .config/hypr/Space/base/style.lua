@@ -79,6 +79,8 @@ for _, ns in ipairs({ "space-bar", "space-launcher", "space-settings", "space-to
 end
 hl.layer_rule({ name = "osd-blur", match = { namespace = "osd" }, blur = true, ignore_alpha = 0.05, no_anim = true })
 hl.layer_rule({ name = "space-home-blur", match = { namespace = "space-home" }, blur = true, ignore_alpha = 0, animation = "fade" })
+hl.layer_rule({ name = "widget-frames-blur", match = { namespace = "quickshell-widget-frames" }, blur = true, ignore_alpha = 0.01, no_anim = true })
+hl.layer_rule({ name = "desk-frame-blur", match = { namespace = "^desk-.*-frame$" }, blur = true, ignore_alpha = 0.01, no_anim = true })
 for _, ns in ipairs({ "space-wall", "quickshell-widgets", "space-overview" }) do
     hl.layer_rule({ name = ns .. "-noanim", match = { namespace = ns }, no_anim = true })
 end

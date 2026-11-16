@@ -39,7 +39,7 @@ Rectangle {
 
         Chip { text: "add"; rightPadding: 6; color: Theme.alpha(Theme.fg, 0.3) }
         Repeater {
-            model: ["clock", "stats", "media", "viz", "note", "todo"]
+            model: ["clock", "stats", "media", "viz", "note", "todo", "term"]
             Chip { required property string modelData; text: "+" + modelData; onHit: strip.model.add(modelData) }
         }
 

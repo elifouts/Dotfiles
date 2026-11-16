@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -71,6 +72,11 @@ def tweaks_file(variant=None):
 
 def saved_dir():
     return tweaks_dir() / "saved" / active_profile().partition("/")[2]
+
+
+def layouts_dir():
+    style, _, variant = active_profile().partition("/")
+    return STATE / "layouts" / style.lower() / variant
 
 
 def default_look_file():
@@ -149,6 +155,7 @@ def settings_wallpaper(s):
 def write_lua(settings):
     write_atomic(LUA_FILE, "return " + lua(settings) + "\n"
                  if settings else "return {}\n")
+    write_atomic(STATE / "settings.json", json.dumps(settings or {}) + "\n")
 
 
 def portable(settings):
@@ -387,7 +394,7 @@ def cmd_set(pairs):
         portable(looks[variant])
         write_atomic(default_look_file(), json.dumps(looks, indent=2, sort_keys=True) + "\n")
         return
-    settings = load(tweaks_file(), {}) if default else live_settings()
+    settings = json.loads(json.dumps(entry_settings("default"))) if default else live_settings()
     reload = put(settings, pairs)
     save(settings)
     reapply(reload)
@@ -395,6 +402,9 @@ def cmd_set(pairs):
         cmd_cursor()
     if any(p.startswith("utilities.clock24=") for p in pairs):
         cmd_waybar_clock()
+    hook = style_dir() / "base/wallpaper.sh"
+    if hook.is_file() and any(p.startswith("filter.") for p in pairs):
+        detached(str(hook), "--apply")
     if "space.world=null" in pairs:
         sync_world(live_settings())
         detached(str(HYPR / "utilities/colors/color-apply.sh"), dig(settings, "colors.theme") or DEFAULT_THEME)
@@ -608,6 +618,7 @@ def cmd_saved(args):
             sys.exit("Default can't be deleted")
         was_live = live_entry() == raw
         path.unlink(missing_ok=True)
+        shutil.rmtree(layouts_dir() / raw.replace(":", "-"), ignore_errors=True)
         if was_live:
             go_live("default")
     elif action == "preview":
@@ -619,6 +630,8 @@ def cmd_saved(args):
         for d in (tweaks_dir() / "saved").glob("*/"):
             d.rmdir()
         ACTIVE_SAVED_FILE.unlink(missing_ok=True)
+        for d in layouts_dir().glob("saved-*/"):
+            shutil.rmtree(d, ignore_errors=True)
         go_live("default")
     else:
         sys.exit(USAGE)

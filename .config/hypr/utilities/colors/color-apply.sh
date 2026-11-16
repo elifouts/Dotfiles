@@ -70,6 +70,6 @@ CAVA
 pkill -USR1 cava 2>/dev/null || true
 
 [ -n "${COLOR_NO_RELOAD:-}" ] || hyprctl reload config-only >/dev/null 2>&1 || true
-
-
-
+if [ -z "${WALL_SKIP:-}" ] && [ -x "$STYLE/base/wallpaper.sh" ] && [ -f "$wallpaper" ]; then
+    "$UTIL/wallpaper/awww.sh" "$("$STYLE/base/wallpaper.sh" "$wallpaper")" --transition-type fade --transition-duration .4 >/dev/null 2>&1 || true
+fi

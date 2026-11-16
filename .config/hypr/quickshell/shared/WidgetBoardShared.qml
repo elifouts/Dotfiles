@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import "../style/common"
 
 Item {
@@ -8,6 +9,20 @@ Item {
     property bool editing: false
     readonly property int grid: 24
     opacity: model.shown
+
+    property list<Region> hits
+    property list<Item> framed
+    function rehit(gone) {
+        const r = [], f = []
+        for (let j = 0; j < widgets.count; j++) {
+            const o = widgets.itemAt(j)
+            if (!o || o === gone) continue
+            if (o.d.type !== "term") r.push(o.hit)
+            if (o.d.style === "frame" && o.d.type !== "term") f.push(o)
+        }
+        hits = r
+        framed = f
+    }
 
     property real guideX: -1
     property real guideY: -1
@@ -45,13 +60,17 @@ Item {
     Repeater {
         id: widgets
         model: board.model.items
+        onItemAdded: board.rehit(null)
+        onItemRemoved: (i, item) => board.rehit(item)
         WidgetShared {
             id: wdg
             required property var modelData
             required property int index
             readonly property bool on: board.editing && board.model.picked === index
+            readonly property Region hit: Region { item: wdg }
             d: modelData
             editing: board.editing
+            backed: !board.editing
             x: modelData.x * board.width
             y: modelData.y * board.height
             onNoteEdited: t => board.model.quiet(index, { text: t })

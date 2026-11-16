@@ -1,0 +1,18 @@
+{
+    "//": [
+        "left, center, right: module lists, an empty list hides that section",
+        "modules: user workspaces cpu mem media timer updates network audio battery tray notifications clock power, | is a divider",
+        "attached: true is one strip across the top, false is floating boxes"
+    ],
+    "left": [
+        "workspaces"
+    ],
+    "center": ["media"],
+    "right": [
+        "audio",
+        "clock",
+        "power"
+
+    ],
+    "attached": true
+}

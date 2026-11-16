@@ -46,7 +46,7 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 <details>
   <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/how-it-all-fits-together-v2.svg" alt="How It All Fits Together" align="absmiddle"></picture></summary>
 
-  - **Style**: the whole look. Right now I only have `Modern` and `Space`.
+  - **Style**: the whole look. Right now I have `Modern`, `Space` and `Retro`.
   - **Variant**: `desktop` or `laptop`. Just the stuff that changes per machine like monitors and mouse. Hyprland loads them straight out of `.config/hypr/`, so that is the config you edit.
   - **Profile**: your tweaks on top, picked in the settings panel. **Glass** and **Zen** are mine. Saving a profile also saves your colors, bar and wallpaper.
 
@@ -364,6 +364,109 @@ Built by me, with help from my own thoughts and ideas AKA Claude for some of the
 
 </details>
 
+<details>
+  <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/retro-v2.svg" alt="Retro" align="absmiddle"></picture></summary>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/launcher-retro-v3.svg" alt="Launcher" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/launcher-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/launcher-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/launcher-wallpaper.png" width = "33%">
+
+- **Tap `Super`** to open it.
+- A numbered menu. Type the number to launch it, `Tab` for commands.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/home-screen-retro-v3.svg" alt="Home Screen" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/home-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/home-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/home-wallpaper.png" width = "33%">
+
+- **`Alt+Tab`** to open it.
+- Shares functionality, just laid out like a status screen.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/settings-panel-retro-v3.svg" alt="Settings Panel" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/settings-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/settings-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/settings-wallpaper.png" width = "33%">
+
+- **`Alt+S`** to open it.
+- Shares functionality. `1-9` jumps pages, and `screen` is Retro's own page for the crt and filter.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/overview-retro-v3.svg" alt="Overview" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/overview-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/overview-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/overview-wallpaper.png" width = "33%">
+
+- **`Super+Tab`** to open it.
+- Every window as a table. `Enter` goes there, `x` closes it.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-picker-retro-v3.svg" alt="Wallpaper Picker" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/picker-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/picker-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/picker-wallpaper.png" width = "33%">
+
+- **`Alt+W`** to open it.
+- Shares functionality with Modern's. The preview runs the filter on what you pick.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/wallpaper-retro-v3.svg" alt="Wallpaper" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/wall-default.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/wall-windows.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/wall-wallpaper.jpg" width = "33%">
+
+- Same wallpapers, run through the filter. Default has it off so it's just black.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/filter-retro-v3.svg" alt="Filter" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/filter-1.jpg" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/filter-2.jpg" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/filter-3.jpg" width = "50%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/filter-4.jpg" width = "50%">
+
+- **`Alt+C`** turns the crt on and off. It covers everything, games too.
+- The wallpaper filter has lines, tube, palette and source tones. These are from my own setups.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/osd-retro-v3.svg" alt="OSD" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/osd-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/osd-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/osd-wallpaper.png" width = "33%">
+
+- Shares functionality.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/notifications-retro-v3.svg" alt="Notifications" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/notify-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/notify-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/notify-wallpaper.png" width = "33%">
+
+- Shares functionality.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/lock-screen-retro-v3.svg" alt="Lock Screen" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/lock-default.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/lock-windows.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/lock-wallpaper.jpg" width = "33%">
+
+- Shares functionality. `Mod+L` to lock.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/quickshell-bar-retro-v3.svg" alt="Quickshell Bar" align="absmiddle"></picture></summary>
+![bar-default](https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/bar-default.png)
+
+![bar-windows](https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/bar-windows.png)
+
+![bar-wallpaper](https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/bar-wallpaper.png)
+
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/dropdown-default.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/dropdown-windows.png" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/dropdown-wallpaper.png" width = "33%">
+
+- **`Alt+A`** turns it on and off.
+- Text readouts instead of icons. Hover one to open its menu.
+  </details>
+
+  <details>
+    <summary><picture><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/badges/desktop-widgets-retro-v3.svg" alt="Desktop Widgets" align="absmiddle"></picture></summary>
+<img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/widgets-default.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/widgets-windows.jpg" width = "33%"><img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/retro/widgets-wallpaper.jpg" width = "33%">
+
+- **`Alt+D`** to edit them.
+- Shares functionality. Retro has a real terminal on the wallpaper by default.
+  </details>
+
+</details>
+
 ## Other Configurations
 
 <details>
@@ -630,6 +733,16 @@ Uninstall:
 <p align="center">
   <img src="https://raw.githubusercontent.com/elifouts/Dotfiles/images/space/launcher.gif" width="75%">
 </p>
+
+### Retro
+
+An old green screen terminal. Everything is drawn through a CRT filter, the whole screen, every app. Wallpapers get traced or dithered into the tube color. Pick a tube (green, amber, cyan, white) or let pywal color it.
+
+- The little terminal on the wallpaper is real, click it and type. It's a widget (`Alt+D`), so you can add it in any style. Swapping between Retro profiles keeps whatever you had running in it
+- `Super` opens the program menu, type a number or a name
+- `Alt+Tab` status screen, `Super+Tab` every window as a list
+- `Alt+W` wallpapers with a preview of the filter, `Alt+S` setup, `Alt+C` turns the filter off for games
+- Each style has its own starship prompt now, `<Style>/starship.toml`
 
 ### Other Applications
 

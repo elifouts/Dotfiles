@@ -29,6 +29,7 @@ Singleton {
     property bool clock24Default: false
     readonly property bool h24: utility("clock24", String(clock24Default)) === "true"
     readonly property real shellOpacity: parseFloat(utility("opacity", "1"))
+    property real osdFill: 0.45
     function surface(a) { return Math.min(1, a * shellOpacity) }
     function back(a) { return alpha(bg, surface(a)) }
     function clock(date, seconds, mark) {

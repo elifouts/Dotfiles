@@ -26,6 +26,7 @@ apply() {
     if [ "$offline" != "--offline" ]; then
         "$UTIL/session/transition.sh" begin
         trap '"$UTIL/session/transition.sh" reveal' EXIT
+        if [ "$style" = "${STYLE##*/}" ]; then "$UTIL/desk.sh" hold; fi
         HYPR_STYLE="${STYLE##*/}" "$UTIL/session/session.sh" stop &
         stopping=$!
     fi
@@ -48,6 +49,7 @@ apply() {
     COLORS_DONE=1 HYPR_SETTINGS_WAIT=1 WALLPAPER_TRANSITION=none python3 "$UTIL/settings/hypr-settings.py" appearance
     "$UTIL/session/transition.sh" reveal
     trap - EXIT
+    setsid -f "$UTIL/desk.sh" release </dev/null >/dev/null 2>&1
     sleep 0.35
     notify-send -e "Hyprland Profile" "Loaded $style / $variant" 2>/dev/null || true
 }

@@ -1,0 +1,42 @@
+format = """[$username@$hostname](green) $directory$git_branch$git_status$cmd_duration$status
+$character"""
+add_newline = true
+
+[username]
+show_always = true
+format = "[$user]($style)"
+style_user = "bold bright-green"
+
+[hostname]
+ssh_only = false
+format = "[$hostname]($style)"
+style = "green"
+
+[directory]
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold bright-green"
+read_only = " [ro]"
+truncation_length = 3
+truncation_symbol = ".../"
+
+[git_branch]
+format = "[\\($branch\\)]($style) "
+style = "green"
+
+[git_status]
+format = "([\\[$all_status$ahead_behind\\]]($style) )"
+style = "bright-yellow"
+
+[cmd_duration]
+format = "[took $duration]($style) "
+style = "bright-black"
+
+[status]
+disabled = false
+format = "[SYS-$status]($style) "
+style = "bold red"
+
+[character]
+success_symbol = "[READY >](bold bright-green)"
+error_symbol = "[READY >](bold red)"
+vimcmd_symbol = "[CMD <](bold yellow)"

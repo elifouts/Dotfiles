@@ -8,6 +8,7 @@ Item {
 
     required property var d
     property bool editing: false
+    property bool backed: false
     signal noteEdited(string text)
 
     property real live: 0
@@ -48,8 +49,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         visible: d.style === "frame"
-        radius: Theme.r(10)
-        color: Theme.back(0.25)
+        radius: d.type === "term" ? 0 : Theme.r(10)
+        color: w.backed ? "transparent" : Theme.back(0.25)
         border.width: Theme.lines ? 0 : 1
         border.color: Theme.edge
     }
@@ -118,6 +119,24 @@ Item {
                 HoverHandler { id: inside }
                 Timer { interval: 1500; running: cal.typing && !inside.hovered; onTriggered: cal.letGo() }
             }
+        }
+
+        Item {
+            id: term
+            visible: w.d.type === "term"
+            width: (QsWindow.window?.width ?? 1680) / 3 * w.s - w.pad * 2
+            height: (QsWindow.window?.height ?? 750) / 3 * w.s - w.pad * 2
+            readonly property string here: QsWindow.window?.screen?.name ?? ""
+            readonly property bool frozen: w.editing || WidgetStateShared.editing === here
+            onFrozenChanged: if (!frozen) place.restart()
+            readonly property color tint: Theme.back(0.25)
+            readonly property string spot: visible && !w.editing && here && w.x + w.y >= 0 ? [here, Math.round(w.x), Math.round(w.y), Math.round(Math.min(width + w.pad * 2, (QsWindow.window?.width ?? 1e5) - w.x)), Math.round(Math.min(height + w.pad * 2, (QsWindow.window?.height ?? 1e5) - w.y)), Math.round(w.pad),
+                ("size" in Theme ? Math.round(Theme.size * 0.75) : 10), Qt.rgba(tint.r, tint.g, tint.b, 1).toString(), w.pad ? tint.a.toFixed(3) : 0, "font" in Theme ? Theme.font : ""].join(" ") : ""
+            onSpotChanged: if (!frozen) place.restart()
+            Timer { id: place; interval: 250; onTriggered: if (!term.frozen) Quickshell.execDetached(term.spot ? [HyprShared.util + "/desk.sh", "show", term.here].concat(term.spot.split(" ")) : [HyprShared.util + "/desk.sh", "hide", term.here]) }
+            Component.onDestruction: if (here && !frozen) Quickshell.execDetached([HyprShared.util + "/desk.sh", "drop", here])
+            Rectangle { anchors.fill: parent; visible: w.editing; color: Theme.back(0.3); border.width: 1; border.color: Theme.accent }
+            LabelShared { anchors.centerIn: parent; visible: w.editing; text: "terminal"; color: Theme.dim; font.pixelSize: 13 * w.s }
         }
 
         TextEdit {

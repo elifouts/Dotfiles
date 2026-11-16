@@ -1,89 +1,89 @@
 {
-    "desktop": {
-        "colors": {
-            "theme": "dark/space"
-        },
-        "quickshell": {
-            "style": "default"
-        },
-        "cursor": {
-            "theme": "Qogir-Dark"
-        },
-    "space": {
-            "world": {
-                "hue": 0.4362777769565582,
-                "palette": {
-                    "colors": {
-                        "color0": "#282828",
-                        "color1": "#fb4934",
-                        "color10": "#b8bb26",
-                        "color11": "#fabd2f",
-                        "color12": "#83a598",
-                        "color13": "#b8bb26",
-                        "color14": "#8ec07c",
-                        "color15": "#ebdbb2",
-                        "color2": "#b8bb26",
-                        "color3": "#fabd2f",
-                        "color4": "#83a598",
-                        "color5": "#d3869b",
-                        "color6": "#8ec07c",
-                        "color7": "#ebdbb2",
-                        "color8": "#665c54",
-                        "color9": "#83a598"
-                    },
-                    "custom": true,
-                    "name": "Space",
-                    "special": {
-                        "background": "#282828",
-                        "cursor": "#ebdbb2",
-                        "foreground": "#ebdbb2"
-                    }
-                },
-                "random": false,
-                "theme": "gruvbox"
-            }
-        }
+  "desktop": {
+    "colors": {
+      "theme": "dark/space"
     },
-    "laptop": {
-        "colors": {
-            "theme": "dark/space"
+    "cursor": {
+      "theme": "Qogir-Dark"
+    },
+    "quickshell": {
+      "style": "default"
+    },
+    "space": {
+      "world": {
+        "hue": 0.4362777769565582,
+        "palette": {
+          "colors": {
+            "color0": "#282828",
+            "color1": "#fb4934",
+            "color10": "#b8bb26",
+            "color11": "#fabd2f",
+            "color12": "#83a598",
+            "color13": "#b8bb26",
+            "color14": "#8ec07c",
+            "color15": "#ebdbb2",
+            "color2": "#b8bb26",
+            "color3": "#fabd2f",
+            "color4": "#83a598",
+            "color5": "#d3869b",
+            "color6": "#8ec07c",
+            "color7": "#ebdbb2",
+            "color8": "#665c54",
+            "color9": "#83a598"
+          },
+          "custom": true,
+          "name": "Space",
+          "special": {
+            "background": "#282828",
+            "cursor": "#ebdbb2",
+            "foreground": "#ebdbb2"
+          }
         },
-        "cursor": {
-            "theme": "Qogir-Dark"
-        },
-        "space": {
-            "world": {
-                "hue": 0.4362777769565582,
-                "palette": {
-                    "colors": {
-                        "color0": "#282828",
-                        "color1": "#fb4934",
-                        "color10": "#b8bb26",
-                        "color11": "#fabd2f",
-                        "color12": "#83a598",
-                        "color13": "#b8bb26",
-                        "color14": "#8ec07c",
-                        "color15": "#ebdbb2",
-                        "color2": "#b8bb26",
-                        "color3": "#fabd2f",
-                        "color4": "#83a598",
-                        "color5": "#d3869b",
-                        "color6": "#8ec07c",
-                        "color7": "#ebdbb2",
-                        "color8": "#665c54",
-                        "color9": "#83a598"
-                    },
-                    "custom": true,
-                    "name": "Space",
-                    "special": {
-                        "background": "#282828",
-                        "cursor": "#ebdbb2",
-                        "foreground": "#ebdbb2"
-                    }
-                },
-                "random": false,
-                "theme": "gruvbox"
-            }
-        }
+        "random": false,
+        "theme": "gruvbox"
+      }
     }
+  },
+  "laptop": {
+    "colors": {
+      "theme": "dark/space"
+    },
+    "cursor": {
+      "theme": "Qogir-Dark"
+    },
+    "space": {
+      "world": {
+        "hue": 0.4362777769565582,
+        "palette": {
+          "colors": {
+            "color0": "#282828",
+            "color1": "#fb4934",
+            "color10": "#b8bb26",
+            "color11": "#fabd2f",
+            "color12": "#83a598",
+            "color13": "#b8bb26",
+            "color14": "#8ec07c",
+            "color15": "#ebdbb2",
+            "color2": "#b8bb26",
+            "color3": "#fabd2f",
+            "color4": "#83a598",
+            "color5": "#d3869b",
+            "color6": "#8ec07c",
+            "color7": "#ebdbb2",
+            "color8": "#665c54",
+            "color9": "#83a598"
+          },
+          "custom": true,
+          "name": "Space",
+          "special": {
+            "background": "#282828",
+            "cursor": "#ebdbb2",
+            "foreground": "#ebdbb2"
+          }
+        },
+        "random": false,
+        "theme": "gruvbox"
+      }
+    }
+  }
 }

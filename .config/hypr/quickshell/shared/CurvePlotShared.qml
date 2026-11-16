@@ -8,6 +8,7 @@ Item {
     property real t: 0
     property real p: 0
     property bool playing: false
+    property color fill: Theme.alpha(Theme.fg, 0.045)
     signal edited(var curve)
     signal resetRequested()
 
@@ -27,7 +28,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: Theme.r(12)
-        color: Theme.alpha(Theme.fg, 0.045)
+        color: plot.fill
         border.width: Theme.lines
         border.color: Theme.edge
     }

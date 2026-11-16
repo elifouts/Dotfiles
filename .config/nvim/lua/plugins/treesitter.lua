@@ -5,8 +5,12 @@ return {
     build = ":TSUpdate",
     config = function()
         local ts = require("nvim-treesitter")
-        local can_install = vim.fn.executable("tree-sitter") == 1
-            and (vim.fn.executable("cc") == 1 or vim.fn.executable("gcc") == 1 or vim.fn.executable("clang") == 1)
+        local cc = vim.fn.executable("cc") == 1 or vim.fn.executable("gcc") == 1 or vim.fn.executable("clang") == 1
+        local has_cli = false
+        local function can_install()
+            has_cli = has_cli or vim.fn.executable("tree-sitter") == 1
+            return cc and has_cli
+        end
         local available
 
         local function start(buf, lang)
@@ -25,7 +29,7 @@ return {
                 if not lang then
                     return
                 end
-                if can_install and not vim.list_contains(ts.get_installed(), lang) then
+                if can_install() and not vim.list_contains(ts.get_installed(), lang) then
                     available = available or ts.get_available()
                     if vim.list_contains(available, lang) then
                         ts.install(lang):await(vim.schedule_wrap(function()

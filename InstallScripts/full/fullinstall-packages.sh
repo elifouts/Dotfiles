@@ -2,12 +2,12 @@
 
 CORE_PACKAGES=(
     python-pywal16 awww waybar starship myfetch neovim python-pywalfox
-    hypridle hyprpicker hyprshot grim slurp wf-recorder ffmpeg jq wl-clipboard libnotify hyprmon pacman-contrib pyprland fd
+    hypridle hyprpicker hyprshot grim slurp wf-recorder ffmpeg jq wl-clipboard libnotify hyprmon pacman-contrib pyprland fd ripgrep tree-sitter-cli
     cava brightnessctl otf-codenewroman-nerd nwg-look qogir-icon-theme
     materia-gtk-theme bibata-cursor-theme-bin
     thunar gvfs tumbler eza bottom htop libreoffice-fresh yazi lazygit hyprdvd quickshell unzip zip mpv
     avahi xdg-desktop-portal-hyprland libvips kitty networkmanager wireplumber playerctl imagemagick
-    qt6-shadertools ttf-jetbrains-mono-nerd
+    qt6-shadertools ttf-jetbrains-mono-nerd ttf-terminus-nerd python-numpy python-pillow
 )
 
 OPTIONAL_PACKAGES=(

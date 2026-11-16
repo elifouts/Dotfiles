@@ -8,14 +8,12 @@ import "../common"
 PanelWindow {
     id: win
 
-    required property var widgets
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Ignore
     updatesEnabled: !Ui.covered
     color: "black"
     WlrLayershell.layer: WlrLayer.Background
     WlrLayershell.namespace: "space-wall"
-    WlrLayershell.keyboardFocus: WidgetStateShared.typing === screen?.name ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     readonly property int ws: Hyprland.focusedWorkspace?.id ?? 1
     readonly property bool moving: World.hopBusy || panning.running
@@ -69,6 +67,4 @@ PanelWindow {
             before.tone = land.tone
         }
     }
-
-    WidgetBoardShared { anchors.fill: parent; model: win.widgets; visible: WidgetStateShared.editing !== win.screen?.name }
 }

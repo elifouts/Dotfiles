@@ -64,3 +64,6 @@ if S.mice and S.config and S.config.input and S.config.input.sensitivity ~= nil 
         hl.device({ name = name, sensitivity = S.config.input.sensitivity })
     end
 end
+
+local has_crt, crt = pcall(require, "crt")
+if has_crt and type(crt) == "function" then crt(require("wal")) end
