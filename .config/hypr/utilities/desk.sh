@@ -1,6 +1,7 @@
 #!/bin/bash
 HYPR="$HOME/.config/hypr"
 RUN="${XDG_RUNTIME_DIR:-/tmp}/desk"
+LIVE="${XDG_RUNTIME_DIR:-/tmp}/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket.sock"
 
 greet() {
     clear
@@ -20,6 +21,15 @@ hide() {
     pkill -f "^[^ ]*kitty \+kitten panel .*--app-id=desk-$1(-frame)? "
 }
 
+fresh() {
+    [ "$(cat "$RUN/.his" 2>/dev/null)" = "$HYPRLAND_INSTANCE_SIGNATURE" ] && return
+    pkill -f "^/bin/bash .*/desk\.sh loop "
+    pkill -f "^[^ ]*kitty \+kitten panel .*--app-id=desk-"
+    rm -rf "$RUN"
+    mkdir -p "$RUN/look" "$RUN/sock"
+    printf '%s' "$HYPRLAND_INSTANCE_SIGNATURE" > "$RUN/.his"
+}
+
 loop() {
     local geo out x y w h pad size bg alpha font look id sw sh
     geo="$(cat "$RUN/$1" 2>/dev/null)"
@@ -29,7 +39,11 @@ loop() {
     read -r sw sh < <(hyprctl monitors -j | jq -r --arg o "$out" '.[] | select(.name == $o) | .scale as $k | [.width, .height] as $s | (if .transform % 2 == 1 then [$s[1], $s[0]] else $s end) | map(. / $k | floor) | "\(.[0]) \(.[1])"' 2>/dev/null)
     look="$HYPR/$(cut -d/ -f1 "$HYPR/state/profile")/starship.toml"
     [ -f "$look" ] || look="$HOME/.config/starship.toml"
-    while [ -n "$geo" ] && [ "$(cat "$RUN/$1" 2>/dev/null)" = "$geo" ]; do
+    for _ in $(seq 40); do
+        hyprctl layers -j | jq -e --arg o "$out" '.[$o].levels["0"] // [] | any(.[]; .namespace | startswith("desk-") | not)' >/dev/null 2>&1 && break
+        sleep 0.1
+    done
+    while [ -n "$geo" ] && [ -S "$LIVE" ] && [ "$(cat "$RUN/$1" 2>/dev/null)" = "$geo" ]; do
         read -r size bg alpha font <"$RUN/look/$1"
         rm -f "$RUN/sock/$1"
         kitten panel --app-id="$id" --edge=none --layer=background --output-name="$out" --focus-policy=on-demand \
@@ -45,7 +59,7 @@ loop() {
 case "${1:-}" in
     show)
         key="$2" geo="${*:3:6}" look="${*:9}"
-        mkdir -p "$RUN/look" "$RUN/sock"
+        { flock 9; fresh; } 9>"$RUN.lock"
         if [ "$(cat "$RUN/$key" 2>/dev/null)" = "$geo" ] && pgrep -f "^/bin/bash .*/desk\.sh loop $key$" >/dev/null; then
             touch "$RUN/$key"
             [ "$(cat "$RUN/look/$key" 2>/dev/null)" = "$look" ] && exit 0

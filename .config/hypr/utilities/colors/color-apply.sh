@@ -26,7 +26,7 @@ else
     echo "No wallpaper to derive colors from." >&2
     exit 1
 fi
-
+walrgb apply
 [ -f "$wallpaper" ] && printf '%s' "$wallpaper" > "$HOME/.cache/wal/wal"
 
 for socket in /run/user/1000/nvim.*; do
