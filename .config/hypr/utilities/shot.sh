@@ -4,7 +4,7 @@
 mode="${1:-region}"
 dir="$HOME/Screenshots"
 frag="$(hyprctl getoption decoration:screen_shader -j | jq -r '.str // empty')"
-crt="$STYLE/base/crt-shot.py"
+crt="$STYLE/base/shot.py"
 
 if [ -z "$frag" ] || [ "$frag" = "[[EMPTY]]" ] || [ ! -f "$frag" ] || [ ! -f "$crt" ]; then
     [ "$mode" = output ] && exec hyprshot -m active -m output -o "$dir"

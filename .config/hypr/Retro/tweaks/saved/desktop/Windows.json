@@ -7,14 +7,20 @@
   },
   "config": {
     "decoration": {
-      "active_opacity": 0.69,
+      "active_opacity": 0.73,
       "blur": {
         "enabled": true,
         "passes": 4,
         "popups": true,
-        "size": 12
+        "size": 12,
+        "xray": false
       },
-      "inactive_opacity": 0.69
+      "dim_inactive": false,
+      "inactive_opacity": 0.73,
+      "rounding": 0
+    },
+    "general": {
+      "gaps_out": 2
     }
   },
   "crt": {
@@ -24,10 +30,11 @@
     "grain": 0,
     "lines": 0.25,
     "mono": 0,
+    "on": true,
     "vignette": 0.6
   },
   "cursor": {
-    "theme": "Adwaita"
+    "theme": "whiteglass"
   },
   "filter": {
     "bright": 0.5,
@@ -41,7 +48,7 @@
     "style": "default"
   },
   "utilities": {
-    "opacity": 0.7
+    "opacity": 0.4
   },
   "wallpaper": {
     "path": "$HOME/wallpapers/library/other/oth-03.jpg"

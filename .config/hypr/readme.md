@@ -283,7 +283,7 @@ Same scripts, settings, lock, widgets, notifications and color themes as the oth
 | colors | `Alt+S` 2 | the four tubes are `dark/phosphor` `amber` `cyan` `paper`. pywal works too, the crt tints with whatever the accent is. set phosphor tint to 0 for full color. each tile has 12 swatches for the accent, saved per scheme through `color-roles.sh` like the role picks everywhere else, then the wallpaper gets redrawn in it |
 | bar | `Alt+A` | `Retro/quickshellbar/<name>/config.json`, same keys as the others. `attached` is one strip. adds `cpu` and `mem` modules, `media` is the song and artist (cut at 36), `audio` is just the number, `clock` is the date and time in one. one dropdown per bar, owned by the readout that opened it. if it doesn't fit it drops readouts in the order of `spare` in `Bar.qml`. the dropdown's title sits on its border, a menu can set `card` to change it (tray shows the app). `menus/Header.qml` hides the shared Sound, Updates and Notifications headers so they don't show twice |
 | terminal widget | `Alt+D` | a real bash on the wallpaper. it's the `term` widget, so every style can add one, Retro just has it in its default layout. `desk.sh` runs each one as a kitty panel. it only gets rebuilt when it moves, a font or size change goes over kitty's socket (`load-config`), so saved profiles and variants inside the same style keep the shell going (`hold`/`release` around a shell restart). switching styles kills it |
-| screenshots | `Print` | `utilities/shot.sh` (region, window, output) runs hyprshot like normal. when the crt is on it grabs each monitor with grim instead, since Hyprland leaves `screen_shader` out of screencopy, runs it through `base/crt-shot.py` (the same math as `crt.frag` in numpy, reads the defines from the live shader) and crops after. takes about 2s. the wallpaper filter is already in the image so it always shows up |
+| screenshots | `Print` | `utilities/shot.sh` (region, window, output) runs hyprshot like normal. when the crt is on it grabs each monitor with grim instead, since Hyprland leaves `screen_shader` out of screencopy, runs the live shader file over it with `base/shot.py` (headless EGL through ctypes, so it matches the screen exactly) and crops after. about half a second. the wallpaper filter is already in the image so it always shows up |
 | blur | | the bar, panels, notifications, osd and welcome have blur rules in `base/style.lua`, off by default since Retro's blur is off. turn on blur and drop shell opacity in a tweak (like `Windows`) and they frost. the wallpaper and widget layers don't blur, widget frames do (below). the osd is 0.86 here (`osdFill` in `Theme.qml`) instead of 0.45 so it doesn't look see-through without blur
 | starship | | `Retro/starship.toml`. `hyprland.lua` sets `STARSHIP_CONFIG` to `<Style>/starship.toml` when the style has one, else `~/.config/starship.toml`, so every terminal opened after a switch gets it |
 
@@ -1030,7 +1030,7 @@ Retro/
 ├─ base/
 │  ├─ crt.frag           the screen filter. crt.lua fills in the // defs line
 │  ├─ crt.lua            writes the filter with your settings and points hyprland at it
-│  ├─ crt-shot.py        crt.frag again in numpy, for screenshots
+│  ├─ shot.py            runs the live crt shader over a screenshot with headless EGL
 │  ├─ session.sh         awww and pypr
 │  ├─ shortcuts.lua      Retro's keybinds, most go through `shells.sh retro toggle`
 │  ├─ startup.lua        only pulls in session.lua

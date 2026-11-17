@@ -96,3 +96,6 @@ function y() {
         rm -f -- "$tmp"
 }
 export PATH="$HOME/.local/bin:$PATH"
+
+# private per-machine aliases live here, kept out of the dotfiles repo
+[ -f "$HOME/.bashrc.local" ] && . "$HOME/.bashrc.local"
