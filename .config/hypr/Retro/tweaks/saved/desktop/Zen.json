@@ -3,7 +3,7 @@
     "kind": "quickshell"
   },
   "colors": {
-    "theme": "pywal"
+    "theme": "dark/paper"
   },
   "config": {
     "decoration": {
@@ -18,26 +18,26 @@
     }
   },
   "crt": {
-    "bend": 1,
+    "bend": 0,
     "corners": 0,
     "glow": 1.5,
     "grain": 0,
     "lines": 0,
     "mono": 0,
     "on": true,
-    "vignette": 0.2
+    "vignette": 0
   },
   "cursor": {
     "theme": "whiteglass"
   },
   "filter": {
-    "bright": 0.4,
-    "contrast": 0.75,
-    "dither": "bayer",
+    "bright": 0.3,
+    "contrast": 0.8,
+    "dither": "none",
     "levels": 5,
     "on": true,
-    "pixel": 6,
-    "tone": "palette"
+    "pixel": 2,
+    "tone": "lines"
   },
   "quickshell": {
     "style": "zen"
@@ -46,6 +46,6 @@
     "size": 14
   },
   "wallpaper": {
-    "path": "$HOME/wallpapers/library/industrial/ind-06.jpg"
+    "path": "$HOME/wallpapers/library/industrial/ind-01.jpg"
   }
 }
