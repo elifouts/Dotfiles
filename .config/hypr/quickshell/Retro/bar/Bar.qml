@@ -144,9 +144,9 @@ PanelWindow {
     Component {
         id: media
         Module {
-            readonly property var p: MediaShared.pickPlayer("")
-            readonly property string song: p ? [p.trackTitle, p.trackArtist].filter(x => x).join(" - ") : ""
-            show: song !== ""
+            NowPlayingShared { id: now; player: MediaShared.pickPlayer("") }
+            readonly property string song: [now.title, now.artist].filter(x => x).join(" - ")
+            glyph: "󰝚"
             text: song.length > 36 ? song.slice(0, 35) + "…" : song
             panel: "media"
         }

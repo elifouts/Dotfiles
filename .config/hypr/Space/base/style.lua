@@ -74,6 +74,7 @@ hl.window_rule({
     no_focus = true,
 })
 hl.window_rule({ name = "spotify-float", match = { class = "(?i)^spotify$" }, float = true })
+hl.window_rule({ name = "blueferry-float", match = { class = "^org\\.quickshell$", title = "^BlueFerry$" }, float = true })
 for _, ns in ipairs({ "space-bar", "space-launcher", "space-settings", "space-toast", "space-panel", "notification-popup", "welcome" }) do
     hl.layer_rule({ name = ns .. "-blur", match = { namespace = ns }, blur = true, ignore_alpha = 0.2, no_anim = true })
 end

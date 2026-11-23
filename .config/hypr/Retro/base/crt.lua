@@ -4,7 +4,7 @@ local here = debug.getinfo(1, "S").source:sub(2):match("(.*/)")
 return function(wal)
     local ok, S = pcall(require, "settings")
     local c = (ok and type(S) == "table" and S.crt) or {}
-    if c.on == false then return hl.config({ decoration = { screen_shader = "" }, debug = { damage_tracking = 2 } }) end
+    if c.on == false then return hl.config({ decoration = { screen_shader = "" }, debug = { damage_tracking = 2 }, cursor = { no_hardware_cursors = 2 } }) end
     local bend = (c.bend or 0) * 0.08
     local hex = "#" .. (wal.hex[wal.accent] or "33ff66")
     local r, g, b = tonumber(hex:sub(2, 3), 16) / 255, tonumber(hex:sub(4, 5), 16) / 255, tonumber(hex:sub(6, 7), 16) / 255
@@ -24,5 +24,5 @@ return function(wal)
         out:write(src)
         out:close()
     end
-    hl.config({ decoration = { screen_shader = path }, debug = { damage_tracking = bend > 0 and 1 or 2 } })
+    hl.config({ decoration = { screen_shader = path }, debug = { damage_tracking = bend > 0 and 1 or 2 }, cursor = { no_hardware_cursors = bend > 0 and 1 or 2 } })
 end

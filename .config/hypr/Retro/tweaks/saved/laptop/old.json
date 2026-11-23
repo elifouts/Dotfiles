@@ -1,0 +1,28 @@
+{
+  "bar": {
+    "kind": "quickshell"
+  },
+  "colors": {
+    "theme": "dark/paper"
+  },
+  "crt": {
+    "bend": 1,
+    "corners": 1,
+    "glow": 1.5,
+    "grain": 1,
+    "lines": 0.9,
+    "mono": 1,
+    "on": false,
+    "vignette": 0
+  },
+  "filter": {
+    "on": false,
+    "tone": "source"
+  },
+  "quickshell": {
+    "style": "default"
+  },
+  "wallpaper": {
+    "path": "$HOME/wallpapers/library/catppuccin/cat-10.png"
+  }
+}

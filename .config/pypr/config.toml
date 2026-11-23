@@ -47,3 +47,15 @@ skip_windowrules = ["group"]
 position = "8% 5%"
 size = "84% 88%"
 offset = "200%"
+
+[scratchpads.blueferry]
+animation = "fromRight"
+command = "blueferry-quickshell"
+class = "org.quickshell"
+title = "BlueFerry"
+match_by = "title"
+process_tracking = false
+skip_windowrules = ["group"]
+position = "60% 8%"
+size = "38% 84%"
+offset = "200%"

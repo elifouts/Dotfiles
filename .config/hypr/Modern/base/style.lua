@@ -68,6 +68,7 @@ hl.animation({ leaf = "workspaces", enabled = true, speed = 1.7, bezier = "snapp
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 4, bezier = "fluid", style = "slidefadevert -35%" })
 hl.animation({ leaf = "layers", enabled = true, speed = 2, bezier = "snappy", style = "popin 70%" })
 hl.window_rule({ match = { class = "(?i)^spotify$" }, float = true })
+hl.window_rule({ match = { class = "^org\\.quickshell$", title = "^BlueFerry$" }, float = true })
 hl.layer_rule({ name = "waybar-blur", match = { namespace = "waybar" }, blur = true, ignore_alpha = 0.5 })
 hl.layer_rule({ name = "quickshell-bar-blur", match = { namespace = "quickshell-bar" }, blur = true, ignore_alpha = 0.3, no_anim = true })
 hl.layer_rule({ name = "quickshell-overview-noanim", match = { namespace = "quickshell-overview" }, no_anim = true })

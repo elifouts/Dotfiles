@@ -13,10 +13,8 @@
     "right": [
         "cpu",
         "mem",
-        "|",
         "media",
         "timer",
-        "|",
         "updates",
         "network",
         "audio",

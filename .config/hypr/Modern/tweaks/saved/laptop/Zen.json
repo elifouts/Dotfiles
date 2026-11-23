@@ -7,7 +7,7 @@
       1.03
     ],
     "preset": "custom",
-    "speed": 1.2,
+    "speed": 2.15,
     "window": "gnomed",
     "workspace": "slidefadevert"
   },
@@ -48,7 +48,7 @@
     "style": "zen"
   },
   "wallpaper": {
-    "path": "$HOME/wallpapers/library/catppuccin/cat-04.png"
+    "path": "$HOME/wallpapers/library/catppuccin/cat-10.png"
   },
   "waybar": {
     "style": "default"

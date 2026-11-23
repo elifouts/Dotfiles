@@ -1,0 +1,5 @@
+[[mgr.prepend_keymap]]
+on   = [ "T" ]
+run  = "shell --orphan --confirm kitty"
+desc = "Open Kitty terminal in current directory"
+

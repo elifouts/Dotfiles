@@ -36,12 +36,15 @@ Item {
             if (m) { name = m[1]; continue }
             m = line.match(/^class\s*=\s*"(.*)"/)
             if (m && name) out.push({ name: name, cls: m[1], re: m[1].startsWith("re:") ? new RegExp(m[1].slice(3).replace("(?i)", ""), "i") : null })
+            m = line.match(/^title\s*=\s*"(.*)"/)
+            if (m && name && out.length && out[out.length - 1].name === name) out[out.length - 1].title = m[1]
         }
         return out
     }
     function scratchOf(t) {
-        const c = t.lastIpcObject ? t.lastIpcObject.class || "" : ""
-        return scratch.find(s => s.re ? s.re.test(c) : s.cls === c)
+        const o = t.lastIpcObject
+        const c = o ? o.class || "" : ""
+        return scratch.find(s => (s.re ? s.re.test(c) : s.cls === c) && (!s.title || (o && o.title === s.title)))
     }
     function scratchpads() {
         rev
